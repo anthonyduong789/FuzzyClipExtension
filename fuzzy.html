@@ -2,114 +2,101 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fuzzy Finder</title>
-  <style>
-    body {
-      background-color: #0f172a;
-      color: white;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      min-width: 500px;
-      margin: 0;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    input {
-      width: 320px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #1e293b;
-      color: white;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px #2563eb55;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 12px;
-      width: 320px;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      background: #1e293b;
-      max-height: 320px;
-      overflow: hidden;
-    }
-
-    li {
-      padding: 10px 14px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    li span.highlight {
-      color: #3b82f6;
-      font-weight: 600;
-    }
-
-    li.active {
-      background: #3b82f6;
-      color: white;
-    }
-
-    li.active span.highlight {
-      color: #fff;
-      text-decoration: underline;
-    }
-
-    li:hover {
-      background: #334155;
-    }
-
-    .no-match {
-      color: #94a3b8;
-      font-style: italic;
-      text-align: center;
-      padding: 10px;
-    }
-
-    .list-box {
-      height: 320px;
-    }
-
-    section {
-      display: flex;
-      flex-direction: column;
-      justify-items: center;
-      align-items: center;
-    }
-
-  </style>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Document</title>
 </head>
+<style>
+      .resultUL {
+            list-style: none;
+            padding: 0;
+            margin-top: 12px;
+            width: 320px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            max-height: 320px;
+            overflow: hidden;
+      }
+
+      .resultLi {
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+      }
+
+      .resultLi span.highlight {
+            color: #3b82f6;
+            font-weight: 600;
+      }
+
+      .resultLi span.highlight {
+            color: #fff;
+            text-decoration: underline;
+      }
+
+      .resultLi:hover {
+            background: #334155;
+      }
+</style>
 
 <body>
-  <section>
-    <h1>🔍 Fuzzy Finder</h1>
-    <input type="text" id="search" placeholder="Type to search..." autocomplete="off" />
-    <div class="list-box">
-      <ul id="results"></ul>
 
-    </div>
-  </section>
-  <script src="./fuzzy.js"></script>
+      <div style="
+      position: fixed;
+      top: 5px;
+      right: 5px;
+      background-color: #0f172a;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 10000;
+      font-family: system-ui, sans-serif;
+      min-height: 700px;
+      border-radius: 10px;
+      width: 300px;
+      opacity: 0.97; /* 0 = fully transparent, 1 = fully visible */
+      align-items: center;
+">
+            <div style="display:flex; gap: 1rem;">
+                  <button style="
+margin-top: 10px;
+padding: 5px 15px;
+background: white;
+color: #667eea;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+white-space: nowrap;
+">
+                        Add Notes
+                  </button>
+                  <button id="closeInjected" style="
+margin-top: 10px;
+padding: 5px 15px;
+background: white;
+color: #667eea;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+">Close</button>
+            </div>
 
+            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">🔍 Fuzzy Finder</h1>
+            <input type="text" id="search" placeholder="Type to search..." autocomplete="off" />
+            <div class="list-box">
+                  <ul class="resultUL">
+                        <li class="resultLi">test</li>
+                  </ul>
+            </div>
 
 </body>
+<script>
+
+
+
+</script>
 
 </html>

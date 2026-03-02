@@ -3,22 +3,18 @@
   "version": "0.0.0.1",
   "manifest_version": 3,
   "description": "browser note that allows your to easily copy and past things ans also search with a quick keymaps",
-  "icons": {},
-  "action": {
-    "default_popup": "./fuzzy.html"
-  },
-
-  "background": {
-    "service_worker": "fuzzy.js"
-  },
-    
-  "commands": {
-    "_execute_action": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+F",
-        "mac": "Command+Shift+F"
-      },
-      "description": "Open the extension popup"
+  "permissions": ["activeTab", "scripting"],
+  "web_accessible_resources": [
+    {
+      "resources": ["fuzzy.html", "content.js", "fuzzy.css"],
+      "matches": ["<all_urls>"]
     }
-  }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
 }
