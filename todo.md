@@ -5,8 +5,16 @@ Instead of making the app through fuzzy.html and injecting it I'm thinking about
 ## Things todo
 
 [] find how how to inject hmtl in to the webpage
-
 - look over
+
+
+1. implement rendering of list item 
+[x] 
+
+2.
+
+3. third
+
 - [] setup fuzzy search for Fuzzy Clip Pages implement basic search algorithm for fzfMatch
     - implement search function and test that 
 

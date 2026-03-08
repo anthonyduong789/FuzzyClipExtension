@@ -7,6 +7,11 @@
       <title>Document</title>
 </head>
 <style>
+      :root {
+            --bg: #0d0d0d;
+            --match: #00ff88;
+      }
+
       .resultUL {
             list-style: none;
             padding: 0;
@@ -38,6 +43,25 @@
       .resultLi:hover {
             background: #334155;
       }
+
+      #results {
+            display: flex;
+            flex-direction: column;
+            margin-top: 2px;
+            max-height: 480px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+      }
+
+      .result-item {
+            padding: 5px, 10px;
+      }
+
+
+      #search-input {
+              padding: 5px 5px;
+      }
 </style>
 
 <body>
@@ -46,9 +70,9 @@
       position: fixed;
       top: 5px;
       right: 5px;
-      background-color: #0f172a;
+      background-color:  var(--bg);
       color: white;
-      padding: 20px;
+      padding: 20px 5px;
       display: flex;
       flex-direction: column;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -84,9 +108,10 @@ cursor: pointer;
 ">Close</button>
             </div>
 
-            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">🔍 Fuzzy Finder</h1>
-            <input type="text" id="search" placeholder="Type to search..." autocomplete="off" />
-            <div id="results">test</div>
+            <h1 style="font-size: 1.5rem; ">🔍 Fuzzy Finder</h1>
+            <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off" />
+            <div id="results">
+            </div>
 
 </body>
 

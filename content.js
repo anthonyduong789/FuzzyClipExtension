@@ -1,5 +1,85 @@
 let html;
 let isInjected = false;
+let currentAlgo = 'fzf';
+let visibleResults = [];
+const RAW_DATA = [
+  "src/components/Button.tsx", "src/components/Modal.tsx", "src/components/Dropdown.tsx",
+  "src/components/Tooltip.tsx", "src/components/Spinner.tsx", "src/components/Avatar.tsx",
+  "src/components/Badge.tsx", "src/components/Card.tsx", "src/components/Input.tsx",
+  "src/components/Table.tsx", "src/hooks/useAuth.ts", "src/hooks/useDebounce.ts",
+  "src/hooks/useLocalStorage.ts", "src/hooks/useFetch.ts", "src/hooks/useClickOutside.ts",
+  "src/hooks/useWindowSize.ts", "src/hooks/useTheme.ts", "src/hooks/useForm.ts",
+  "src/utils/formatDate.ts", "src/utils/formatCurrency.ts", "src/utils/debounce.ts",
+  "src/utils/throttle.ts", "src/utils/deepClone.ts", "src/utils/parseJSON.ts",
+  "src/utils/validateEmail.ts", "src/utils/slugify.ts", "src/utils/capitalize.ts",
+  "src/api/auth.ts", "src/api/users.ts", "src/api/posts.ts", "src/api/comments.ts",
+  "src/api/search.ts", "src/api/upload.ts", "src/api/notifications.ts",
+  "src/pages/Home.tsx", "src/pages/Login.tsx", "src/pages/Register.tsx",
+  "src/pages/Dashboard.tsx", "src/pages/Profile.tsx", "src/pages/Settings.tsx",
+  "src/pages/NotFound.tsx", "src/pages/Forbidden.tsx", "src/pages/Search.tsx",
+  "src/store/authSlice.ts", "src/store/uiSlice.ts", "src/store/userSlice.ts",
+  "src/store/postSlice.ts", "src/store/index.ts", "src/store/middleware.ts",
+  "tests/unit/Button.test.tsx", "tests/unit/Modal.test.tsx", "tests/unit/useAuth.test.ts",
+  "tests/unit/formatDate.test.ts", "tests/unit/validateEmail.test.ts",
+  "tests/e2e/login.spec.ts", "tests/e2e/dashboard.spec.ts", "tests/e2e/search.spec.ts",
+  "config/webpack.config.js", "config/jest.config.js", "config/tsconfig.json",
+  "config/eslint.config.js", "config/prettier.config.js", "config/babel.config.js",
+  ".github/workflows/ci.yml", ".github/workflows/deploy.yml", ".github/CODEOWNERS",
+  "scripts/build.sh", "scripts/seed.js", "scripts/migrate.js", "scripts/lint.sh",
+  "docs/API.md", "docs/CONTRIBUTING.md", "docs/CHANGELOG.md", "docs/ARCHITECTURE.md",
+  "docker/Dockerfile", "docker/docker-compose.yml", "docker/nginx.conf",
+  "src/middleware/auth.ts", "src/middleware/logging.ts", "src/middleware/rateLimit.ts",
+  "src/types/User.ts", "src/types/Post.ts", "src/types/Comment.ts", "src/types/Api.ts",
+  "src/constants/routes.ts", "src/constants/config.ts", "src/constants/errors.ts",
+  "src/styles/globals.css", "src/styles/variables.css", "src/styles/mixins.css",
+  "src/styles/components.css", "src/styles/animations.css", "src/styles/dark.css",
+  "public/index.html", "public/favicon.ico", "public/robots.txt", "public/manifest.json",
+  "src/lib/axios.ts", "src/lib/firebase.ts", "src/lib/sentry.ts", "src/lib/analytics.ts",
+  "src/context/AuthContext.tsx", "src/context/ThemeContext.tsx", "src/context/CartContext.tsx",
+  "src/services/EmailService.ts", "src/services/StorageService.ts", "src/services/CacheService.ts",
+  "src/workers/ImageWorker.ts", "src/workers/DataWorker.ts", "src/workers/SyncWorker.ts",
+  // more filler
+  "src/components/NavigationBar.tsx", "src/components/SidePanel.tsx", "src/components/Footer.tsx",
+  "src/components/Header.tsx", "src/components/SearchBar.tsx", "src/components/FileUpload.tsx",
+  "src/components/DatePicker.tsx", "src/components/ColorPicker.tsx", "src/components/RichEditor.tsx",
+  "src/components/Charts/LineChart.tsx", "src/components/Charts/BarChart.tsx",
+  "src/components/Charts/PieChart.tsx", "src/components/Charts/AreaChart.tsx",
+  "src/hooks/useAnimation.ts", "src/hooks/useKeyboard.ts", "src/hooks/useIntersection.ts",
+  "src/hooks/useMediaQuery.ts", "src/hooks/usePortal.ts", "src/hooks/useScrollLock.ts",
+  "src/utils/arrayUtils.ts", "src/utils/objectUtils.ts", "src/utils/stringUtils.ts",
+  "src/utils/numberUtils.ts", "src/utils/colorUtils.ts", "src/utils/domUtils.ts",
+  "src/utils/cryptoUtils.ts", "src/utils/imageUtils.ts", "src/utils/fileUtils.ts",
+  "src/api/webhooks.ts", "src/api/analytics.ts", "src/api/billing.ts", "src/api/admin.ts",
+  "src/pages/Billing.tsx", "src/pages/Admin.tsx", "src/pages/Analytics.tsx",
+  "src/pages/Help.tsx", "src/pages/Onboarding.tsx", "src/pages/Upgrade.tsx",
+  "tests/integration/api.test.ts", "tests/integration/auth.test.ts",
+  "src/animations/fadeIn.ts", "src/animations/slideIn.ts", "src/animations/bounce.ts",
+  "src/mocks/handlers.ts", "src/mocks/db.ts", "src/mocks/server.ts",
+  "src/i18n/en.json", "src/i18n/es.json", "src/i18n/fr.json", "src/i18n/de.json",
+  "src/i18n/index.ts", "src/i18n/config.ts",
+  "src/featureFlags/index.ts", "src/featureFlags/flags.ts",
+  "src/analytics/events.ts", "src/analytics/tracker.ts",
+  "src/errors/AppError.ts", "src/errors/HttpError.ts", "src/errors/ValidationError.ts",
+  "src/validators/UserValidator.ts", "src/validators/PostValidator.ts",
+  "src/transformers/UserTransformer.ts", "src/transformers/PostTransformer.ts",
+  "src/guards/AuthGuard.tsx", "src/guards/RoleGuard.tsx", "src/guards/GuestGuard.tsx",
+  "package.json", "tsconfig.json", "README.md", ".env.example", ".gitignore",
+  "yarn.lock", "pnpm-lock.yaml",
+  "src/components/Pagination.tsx", "src/components/Breadcrumb.tsx", "src/components/Accordion.tsx",
+  "src/components/Tabs.tsx", "src/components/Progress.tsx", "src/components/Skeleton.tsx",
+  "src/components/Toast.tsx", "src/components/Dialog.tsx", "src/components/Drawer.tsx",
+  "src/components/Menu.tsx", "src/components/Popover.tsx", "src/components/Select.tsx",
+  "src/components/Checkbox.tsx", "src/components/Radio.tsx", "src/components/Switch.tsx",
+  "src/components/Slider.tsx", "src/components/Rating.tsx", "src/components/Tag.tsx",
+  "src/components/Timeline.tsx", "src/components/Tree.tsx", "src/components/List.tsx",
+  "src/components/Grid.tsx", "src/components/Stack.tsx", "src/components/Flex.tsx",
+  "src/components/Container.tsx", "src/components/Divider.tsx", "src/components/Text.tsx",
+  "src/components/Heading.tsx", "src/components/Link.tsx", "src/components/Icon.tsx",
+  "src/components/Image.tsx", "src/components/Video.tsx", "src/components/Audio.tsx",
+  "src/components/Code.tsx", "src/components/Pre.tsx", "src/components/Kbd.tsx",
+  "src/components/Mark.tsx", "src/components/Quote.tsx", "src/components/Cite.tsx",
+];
+
 let resultsEl;
 // Load the file
 fetch(chrome.runtime.getURL('fuzzy.html'))
@@ -18,6 +98,17 @@ window.addEventListener('load', async () => {
     injectedDiv.innerHTML = html
     document.body.appendChild(injectedDiv);
     const closeButton = document.getElementById('closeInjected');
+    const input = document.getElementById('search-input');
+
+
+    const shadow = html.attachShadow({ mode: 'open' });
+
+    // Load CSS into the shadow root
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = chrome.runtime.getURL('styles/styles.css');
+    shadow.appendChild(link);
+
     if (closeButton) {
       closeButton.addEventListener('click', () => {
         injectedDiv.remove();
@@ -25,21 +116,64 @@ window.addEventListener('load', async () => {
     }
 
     resultsEl = document.getElementById('results');
-    console.log(resultsEl)
     /**
  * Renders the given result list in the UI.
  * @param {object[]} result - Array of {str, score, positions}
  */
+    function highlight(str, positions) {
+      if (!positions || positions.length === 0) return escHtml(str);
+      const posSet = new Set(positions);
+      return str.split('').map((c, i) =>
+        posSet.has(i) ? `<mark>${escHtml(c)}</mark>` : escHtml(c)
+      ).join('');
+    }
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 
+    /**
+     * Searches through the RAW_DATA array using the given algorithm
+     * @param {string} query - The string to search for
+     * @returns {object[]} Array of {string, score and positions}
+     */
+    function search(query) {
+      // assigns the funciton that is being implemented
+      const algo = algos[currentAlgo].fn;
+
+      if (!query.trim()) {
+        return RAW_DATA.slice(0, 200).map(s => ({ str: s, score: 0, positions: [] }));
+      }
+      const results = [];
+      for (const str of RAW_DATA) {
+        const res = algo(query, str);
+        if (res.matched) results.push({ str, score: res.score, positions: res.positions });
+      }
+      results.sort((a, b) => b.score - a.score);
+      return results.slice(0, 200);
+    }
     function render(results) {
       if (results.length === 0) {
         resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
         return;
       }
+      resultsEl.innerHTML = results.map((r) => {
+        return `
+       <div class="result-item">
+       <span class="item">${highlight(r.str, r.positions)}</span>
+       </div> 
+        
+        `
+      }).join('');
+
     }
 
-    render([]);
-
+    // console.log(search(''))
+    render(search(''));
+    let debounceTimer;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => render(search(input.value)), 60);
+    });
 
   }
   // removes toggles it to remove the element
