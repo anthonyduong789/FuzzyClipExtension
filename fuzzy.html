@@ -4,88 +4,19 @@
 <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Document</title>
+      <title>Fuzzy Clip Extension</title>
+      <script type="module" src="fuzzy.js"></script>
+      <link rel="stylesheet" href="styles/fuzzy.css">
 </head>
-<style>
-      :root {
-            --bg: #0d0d0d;
-            --match: #00ff88;
-      }
 
-      .resultUL {
-            list-style: none;
-            padding: 0;
-            margin-top: 12px;
-            width: 320px;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            background: #1e293b;
-            max-height: 320px;
-            overflow: hidden;
-      }
-
-      .resultLi {
-            padding: 10px 14px;
-            cursor: pointer;
-            transition: background 0.15s;
-      }
-
-      .resultLi span.highlight {
-            color: #3b82f6;
-            font-weight: 600;
-      }
-
-      .resultLi span.highlight {
-            color: #fff;
-            text-decoration: underline;
-      }
-
-      .resultLi:hover {
-            background: #334155;
-      }
-
-      #results {
-            display: flex;
-            flex-direction: column;
-            margin-top: 2px;
-            max-height: 480px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) transparent;
-      }
-
-      .result-item {
-            padding: 5px, 10px;
-      }
-
-
-      #search-input {
-              padding: 5px 5px;
-      }
-</style>
-
-<body>
-
-      <div style="
-      position: fixed;
-      top: 5px;
-      right: 5px;
-      background-color:  var(--bg);
-      color: white;
-      padding: 20px 5px;
+<body style="
       display: flex;
       flex-direction: column;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      z-index: 10000;
-      font-family: system-ui, sans-serif;
-      min-height: 700px;
-      border-radius: 10px;
-      width: 300px;
-      opacity: 0.97; /* 0 = fully transparent, 1 = fully visible */
       align-items: center;
-">
-            <div style="display:flex; gap: 1rem;">
-                  <button style="
+      background-color:  var(--bg);
+      color: white;">
+      <div style="display:flex; gap: 1rem;">
+            <button style="
 margin-top: 10px;
 padding: 5px 15px;
 background: white;
@@ -95,9 +26,9 @@ border-radius: 5px;
 cursor: pointer;
 white-space: nowrap;
 ">
-                        Add Notes
-                  </button>
-                  <button id="closeInjected" style="
+                  Add Notes
+            </button>
+            <button id="closeInjected" style="
 margin-top: 10px;
 padding: 5px 15px;
 background: white;
@@ -106,13 +37,14 @@ border: none;
 border-radius: 5px;
 cursor: pointer;
 ">Close</button>
-            </div>
+      </div>
 
-            <h1 style="font-size: 1.5rem; ">🔍 Fuzzy Finder</h1>
-            <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off" />
-            <div id="results">
-            </div>
+      <h1 style="font-size: 1.5rem; ">🔍 Fuzzy Finder</h1>
+      <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off" />
+      <div id="results"></div>
 
 </body>
+
+
 
 </html>

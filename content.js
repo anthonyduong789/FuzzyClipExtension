@@ -1,3 +1,5 @@
+const iframe = document.createElement('iframe');
+const test = "content.js file exposed"
 let html;
 let isInjected = false;
 let currentAlgo = 'fzf';
@@ -81,33 +83,57 @@ const RAW_DATA = [
 ];
 
 let resultsEl;
-// Load the file
-fetch(chrome.runtime.getURL('fuzzy.html'))
-  .then(response => response.text())
-  .then(res => {
-    html = res
-    // document.getElementById('container').innerHTML = html;
-  });
+
+
+iframe.style.cssText = `
+      position: fixed;
+      top: 5px;
+      right: 5px;
+      min-height: 700px;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 10000;
+      font-family: system-ui, sans-serif;
+      opacity: 0.97; /* 0 = fully transparent, 1 = fully visible */
+  `;
+// Point it to your extension's HTML file
+iframe.src = chrome.runtime.getURL('fuzzy.html');
+// Inject it into the page
+document.documentElement.appendChild(iframe);
+// ✅ Listen on window, not iframe.contentWindow
+window.addEventListener('message', (event) => {
+  if (!event.origin.startsWith('chrome-extension://')) return;
+  console.log('[content.js] received:', event.data);
+});
+
 
 // inject html 
 window.addEventListener('load', async () => {
+  // Style it to sit in the bottom-right corner of the page
+
+
+
   const injectedDiv = document.createElement('div');
 
   if (html) {
 
     injectedDiv.innerHTML = html
-    document.body.appendChild(injectedDiv);
-    const closeButton = document.getElementById('closeInjected');
-    const input = document.getElementById('search-input');
-
-
-    const shadow = html.attachShadow({ mode: 'open' });
-
     // Load CSS into the shadow root
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('styles/styles.css');
-    shadow.appendChild(link);
+    injectedDiv.appendChild(link);
+
+
+    // document.body.appendChild(injectedDiv);
+    const closeButton = document.getElementById('closeInjected');
+    const input = document.getElementById('search-input');
+
+
+    // const shadow = html.attachShadow({ mode: 'open' });
+
+
 
     if (closeButton) {
       closeButton.addEventListener('click', () => {
@@ -157,14 +183,50 @@ window.addEventListener('load', async () => {
         return;
       }
       resultsEl.innerHTML = results.map((r) => {
+
         return `
-       <div class="result-item">
-       <span class="item">${highlight(r.str, r.positions)}</span>
-       </div> 
+       <div class="item">
+        <button class="toggle" onClick = {}>
+          <span class="icon">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+          <span class="item">${highlight(r.str, r.positions)}</span>
+          
+        </button>
+        <div class="content">
+        <p>test</p>
+        </div>
+      </div>
+   
         
         `
       }).join('');
 
+      const toggle = document.getElementsByClassName('toggle');
+      console.log(toggle)
+
+      for (let i = 0; i < toggle.length; i++) {
+        toggle[i].onclick = function () {
+
+          console.log(i)
+        }
+      }
+
+
+
+
+
+
+
+
+      // if (toggle) {
+      //   toggle.addEventListener('click', () => {
+      //     console.log("check")
+      //   });
+      // }
+      // else {
+      //   console.log("no toggle items")
+      // }
     }
 
     // console.log(search(''))
@@ -174,6 +236,9 @@ window.addEventListener('load', async () => {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => render(search(input.value)), 60);
     });
+
+
+
 
   }
   // removes toggles it to remove the element
@@ -196,13 +261,6 @@ window.addEventListener('load', async () => {
     }
   })
 });
-
-
-
-
-
-
-
 function search(query) {
   // assigns the funciton that is being implemented
   const algo = algos[currentAlgo].fn;
@@ -339,7 +397,6 @@ const algos = {
   levenshtein: { fn: levenshteinMatch, label: 'levenshtein distance', desc: '<strong>Levenshtein:</strong> Measures edit distance (insertions, deletions, substitutions) between pattern and substrings. More typo-tolerant; works even when characters are out of order.' },
   trigram: { fn: trigramMatch, label: 'trigram similarity', desc: '<strong>Trigram:</strong> Splits strings into 3-character chunks and measures overlap (Sørensen–Dice). Great for longer strings, spell-correction, and partial matches across word boundaries.' },
 };
-
 
 
 
