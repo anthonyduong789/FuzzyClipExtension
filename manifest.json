@@ -6,7 +6,7 @@
   "permissions": ["activeTab", "scripting"],
   "web_accessible_resources": [
     {
-      "resources": ["fuzzy.html", "content.js", "fuzzy.css", "styles/styles.css", "panel.html"],
+      "resources": ["fuzzy.html", "content.js", "fuzzy.css", "styles/styles.css"],
       "matches": ["<all_urls>"]
     }
   ],

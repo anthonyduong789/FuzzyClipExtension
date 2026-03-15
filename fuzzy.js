@@ -99,11 +99,7 @@ const RAW_DATA = [
  */
 
 
-if (closeButton) {
-  closeButton.addEventListener('click', () => {
-    injectedDiv.remove();
-  });
-}
+
 
 render(search(''));
 let debounceTimer;
@@ -295,15 +291,15 @@ function trigrams(s) {
   return set;
 }
 
-function sendToContentScript() {
-  console.log("sending Content Script")
-  window.parent.postMessage(
-    {message: "hello"}
-  )
+function ToggleClose() {
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
+    });
+  }
 }
 
-sendToContentScript();
+ToggleClose();
 
 
 
-window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
