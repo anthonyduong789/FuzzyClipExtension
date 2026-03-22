@@ -3,9 +3,11 @@ console.log("fuzzy.js file linked")
 const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
-
-
+let visibleResults;
 let currentAlgo = 'fzf';
+let selectedIndex = 0;
+
+
 /**
  * Search Logic
  */
@@ -98,21 +100,6 @@ const RAW_DATA = [
  * Search Logic
  */
 
-
-
-
-render(search(''));
-let debounceTimer;
-input.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => render(search(input.value)), 60);
-});
-
-
-
-
-
-
 /**
 * Renders the given result list in the UI.
 * @param {object[]} result - Array of {str, score, positions}
@@ -148,19 +135,21 @@ function search(query) {
   return results.slice(0, 200);
 }
 function render(results) {
+  visibleResults = results;
+  selectedIndex = 0;
   if (results.length === 0) {
     resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
     return;
   }
-  resultsEl.innerHTML = results.map((r) => {
+  resultsEl.innerHTML = results.map((r, i) => {
 
     return `
-       <div class="item">
+       <div class="item ${i === 0 ? 'selected' : ''}">
         <button class="toggle" onClick = {}>
-          <span class="icon">
-            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-          </span>
-          <span class="item">${highlight(r.str, r.positions)}</span>
+    
+          
+          <span class="resultText">${highlight(r.str, r.positions)}</span>
+
           
         </button>
         <div class="content">
@@ -171,6 +160,17 @@ function render(results) {
         
         `
   }).join('');
+}
+
+function updateSelected() {
+  resultsEl.querySelectorAll('.item').forEach((el, i) => {
+    if (i == selectedIndex) {
+      console.log("selected")
+    }
+    el.classList.toggle('selected', i === selectedIndex);
+  });
+  const sel = resultsEl.querySelector('.item.selected');
+  if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
 
 /**
@@ -291,15 +291,51 @@ function trigrams(s) {
   return set;
 }
 
-function ToggleClose() {
+function handleKeys() {
+  let debounceTimer;
   if (closeButton) {
+    document.addEventListener('keydown', function (event) {
+      if (event.ctrlKey && event.key === 'q') {
+        window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
+      }
+      if (event.key === 'ArrowDown') {
+        console.log("ArrowDown")
+        event.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, visibleResults.length - 1)
+        updateSelected()
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0)
+        updateSelected()
+      }
+
+
+    })
     closeButton.addEventListener('click', () => {
       window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
     });
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => render(search(input.value)), 60);
+    });
+
   }
+
 }
 
-ToggleClose();
+
+window.addEventListener("message", (event) => {
+  // Inside iframe
+  if (event.data.type === "FROM_CONTENT") {
+    console.log("Got from content script:", event.data.data);
+    input.focus();
+
+  }
+});
 
 
 
+render(search(''));
+handleKeys();

@@ -140,11 +140,10 @@ Updates the UI inside the iframe
 
 
 ## Things todo
-
-[x] find how how to inject hmtl in to the webpage
-
-- look over
-
-1. [x] implement rendering of list item
+14. [] implement . [x] implement rendering of list item
 2. [] implement toggle list that shows items
-3. third
+3. [] implement selector that you can move up and down items
+- after search default value should be 1
+- ui have a arrow / highlight pointed item
+
+
