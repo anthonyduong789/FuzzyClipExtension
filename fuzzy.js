@@ -141,25 +141,34 @@ function render(results) {
     resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
     return;
   }
+  function toggle(element) {
+    el.classList.toggle('open')
+  }
   resultsEl.innerHTML = results.map((r, i) => {
-
     return `
-       <div class="item ${i === 0 ? 'selected' : ''}">
-        <button class="toggle" onClick = {}>
-    
-          
-          <span class="resultText">${highlight(r.str, r.positions)}</span>
-
-          
+       <div class = 'itemContainer'>
+        <div class="item ${i === 0 ? 'selected' : ''}">
+          <button class="toggle">
+            <span class="resultText">${highlight(r.str, r.positions)}</span>
+            <span class="icon">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
         </button>
-        <div class="content">
-        <p>test</p>
         </div>
-      </div>
-   
-        
+        <div class="itemContent">
+          <p>test</p>
+        </div>
+       </div>
         `
   }).join('');
+
+  resultsEl.querySelectorAll('.item').forEach((el, i) => {
+    el.addEventListener('click', (e) => {
+      // el.querySelector('.itemContent').classList.toggle('open');
+      el.parentElement.querySelector('.itemContent').classList.toggle('open');
+    });
+  });
+
 }
 
 function updateSelected() {
