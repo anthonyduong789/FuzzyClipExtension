@@ -145,9 +145,12 @@ Updates the UI inside the iframe
 2. [x] implement toggle list that shows items
 3. [x] implement selector that you can move up and down items
 4. [] implement resizability
-5. [x] implement fold for notes that will expand
+5. [x] implemet fold for notes that will expand
 6. [] copy and past button
   notes will be key and value
+7. fix ui for fold for arrow and value for fold 
+8. implement storage for extension figure 
+out json format
   
 
 

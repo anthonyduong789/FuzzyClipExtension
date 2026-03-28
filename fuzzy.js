@@ -162,12 +162,12 @@ function render(results) {
         `
   }).join('');
 
-  resultsEl.querySelectorAll('.item').forEach((el, i) => {
+  resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     el.addEventListener('click', (e) => {
-      // el.querySelector('.itemContent').classList.toggle('open');
-      el.parentElement.querySelector('.itemContent').classList.toggle('open');
-    });
-  });
+      el.classList.toggle('open');
+    })
+
+  })
 
 }
 
