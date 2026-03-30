@@ -148,12 +148,19 @@ function render(results) {
     return `
        <div class = 'itemContainer'>
         <div class="item ${i === 0 ? 'selected' : ''}">
-          <button class="toggle">
             <span class="resultText">${highlight(r.str, r.positions)}</span>
+
             <span class="icon">
-            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        </span>
-        </button>
+              <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+
+
+            
+
+        <div> 
+
+        </div>
+
         </div>
         <div class="itemContent">
           <p>test</p>
@@ -162,10 +169,20 @@ function render(results) {
         `
   }).join('');
 
+  // Handle Mouse
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     el.addEventListener('click', (e) => {
-      el.classList.toggle('open');
+      if (selectedIndex == i) {
+        el.classList.toggle('open');
+      }
+      else {
+        selectedIndex = i;
+        updateSelected();
+      }
+
     })
+
+
 
   })
 
@@ -173,6 +190,7 @@ function render(results) {
 
 function updateSelected() {
   resultsEl.querySelectorAll('.item').forEach((el, i) => {
+  
     if (i == selectedIndex) {
       console.log("selected")
     }
@@ -307,17 +325,22 @@ function handleKeys() {
       if (event.ctrlKey && event.key === 'q') {
         window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
       }
-      if (event.key === 'ArrowDown') {
+      if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'j')) {
         console.log("ArrowDown")
         event.preventDefault();
         selectedIndex = Math.min(selectedIndex + 1, visibleResults.length - 1)
         updateSelected()
       }
 
-      if (event.key === 'ArrowUp') {
+      if (event.key === 'ArrowUp' || (event.ctrlKey && event.key === 'k')) {
         event.preventDefault();
         selectedIndex = Math.max(selectedIndex - 1, 0)
         updateSelected()
+      }
+
+      if (event.key === 'Enter') {
+        resultsEl.children[selectedIndex].classList.toggle('open')
+
       }
 
 

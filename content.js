@@ -10,6 +10,7 @@ function intializeIframe() {
       top: 5px;
       right: 5px;
       min-height: 700px;
+      min-width: 500px;
       border-radius: 10px;
       // width: 300px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);

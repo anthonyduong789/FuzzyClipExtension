@@ -94,14 +94,12 @@
 
 .item {
   flex: 2;
-  white-space: nowrap;
-  /* overflow: hidden; */
-  text-overflow: ellipsis;
   font-size: 15px;
   border-radius: 3px;
-  height: 26px;
-  padding: 5px 10px;
+  height: 31px;
+  padding: 0px 10px;
   cursor: pointer;
+  display: flex;
 }
 
 .item:hover {
@@ -134,14 +132,7 @@
 
 
 
-.icon svg {
-  width: 14px;
-  height: 14px;
-  stroke: #6b5e4e;
-  stroke-width: 2.5;
-  fill: none;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
+
 
 .itemContainer.open .icon {
   transform: rotate(0deg);
@@ -149,6 +140,11 @@
 .itemContainer.open .icon svg {
   /* stroke: #f0ece4; */
   transform: rotate(180deg);
+}
+
+.resultText {
+  width: 100%;
+
 }
 
 .resultText mark {
@@ -159,9 +155,8 @@
 }
 
 .icon {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -172,8 +167,8 @@
   margin-left: auto;
 }
 .icon svg {
-  width: 8px;
-  height: 8px;
+  width: 15px;
+  height: 15px;
   stroke: #6b5e4e;
   stroke-width: 2.5;
   fill: none;
