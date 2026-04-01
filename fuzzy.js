@@ -149,18 +149,11 @@ function render(results) {
        <div class = 'itemContainer'>
         <div class="item ${i === 0 ? 'selected' : ''}">
             <span class="resultText">${highlight(r.str, r.positions)}</span>
-
             <span class="icon">
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
-
-
-            
-
         <div> 
-
         </div>
-
         </div>
         <div class="itemContent">
           <p>test</p>
@@ -171,7 +164,7 @@ function render(results) {
 
   // Handle Mouse
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
-    el.addEventListener('click', (e) => {
+    el.querySelector('.item').addEventListener('click', (e) => {
       if (selectedIndex == i) {
         el.classList.toggle('open');
       }
@@ -190,7 +183,7 @@ function render(results) {
 
 function updateSelected() {
   resultsEl.querySelectorAll('.item').forEach((el, i) => {
-  
+
     if (i == selectedIndex) {
       console.log("selected")
     }

@@ -2,47 +2,59 @@
 <html lang="en">
 
 <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Fuzzy Clip Extension</title>
-      <script type="module" src="fuzzy.js"></script>
-      <link rel="stylesheet" href="styles/fuzzy.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuzzy Clip Extension</title>
+  <script type="module" src="fuzzy.js"></script>
+  <link rel="stylesheet" href="styles/fuzzy.css">
 </head>
 
-<body style="
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color:  var(--bg);
-      color: white;">
-      <h1 style="font-size: 1.5rem; ">🔍 Fuzzy Finder</h1>
-      <div style="display:flex; gap: 1rem;">
-            <button style="
-margin-top: 10px;
-padding: 5px 15px;
-background: white;
-color: #667eea;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-white-space: nowrap;
-">
-                  Add Notes
-            </button>
-            <button id="closeInjected" style="
-margin-top: 10px;
-padding: 5px 15px;
-background: white;
-color: #667eea;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-">Close</button>
-      </div>
+<body class="ff-container">
 
-      <input type="text" id="search-input" placeholder="Type to search..." autocomplete="off" />
-      <div class="footer"></div>
-      <div id="results"></div>
+  <div class="ff-header">
+    <div class="ff-left">
+      <div class="ff-icon-box">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="16.5" y1="16.5" x2="22" y2="22" />
+        </svg>
+      </div>
+      <div class="ff-title-group">
+        <span class="ff-title">Fuzzy Finder</span>
+        <span class="ff-subtitle">Quick search</span>
+      </div>
+    </div>
+    <div class="ff-right">
+      <button class="ff-pill-btn">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add Notes
+      </button>
+      <button class="ff-close-btn" id="closeInjected" title="Close">
+        <svg viewBox="0 0 12 12">
+          <line x1="1" y1="1" x2="11" y2="11" />
+          <line x1="11" y1="1" x2="1" y2="11" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="ff-search-row">
+    <div class="ff-search-icon">
+      <svg viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <line x1="16.5" y1="16.5" x2="22" y2="22" />
+      </svg>
+    </div>
+    <input class="ff-input" type="text" id="search-input" placeholder="Search notes, docs, tags…" />
+    <span class="ff-kbd">⌘K</span>
+  </div>
+
+
+
+  <div class="footer"></div>
+  <div id="results"></div>
 
 </body>
 

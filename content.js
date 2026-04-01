@@ -4,6 +4,7 @@ const test = "content.js file exposed"
 
 
 function intializeIframe() {
+
   iframe.style.cssText = `
       display: none;
       position: fixed;
@@ -15,7 +16,6 @@ function intializeIframe() {
       // width: 300px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       z-index: 10000;
-      font-family: system-ui, sans-serif;
       opacity: 0.97; /* 0 = fully transparent, 1 = fully visible */
   `;
   // Point it to your extension's HTML file

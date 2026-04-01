@@ -3,10 +3,15 @@
   "version": "0.0.0.1",
   "manifest_version": 3,
   "description": "browser note that allows your to easily copy and past things ans also search with a quick keymaps",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "web_accessible_resources": [
     {
-      "resources": ["fuzzy.html", "content.js", "fuzzy.css", "styles/styles.css"],
+      "resources": [
+        "fuzzy.html",
+        "content.js",
+        "fuzzy.css",
+        "styles/styles.css"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
