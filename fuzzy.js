@@ -173,7 +173,7 @@ function render(results) {
 
     el.querySelector('.icon').addEventListener('click', (e) => {
       console.log('open')
-     el.classList.toggle('open');
+      el.classList.toggle('open');
     })
 
 
@@ -316,7 +316,8 @@ function handleKeys() {
   let debounceTimer;
   if (closeButton) {
     document.addEventListener('keydown', function (event) {
-      if (event.ctrlKey && event.key === 'q') {
+
+      if ((event.ctrlKey && event.key === 'q') || (event.key === 'Escape')) {
         window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
       }
       if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'j')) {
