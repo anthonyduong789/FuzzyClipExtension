@@ -14,9 +14,7 @@ function intializeIframe() {
       min-width: 500px;
       border-radius: 10px;
       // width: 300px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       z-index: 10000;
-      opacity: 0.97; /* 0 = fully transparent, 1 = fully visible */
   `;
   // Point it to your extension's HTML file
   iframe.src = chrome.runtime.getURL('fuzzy.html');

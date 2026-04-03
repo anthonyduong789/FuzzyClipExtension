@@ -123,9 +123,10 @@ function search(query) {
   // assigns the funciton that is being implemented
   const algo = algos[currentAlgo].fn;
 
-  if (!query.trim()) {
-    return RAW_DATA.slice(0, 200).map(s => ({ str: s, score: 0, positions: [] }));
-  }
+  // if (!query.trim()) {
+  //   return RAW_DATA.slice(0, 200).map(s => ({ str: s, score: 0, positions: [] }));
+  // }
+  query = query.trim();
   const results = [];
   for (const str of RAW_DATA) {
     const res = algo(query, str);
@@ -137,17 +138,17 @@ function search(query) {
 function render(results) {
   visibleResults = results;
   selectedIndex = 0;
-  if (results.length === 0) {
-    resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
-    return;
-  }
+  // if (results.length === 0) {
+  //   resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
+  //   return;
+  // }
   function toggle(element) {
     el.classList.toggle('open')
   }
   resultsEl.innerHTML = results.map((r, i) => {
     return `
-       <div class = 'itemContainer'>
-        <div class="item ${i === 0 ? 'selected' : ''}">
+       <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
+        <div class="item">
             <span class="resultText">${highlight(r.str, r.positions)}</span>
             <span class="icon">
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -165,14 +166,14 @@ function render(results) {
   // Handle Mouse
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     el.querySelector('.item').addEventListener('click', (e) => {
-      if (selectedIndex == i) {
-        el.classList.toggle('open');
-      }
-      else {
-        selectedIndex = i;
-        updateSelected();
-      }
+      selectedIndex = i;
+      updateSelected();
 
+    })
+
+    el.querySelector('.icon').addEventListener('click', (e) => {
+      console.log('open')
+     el.classList.toggle('open');
     })
 
 
@@ -182,14 +183,14 @@ function render(results) {
 }
 
 function updateSelected() {
-  resultsEl.querySelectorAll('.item').forEach((el, i) => {
+  resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
 
     if (i == selectedIndex) {
       console.log("selected")
     }
     el.classList.toggle('selected', i === selectedIndex);
   });
-  const sel = resultsEl.querySelector('.item.selected');
+  const sel = resultsEl.querySelector('.itemContainer');
   if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
 
