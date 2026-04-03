@@ -190,7 +190,7 @@ function updateSelected() {
     }
     el.classList.toggle('selected', i === selectedIndex);
   });
-  const sel = resultsEl.querySelector('.itemContainer');
+  const sel = resultsEl.querySelector('.selected');
   if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
 
@@ -345,7 +345,7 @@ function handleKeys() {
     });
     input.addEventListener('input', () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => render(search(input.value)), 60);
+      debounceTimer = setTimeout(() => render(search(input.value)), 10);
     });
 
   }
