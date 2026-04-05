@@ -3,6 +3,7 @@ console.log("fuzzy.js file linked")
 const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
+const addEl = document.getElementById('addNotesButton')
 let visibleResults;
 let currentAlgo = 'fzf';
 let selectedIndex = 0;
@@ -182,6 +183,32 @@ function render(results) {
 
 }
 
+function addNotes() {
+  addEl.addEventListener('click', (e) => {
+    const addBox = document.createElement('div');
+    addBox.className = 'itemContainer open';
+    addBox.innerHTML =
+      `
+      <div class="item">
+        <input class="item-add-key" placeholder="Key That will be used when searching">
+      </div>
+      <button id="SaveButon">add new note</button>
+      <div class="itemContent">
+        <textarea class="item-add-value" name="" id=""></textarea>
+      </div>
+   `
+
+    resultsEl.prepend(addBox)
+
+    addBox.querySelector('#SaveButon').addEventListener('click', (el) => {
+      console.log(addBox.querySelector('.item-add-key').value)
+    })
+
+  });
+}
+
+
+
 function updateSelected() {
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
 
@@ -315,7 +342,7 @@ function trigrams(s) {
 function handleKeys() {
   let debounceTimer;
   if (closeButton) {
-    document.addEventListener('keydown', function (event) {
+    document.addEventListener('keydown', function(event) {
 
       if ((event.ctrlKey && event.key === 'q') || (event.key === 'Escape')) {
         window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
@@ -352,6 +379,13 @@ function handleKeys() {
 
 }
 
+function storageManager(action, data) {
+  if (action === 'add-data') {
+    window.parent.postMessage({ action: action }, { data: data }, '*')
+  }
+
+}
+
 
 window.addEventListener("message", (event) => {
   // Inside iframe
@@ -366,3 +400,4 @@ window.addEventListener("message", (event) => {
 
 render(search(''));
 handleKeys();
+addNotes();
