@@ -3,7 +3,7 @@ const test = "content.js file exposed"
 
 
 
-function intializeIframe() {
+async function intializeIframe() {
 
   iframe.style.cssText = `
       display: none;
@@ -20,6 +20,18 @@ function intializeIframe() {
   iframe.src = chrome.runtime.getURL('fuzzy.html');
   // Inject it into the page
   document.documentElement.appendChild(iframe);
+  const dataPromise = loadAllData();
+
+  window.addEventListener('message', async (event) => {
+    if (event.data?.action === 'iframeReady') {
+      const results = await dataPromise;
+      let notes = {}
+      if (results.notes) {
+        notes = results.notes
+      }
+      iframe.contentWindow.postMessage({ action: 'intializeIframe', notes: notes }, '*');
+    }
+  });
 }
 
 function handlMessages() {
@@ -33,8 +45,10 @@ function handlMessages() {
         iframe.style.display = 'none';
         break;
       case 'add-data':
-        console.log(event.data.action.data)
 
+        console.log('storing event.data.data:', event.data.data)
+        storeData('notes', event.data.data)
+        loadAllData()
 
       default:
         console.log('no hide frame');
@@ -44,7 +58,7 @@ function handlMessages() {
 }
 function handleKeyMaps() {
   // removes toggles it to remove the element
-  document.addEventListener('keydown', function(event) {
+  document.addEventListener('keydown', function (event) {
     if (iframe) {
       if (event.ctrlKey && event.key === 'q') {
         console.log("Ctrl q triggered", iframe.style.display)
@@ -60,6 +74,8 @@ function handleKeyMaps() {
     }
   })
 }
+
+
 
 intializeIframe();
 handlMessages();
@@ -80,10 +96,22 @@ function loadData(key) {
   })
 }
 
-function loadAllData() {
-  // Load ALL keys at once
-  chrome.storage.local.get(null, (all) => {
-    console.log(all)
-  })
-}
+async function loadAllData() {
+  try {
+    // We MUST await here to get the actual object, 
+    // otherwise we just return the pending Promise.
+    const allData = await chrome.storage.local.get(null);
 
+    console.log("All data loaded:", allData);
+
+    // Example: Accessing specific keys from the result
+    if (allData.notes) {
+      console.log("Found notes:", allData.notes);
+    }
+
+    return allData;
+  } catch (error) {
+    console.error("Error loading from local storage:", error);
+    return {};
+  }
+}
