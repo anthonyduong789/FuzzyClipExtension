@@ -148,7 +148,7 @@ Updates the UI inside the iframe
 5. [x] implemet fold for notes that will expand
 6. [] copy and past button
   notes will be key and value
-7. fix ui for fold for arrow and value for fold 
+7. [x] fix ui for fold for arrow and value for fold 
 8. implement storage for extension figure 
 out json format
 9. [] make cancel button that will switch be switche for the add button on the top right 

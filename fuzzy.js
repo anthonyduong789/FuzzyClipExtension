@@ -83,6 +83,12 @@ function search(query) {
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, 200);
 }
+
+function handleClick(index) {
+  console.log(index)
+}
+
+
 function render(results) {
   visibleResults = results;
   selectedIndex = 0;
@@ -107,8 +113,19 @@ function render(results) {
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
         <div class="item">
-            <span class="resultText">${highlight(r.key, r.positions)}</span>
-            <span class="icon">
+            <span class="resultText" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
+            <button class="btn trash-btn" id="trashBtn" aria-label="Delete">
+                <svg class="trash-icon" width="18" height="18" viewBox="0 0 18 18" fill="none"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3,5 15,5"/>
+                  <path d="M6 5V3.5A0.5 0.5 0 0 1 6.5 3h5a0.5 0.5 0 0 1 0.5 0.5V5"/>
+                  <rect x="4" y="5" width="10" height="10" rx="1.5"/>
+                  <line x1="7" y1="8" x2="7" y2="12"/>
+                  <line x1="11" y1="8" x2="11" y2="12"/>
+                </svg>
+            </button>
+
+            <span class="DropDownIcon">
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
         <div> 
@@ -129,7 +146,17 @@ function render(results) {
 
     })
 
-    el.querySelector('.icon').addEventListener('click', (e) => {
+    el.querySelector('.trash-btn').addEventListener('click', (e)=> {
+      let data = el.querySelector('.resultText').dataset.key;
+      delete RAW_DATA1[data]
+      storageManager('update-data', RAW_DATA1)
+      render(search(''));
+      })
+      
+
+
+
+    el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
       console.log('open')
       el.classList.toggle('open');
     })
@@ -160,7 +187,7 @@ function addNotes() {
       RAW_DATA1[addBox.querySelector('.item-add-key').value] = addBox.querySelector('.item-add-value').value
       addBox.remove();
       render(search(input.value));
-      storageManager('add-data', RAW_DATA1)
+      storageManager('update-data', RAW_DATA1)
     })
 
     addBox.querySelector('#CancelButton').addEventListener('click', (el) => {
@@ -353,7 +380,7 @@ function handleKeys() {
  * @param {Object} data 
  */
 function storageManager(action, data) {
-  if (action === 'add-data') {
+  if (action === 'update-data') {
     window.parent.postMessage({ action: action, data: data }, '*')
   }
 

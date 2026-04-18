@@ -44,7 +44,7 @@ function handlMessages() {
         console.log("message triggered")
         iframe.style.display = 'none';
         break;
-      case 'add-data':
+      case 'update-data':
 
         console.log('storing event.data.data:', event.data.data)
         storeData('notes', event.data.data)
