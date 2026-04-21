@@ -1,4 +1,3 @@
-console.log("fuzzy.js file linked")
 // UI
 const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
@@ -84,47 +83,80 @@ function search(query) {
   return results.slice(0, 200);
 }
 
-function handleClick(index) {
-  console.log(index)
-}
 
 
+/**
+ * Renders the search results in the UI.
+ * @param {Array<Object>} results - Order of elements based on matching algorithm
+ * object containing:
+ * {string} key - The matched property name.
+ * {string} value - The data associated with that key.
+ * {number} score - Relevance score calculated by the algorithm.
+ * {Array<number>} positions - Indices of where the match occurred.
+ */
 function render(results) {
   visibleResults = results;
   selectedIndex = 0;
-  // if (results.length === 0) {
-  //   resultsEl.innerHTML = `<div class="no-results"><div class="icon">⌀</div>no matches found</div>`;
-  //   return;
-  // }
-
-  /**
-   * 
-   * @param {Array<Object>} - order of elements based of matching algorithm
-   * object containing:
-   * {string} key - The matched property name.
-   * {string} value - The data associated with that key.
-   * {number} score - Relevance score calculated by the algorithm.
-   * {Array<number>} positions - Indices of where the match occurred.
-   */
-  function toggle(element) {
-    el.classList.toggle('open')
-  }
   resultsEl.innerHTML = results.map((r, i) => {
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
         <div class="item">
-            <span class="resultText" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
-            <button class="btn trash-btn" id="trashBtn" aria-label="Delete">
-                <svg class="trash-icon" width="18" height="18" viewBox="0 0 18 18" fill="none"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3,5 15,5"/>
-                  <path d="M6 5V3.5A0.5 0.5 0 0 1 6.5 3h5a0.5 0.5 0 0 1 0.5 0.5V5"/>
-                  <rect x="4" y="5" width="10" height="10" rx="1.5"/>
-                  <line x1="7" y1="8" x2="7" y2="12"/>
-                  <line x1="11" y1="8" x2="11" y2="12"/>
+            <input class="input-key"/>
+            <div class="edit-btns">
+              <button class="btn confirm-btn" id="confirmEditBtn" aria-label="Confirm delete">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
+                stroke="var(--color-text-success)" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2.5,8 6.5,12 13.5,4"/>
                 </svg>
-            </button>
+              </button> 
+              <button class="btn cancel-btn" id="cancelEditBtn" aria-label="Cancel">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                  stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
+                <line x1="1" y1="1" x2="11" y2="11"/>
+                <line x1="11" y1="1" x2="1" y2="11"/>
+                </svg>
+              </button>
+            </div>
 
+            <span class="resultText" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
+
+            <div class="edit-group">
+              <button class="edit-btn btn">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81 3.23 11.33a.25.25 0 0 0-.064.108l-.618 2.162 2.162-.618a.25.25 0 0 0 .108-.064L11.19 6.25z" fill="#ffffff"/>
+                </svg>
+              </button>
+            </div>
+            <div class="delete-group">
+              <button class="btn trash-btn" id="trashBtn" aria-label="Delete">
+                  <svg class="trash-icon" width="18" height="18" viewBox="0 0 18 18" fill="none"
+                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3,5 15,5"/>
+                    <path d="M6 5V3.5A0.5 0.5 0 0 1 6.5 3h5a0.5 0.5 0 0 1 0.5 0.5V5"/>
+                    <rect x="4" y="5" width="10" height="10" rx="1.5"/>
+                    <line x1="7" y1="8" x2="7" y2="12"/>
+                    <line x1="11" y1="8" x2="11" y2="12"/>
+                  </svg>
+              </button>
+              <div class="action-btns " id="actionBtns">
+                <button class="btn confirm-btn" id="confirmDeleteBtn" aria-label="Confirm delete">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
+                  stroke="var(--color-text-success)" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2.5,8 6.5,12 13.5,4"/>
+                  </svg>
+                </button> 
+                <button class="btn cancel-btn" id="cancelDeleteBtn" aria-label="Cancel">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                      stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
+                    <line x1="1" y1="1" x2="11" y2="11"/>
+                    <line x1="11" y1="1" x2="1" y2="11"/>
+                  </svg>
+                </button>
+            </div>
+
+            </div>
             <span class="DropDownIcon">
               <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </span>
@@ -132,7 +164,8 @@ function render(results) {
         </div>
         </div>
         <div class="itemContent">
-          <p>${r.value}</p>
+          <input class="input-content"/>
+          <p class="contentText">${r.value}</p>
         </div>
        </div>
         `
@@ -140,31 +173,78 @@ function render(results) {
 
   // Handle Mouse
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
+    const trash = el.querySelector('.trash-btn')
+    const actions = el.querySelector('.action-btns')
+    const cancelDeleteBtn = el.querySelector('#cancelDeleteBtn')
+    const confirmDeleteBtn = el.querySelector('#confirmDeleteBtn')
+
+    const cancelEditBtn = el.querySelector('#cancelEditBtn')
+    const confirmEditBtn = el.querySelector('#confirmEditBtn')
+
+
+    const editBtn = el.querySelector('.edit-btn')
+    const resultText = el.querySelector('.resultText')
+    const inputKey = el.querySelector('.input-key')
+    const inputContent = el.querySelector('.input-Content')
     el.querySelector('.item').addEventListener('click', (e) => {
       selectedIndex = i;
       updateSelected();
 
     })
+    function openConfirm() {
+      actions.classList.add('open');
+      trash.style.borderColor = 'var(--color-border-danger)';
+    }
+    function closeConfirm() {
+      actions.classList.remove('open');
+      trash.style.borderColor = '';
+    }
+    function editOpen() {
+      inputKey.value = resultText.dataset.key
+      el.classList.toggle('edit');
+    }
 
-    el.querySelector('.trash-btn').addEventListener('click', (e)=> {
-      let data = el.querySelector('.resultText').dataset.key;
+
+    el.querySelector('.trash-btn').addEventListener('click', (e) => {
+      openConfirm();
+      // example to delete data reset search 
+      // let data = el.querySelector('.resultText').dataset.key;
+      // delete RAW_DATA1[data]
+      // storageManager('update-data', RAW_DATA1)
+      // render(search(input.value));
+
+    })
+    cancelDeleteBtn.addEventListener('click', () => {
+      closeConfirm();
+    })
+    confirmDeleteBtn.addEventListener('click', () => { let data = el.querySelector('.resultText').dataset.key;
       delete RAW_DATA1[data]
       storageManager('update-data', RAW_DATA1)
-      render(search(''));
-      })
-      
-
-
-
-    el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
-      console.log('open')
-      el.classList.toggle('open');
+      render(search(input.value));
+    })
+    
+    confirmEditBtn.addEventListener('click', () => {
+      let oldKey = resultText.dataset.key
+      let newKey = inputKey.value
+      // delete RAW_DATA1[oldKey]
+      // resultText.dataset.key = inputKey.value
+      // console.log(resultText.dataset.key)
     })
 
+    cancelEditBtn.addEventListener('click', () => {
+      let oldKey = el.querySelector('.resultText').dataset.key;
+      // RAW_DATA1[inputKey.value] = 
+      // delete RAW_DATA1[oldKey]
+      el.classList.toggle('edit');
+    })
 
-
+    el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
+      el.classList.toggle('open');
+    })
+    editBtn.addEventListener('click', () => {
+      editOpen();
+    })
   })
-
 }
 
 function addNotes() {
@@ -204,10 +284,6 @@ function addNotes() {
 
 function updateSelected() {
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
-
-    if (i == selectedIndex) {
-      console.log("selected")
-    }
     el.classList.toggle('selected', i === selectedIndex);
   });
   const sel = resultsEl.querySelector('.selected');
@@ -390,14 +466,11 @@ function storageManager(action, data) {
 
 window.addEventListener("message", (event) => {
   // Inside iframe
-  console.log(event)
   if (event.data.type === "FROM_CONTENT") {
-    console.log("Got from content script:", event.data.data);
     input.focus();
   }
 
   if (event.data.action === "intializeIframe") {
-    console.log('intializing frame adding', event.data.notes)
     RAW_DATA1 = event.data.notes
     render(search(input.value));
 

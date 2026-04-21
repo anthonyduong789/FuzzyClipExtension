@@ -24,6 +24,13 @@
   --color-bg-danger: #fcebeb;
   --color-text-secondary: #6b6b68;
   --color-text-danger: #a32d2d;
+  --color-text-success: #69b5007a;
+  --color-text-sucess-hover: #72c500;
+
+  /* delete area */
+  --color-bg-success: #173404;
+  --color-border-success: #3b6d11;
+  --color-border-danger: #f09595;
 }
 
 .container {
@@ -411,10 +418,10 @@
   padding: 0 22px 20px;
 }
 
-.itemContainer.open .icon {
+.itemContainer.open .DropDownIcon {
   transform: rotate(0deg);
 }
-.itemContainer.open .icon svg {
+.itemContainer.open .DropDownIcon svg {
   /* stroke: #f0ece4; */
   transform: rotate(180deg);
 }
@@ -423,6 +430,7 @@
   width: 100%;
   height: 10px;
 }
+
 
 .resultText mark {
   /* background: none;
@@ -456,14 +464,92 @@
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* trashbutton */
+/* edit button Notes */
+.edit-btns {
+  display: none;
+}
+
+.edit-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.edit-btn {
+  width: 26px;
+  height: 26px;
+  background: rgb(44, 44, 42);
+  cursor: pointer;
+  border-radius: 25%;
+}
+
+/* edit Mode */
+.itemContainer.edit .edit-btns {
+  display: flex;
+}
+
+.itemContainer.edit .input-key{
+  display: flex;
+}
+
+.itemContainer.edit .input-content{
+  display: flex;
+}
+
+.itemContainer.edit .contentText{
+  display: none;
+}
+
+.itemContainer.edit .edit-group{
+  display: none;
+}
+
+.itemContainer.edit .delete-group{
+  display: none;
+}
+
+.itemContainer.edit .DropDownIcon svg{
+  transform: rotate(180deg);
+}
+
+.itemContainer.edit .resultText {
+  display: none;
+}
+
+.itemContainer.edit .itemContent {
+  max-height: fit-content;
+  padding: 0 22px 20px;
+}
+
+/* Ending Edit Mode */
+
+
+
+/* input */
+.input-key {
+  display: none;
+  width: 100%;
+}
+
+.input-content {
+  display: none;
+  width: 100%;
+}
+
+/* trash section for notes */
+.delete-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: none;
-  border-radius: 50%;
+  border-radius: 25%;
   transition:
     background 0.15s,
     transform 0.1s,
@@ -475,8 +561,9 @@
 }
 
 .trash-btn {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
+  border-radius: 25%;
   background: var(--color-surface);
   border: 0.5px solid var(--color-border-hover);
 }
@@ -488,6 +575,40 @@
   transition: stroke 0.15s;
 }
 .trash-btn:hover .trash-icon {
+  stroke: var(--color-text-danger);
+}
+
+.action-btns {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease,
+    margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 0;
+}
+.action-btns.open {
+  max-width: 120px;
+  opacity: 1;
+}
+
+.confirm-btn {
+  width: 25px;
+}
+
+.confirm-btn:hover svg{
+  stroke: var(--color-text-sucess-hover)
+}
+
+
+
+.cancel-btn {
+  width: 25px;
+}
+.cancel-btn:hover svg{
   stroke: var(--color-text-danger);
 }
 

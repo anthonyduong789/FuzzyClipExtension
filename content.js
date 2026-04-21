@@ -38,20 +38,15 @@ function handlMessages() {
   // ✅ Listen on window, not iframe.contentWindow
   window.addEventListener('message', (event) => {
     if (!event.origin.startsWith('chrome-extension://')) return;
-    console.log('[content.js] received:', event.data);
     switch (event.data.action) {
       case 'hide-iframe':
-        console.log("message triggered")
         iframe.style.display = 'none';
         break;
       case 'update-data':
-
-        console.log('storing event.data.data:', event.data.data)
         storeData('notes', event.data.data)
         loadAllData()
 
       default:
-        console.log('no hide frame');
         break;
     }
   });
@@ -101,13 +96,7 @@ async function loadAllData() {
     // We MUST await here to get the actual object, 
     // otherwise we just return the pending Promise.
     const allData = await chrome.storage.local.get(null);
-
-    console.log("All data loaded:", allData);
-
     // Example: Accessing specific keys from the result
-    if (allData.notes) {
-      console.log("Found notes:", allData.notes);
-    }
 
     return allData;
   } catch (error) {
