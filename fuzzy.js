@@ -6,8 +6,6 @@ const addEl = document.getElementById('addNotesButton')
 let visibleResults;
 let currentAlgo = 'fzf';
 let selectedIndex = 0;
-
-
 /**
  * Search Logic
  */
@@ -16,13 +14,7 @@ const algos = {
   levenshtein: { fn: levenshteinMatch, label: 'levenshtein distance', desc: '<strong>Levenshtein:</strong> Measures edit distance (insertions, deletions, substitutions) between pattern and substrings. More typo-tolerant; works even when characters are out of order.' },
   trigram: { fn: trigramMatch, label: 'trigram similarity', desc: '<strong>Trigram:</strong> Splits strings into 3-character chunks and measures overlap (Sørensen–Dice). Great for longer strings, spell-correction, and partial matches across word boundaries.' },
 };
-
-
-
 let RAW_DATA1 = {};
-
-
-
 /**
  * Search Logic
  */
@@ -165,7 +157,7 @@ function render(results) {
         </div>
         <div class="itemContent">
           <input class="input-content"/>
-          <p class="contentText">${r.value}</p>
+          <p class="contentText" data-content="${r.value}">${r.value}</p>
         </div>
        </div>
         `
@@ -184,8 +176,9 @@ function render(results) {
 
     const editBtn = el.querySelector('.edit-btn')
     const resultText = el.querySelector('.resultText')
+    const contentText = el.querySelector('.contentText')
     const inputKey = el.querySelector('.input-key')
-    const inputContent = el.querySelector('.input-Content')
+    const inputContent = el.querySelector('.input-content')
     el.querySelector('.item').addEventListener('click', (e) => {
       selectedIndex = i;
       updateSelected();
@@ -201,10 +194,11 @@ function render(results) {
     }
     function editOpen() {
       inputKey.value = resultText.dataset.key
+      console.log(contentText)
+      inputContent.value = contentText.dataset.content 
       el.classList.toggle('edit');
+
     }
-
-
     el.querySelector('.trash-btn').addEventListener('click', (e) => {
       openConfirm();
       // example to delete data reset search 
@@ -225,8 +219,11 @@ function render(results) {
     
     confirmEditBtn.addEventListener('click', () => {
       let oldKey = resultText.dataset.key
-      let newKey = inputKey.value
-      // delete RAW_DATA1[oldKey]
+      let newKey = contentText.dataset.content
+      delete RAW_DATA1[oldKey]
+      RAW_DATA1[inputKey.value] = inputContent.value
+      storageManager('update-data', RAW_DATA1)
+      render(search(input.value));
       // resultText.dataset.key = inputKey.value
       // console.log(resultText.dataset.key)
     })
