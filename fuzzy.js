@@ -1,11 +1,27 @@
-// UI
+// =============================================================
+// State
+// =============================================================
+
+let RAW_DATA1 = {};
+let RAW_DATA2 = [
+{"key": "example", "value": "example"},
+{"key": "example1", "value": "example1"},]
+
+
+let visibleResults;
+let currentAlgo = 'fzf';
+let selectedIndex = 0;
+let debounceTimer;
+
+// =============================================================
+// DOM refs
+// =============================================================
+
 const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
 const addEl = document.getElementById('addNotesButton')
-let visibleResults;
-let currentAlgo = 'fzf';
-let selectedIndex = 0;
+
 /**
  * Search Logic
  */
@@ -14,15 +30,7 @@ const algos = {
   levenshtein: { fn: levenshteinMatch, label: 'levenshtein distance', desc: '<strong>Levenshtein:</strong> Measures edit distance (insertions, deletions, substitutions) between pattern and substrings. More typo-tolerant; works even when characters are out of order.' },
   trigram: { fn: trigramMatch, label: 'trigram similarity', desc: '<strong>Trigram:</strong> Splits strings into 3-character chunks and measures overlap (Sørensen–Dice). Great for longer strings, spell-correction, and partial matches across word boundaries.' },
 };
-let RAW_DATA1 = {};
-/**
- * Search Logic
- */
 
-/**
-* Renders the given result list in the UI.
-* @param {object[]} result - Array of {str, score, positions}
-*/
 function highlight(str, positions) {
   if (!positions || positions.length === 0) return escHtml(str);
   const posSet = new Set(positions);
@@ -66,16 +74,24 @@ function search(query) {
   // }
   query = query.trim();
   const results = [];
-  for (const [key, value] of Object.entries(RAW_DATA1)) {
-    const res = algo(query, key);
-    if (res.matched) results.push({ key: key, value: value, score: res.score, positions: res.positions });
+  // for (const [key, value] of Object.entries(RAW_DATA1)) {
+  //   const res = algo(query, key);
+  //   if (res.matched) results.push({ key: key, value: value, score: res.score, positions: res.positions });
+  // }
+
+  for (const note of RAW_DATA2) {
+    const res = algo(query, note.key);
+    if (res.matched) results.push({ key: note.key, value: note.value, score: res.score, positions: res.positions });
   }
 
+  // for (const { key, value } of RAW_DATA2) {
+  //   const res = algo(query, key);
+  //   if (res.matched) result2.push({ key: key, value: value, score: res.score, positions: res.positions });
+  // }
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, 200);
+  // return result2.slice(0, 200);
 }
-
-
 
 /**
  * Renders the search results in the UI.
@@ -111,7 +127,7 @@ function render(results) {
               </button>
             </div>
 
-            <span class="resultText" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
+            <span class="resultText" data-index="${i}" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
 
             <div class="edit-group">
               <button class="edit-btn btn">
@@ -169,11 +185,8 @@ function render(results) {
     const actions = el.querySelector('.action-btns')
     const cancelDeleteBtn = el.querySelector('#cancelDeleteBtn')
     const confirmDeleteBtn = el.querySelector('#confirmDeleteBtn')
-
     const cancelEditBtn = el.querySelector('#cancelEditBtn')
     const confirmEditBtn = el.querySelector('#confirmEditBtn')
-
-
     const editBtn = el.querySelector('.edit-btn')
     const resultText = el.querySelector('.resultText')
     const contentText = el.querySelector('.contentText')
@@ -194,10 +207,8 @@ function render(results) {
     }
     function editOpen() {
       inputKey.value = resultText.dataset.key
-      console.log(contentText)
-      inputContent.value = contentText.dataset.content 
+      inputContent.value = contentText.dataset.content
       el.classList.toggle('edit');
-
     }
     el.querySelector('.trash-btn').addEventListener('click', (e) => {
       openConfirm();
@@ -211,18 +222,26 @@ function render(results) {
     cancelDeleteBtn.addEventListener('click', () => {
       closeConfirm();
     })
-    confirmDeleteBtn.addEventListener('click', () => { let data = el.querySelector('.resultText').dataset.key;
-      delete RAW_DATA1[data]
-      storageManager('update-data', RAW_DATA1)
+    confirmDeleteBtn.addEventListener('click', () => {
+      let index = Number(el.querySelector('.resultText').dataset.index);
+      RAW_DATA2.splice(index, 1)
+      storageManager('update-data', 'notes', RAW_DATA2)
       render(search(input.value));
     })
-    
+
     confirmEditBtn.addEventListener('click', () => {
-      let oldKey = resultText.dataset.key
-      let newKey = contentText.dataset.content
-      delete RAW_DATA1[oldKey]
-      RAW_DATA1[inputKey.value] = inputContent.value
-      storageManager('update-data', RAW_DATA1)
+      let newKey = inputKey.value
+      let newValue = inputContent.value
+
+      let index = Number(el.querySelector('.resultText').dataset.index);
+      // delete RAW_DATA1[oldKey]
+      // RAW_DATA1[inputKey.value] = inputContent.value
+      RAW_DATA2[index] = { key: newKey, value: newValue }
+      console.log("updates data", RAW_DATA2)
+
+
+
+      storageManager('update-data', 'notes', RAW_DATA2)
       render(search(input.value));
       // resultText.dataset.key = inputKey.value
       // console.log(resultText.dataset.key)
@@ -244,6 +263,7 @@ function render(results) {
   })
 }
 
+
 function addNotes() {
   addEl.addEventListener('click', (e) => {
     const addBox = document.createElement('div');
@@ -261,10 +281,17 @@ function addNotes() {
    `
     resultsEl.prepend(addBox)
     addBox.querySelector('#SaveButon').addEventListener('click', (el) => {
-      RAW_DATA1[addBox.querySelector('.item-add-key').value] = addBox.querySelector('.item-add-value').value
+      // RAW_DATA1[addBox.querySelector('.item-add-key').value] = addBox.querySelector('.item-add-value').value
+
+
+      RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
+
+      // RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
+
       addBox.remove();
       render(search(input.value));
-      storageManager('update-data', RAW_DATA1)
+      // storageManager('update-data', RAW_DATA1)
+      storageManager('update-data', RAW_DATA2)
     })
 
     addBox.querySelector('#CancelButton').addEventListener('click', (el) => {
@@ -276,8 +303,6 @@ function addNotes() {
 
   });
 }
-
-
 
 function updateSelected() {
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
@@ -406,7 +431,6 @@ function trigrams(s) {
 }
 
 function handleKeys() {
-  let debounceTimer;
   if (closeButton) {
     document.addEventListener('keydown', function (event) {
 
@@ -414,7 +438,6 @@ function handleKeys() {
         window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
       }
       if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'j')) {
-        console.log("ArrowDown")
         event.preventDefault();
         selectedIndex = Math.min(selectedIndex + 1, visibleResults.length - 1)
         updateSelected()
@@ -445,19 +468,16 @@ function handleKeys() {
 
 }
 
-
-
 /**
  * @typedef {}
  * @param {string} action 
  * @param {Object} data 
  */
-function storageManager(action, data) {
+function storageManager(action,key , data) {
+  console.log(action, key, data)
   if (action === 'update-data') {
-    window.parent.postMessage({ action: action, data: data }, '*')
+    window.parent.postMessage({ action: action,key: key, data: data }, '*')
   }
-
-
 }
 
 
@@ -468,9 +488,12 @@ window.addEventListener("message", (event) => {
   }
 
   if (event.data.action === "intializeIframe") {
-    RAW_DATA1 = event.data.notes
-    render(search(input.value));
+    // RAW_DATA1 = event.data.notes
+    // storageManager('update-data', "notes",  RAW_DATA2)
+    RAW_DATA2 = event.data.notes
+    console.log(RAW_DATA2)
 
+    render(search(input.value));
   }
 });
 

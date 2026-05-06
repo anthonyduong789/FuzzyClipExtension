@@ -153,10 +153,16 @@ Updates the UI inside the iframe
 out json format
 9. [] make cancel button that will switch be switche for the add button on the top right 
 make it highlight red like the exit button
-  
-
-
 - after search default value should be 1
-- ui have a arrow / highlight pointed item
+-ui have a arrow / highlight pointed item
 
+# Refactor
+[x]
+1. intialize Frame
+2. refactor how notes added for new RAWData 1 with []
+3. search -> render -> fix add notes
 
+[]
+1. edit
+2. delete 
+3. order

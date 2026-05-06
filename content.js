@@ -1,10 +1,6 @@
 const iframe = document.createElement('iframe');
 const test = "content.js file exposed"
-
-
-
 async function intializeIframe() {
-
   iframe.style.cssText = `
       display: none;
       position: fixed;
@@ -21,7 +17,6 @@ async function intializeIframe() {
   // Inject it into the page
   document.documentElement.appendChild(iframe);
   const dataPromise = loadAllData();
-
   window.addEventListener('message', async (event) => {
     if (event.data?.action === 'iframeReady') {
       const results = await dataPromise;
@@ -33,7 +28,6 @@ async function intializeIframe() {
     }
   });
 }
-
 function handlMessages() {
   // ✅ Listen on window, not iframe.contentWindow
   window.addEventListener('message', (event) => {
@@ -43,7 +37,7 @@ function handlMessages() {
         iframe.style.display = 'none';
         break;
       case 'update-data':
-        storeData('notes', event.data.data)
+        storeData(event.data.key, event.data.data)
         loadAllData()
 
       default:
@@ -69,16 +63,9 @@ function handleKeyMaps() {
     }
   })
 }
-
-
-
 intializeIframe();
 handlMessages();
 handleKeyMaps();
-
-
-
-
 function storeData(key, value) {
   chrome.storage.local.set({ [key]: value }, () => {
     console.log('Saved!')
