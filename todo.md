@@ -157,12 +157,9 @@ make it highlight red like the exit button
 -ui have a arrow / highlight pointed item
 
 # Refactor
-[x]
-1. intialize Frame
-2. refactor how notes added for new RAWData 1 with []
-3. search -> render -> fix add notes
-
-[]
-1. edit
-2. delete 
-3. order
+[]  make helper function that displays
+[] handles user input icons
+[] keyboard inputs
+[]  make helper function that works on storage of interface/ commands between fuzzy.js -> content.js
+[]  make search algo class/ function/ search
+[]  make Ui class
