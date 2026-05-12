@@ -214,6 +214,33 @@
   background: #f4f1eb;
 }
 
+.handle {
+  color: var(--color-text-tertiary);
+  font-size: 15px;
+  flex-shrink: 0;
+  letter-spacing: -2px;
+  cursor: grab;
+  padding: 5px 10px 5px 5px;
+  background-color: yellow;
+  border: 1px solid black;
+}
+
+.drag-ghost-el {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+  opacity: 0.97;
+}
+
+
 /* #search-input {
   all: unset;
   padding: 5px 5px;
@@ -428,9 +455,9 @@
 
 .resultText {
   width: 100%;
-  height: 10px;
+  display: flex;
+  align-items: center;
 }
-
 
 .resultText mark {
   /* background: none;
@@ -488,27 +515,27 @@
   display: flex;
 }
 
-.itemContainer.edit .input-key{
+.itemContainer.edit .input-key {
   display: flex;
 }
 
-.itemContainer.edit .input-content{
+.itemContainer.edit .input-content {
   display: flex;
 }
 
-.itemContainer.edit .contentText{
+.itemContainer.edit .contentText {
   display: none;
 }
 
-.itemContainer.edit .edit-group{
+.itemContainer.edit .edit-group {
   display: none;
 }
 
-.itemContainer.edit .delete-group{
+.itemContainer.edit .delete-group {
   display: none;
 }
 
-.itemContainer.edit .DropDownIcon svg{
+.itemContainer.edit .DropDownIcon svg {
   transform: rotate(180deg);
 }
 
@@ -522,8 +549,6 @@
 }
 
 /* Ending Edit Mode */
-
-
 
 /* input */
 .input-key {
@@ -599,16 +624,14 @@
   width: 25px;
 }
 
-.confirm-btn:hover svg{
-  stroke: var(--color-text-sucess-hover)
+.confirm-btn:hover svg {
+  stroke: var(--color-text-sucess-hover);
 }
-
-
 
 .cancel-btn {
   width: 25px;
 }
-.cancel-btn:hover svg{
+.cancel-btn:hover svg {
   stroke: var(--color-text-danger);
 }
 

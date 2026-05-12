@@ -151,10 +151,47 @@ Updates the UI inside the iframe
 7. [x] fix ui for fold for arrow and value for fold 
 8. implement storage for extension figure 
 out json format
-9. [] make cancel button that will switch be switche for the add button on the top right 
+9. [x] make cancel button that will switch be switche for the add button on the top right 
 make it highlight red like the exit button
 - after search default value should be 1
 -ui have a arrow / highlight pointed item
+----------
+
+10. **implementing drag and rearange**
+
+steps
+implement event handle mousedown 
+-> startDrag(
+e =>  mouse events
+idx => what index we are dragging
+li => represents the ui element we are passing through
+)
+function startDrag
+# gets info for rect with dimensions/ position
+
+[Element: getBoundingClientRect() method](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect://)
+
+rect = li.getBoundingClientRect
+create ghost element for dragging
+
+OnMouseMove
+determine drage element and where the order will go
+
+
+
+
+OnMouseMoveUp
+
+
+
+
+----------
+
+
+
+
+
+
 
 # Refactor
 []  make helper function that displays
@@ -163,3 +200,7 @@ make it highlight red like the exit button
 []  make helper function that works on storage of interface/ commands between fuzzy.js -> content.js
 []  make search algo class/ function/ search
 []  make Ui class
+
+
+
+

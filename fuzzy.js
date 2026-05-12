@@ -264,6 +264,7 @@ function render(results) {
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
         <div class="item">
+            <span class="handle">&#8942;&#8942;</span>
             <input class="input-key"/>
             <div class="edit-btns">
               <button class="btn confirm-btn" id="confirmEditBtn" aria-label="Confirm delete">
@@ -340,6 +341,38 @@ function render(results) {
 function attachListeners() {
   if (!resultsEl) return;
   // Handle Mouse
+  let dragIdx = null;
+  let hoverIdx = null;
+  let ghostEl = null;
+  let offsetX = 0, offsetY = 0;
+  let itemHeight = 0;
+  function startDrag(e, idx, liEl) {
+    console.log("list element offsetHeight", liEl.offsetHeight)
+    dragIdx = idx;
+    hoverIdx = idx;
+    itemHeight = liEl.offsetHeight + 8;
+    const rect = liEl.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    ghostEl = document.createElement('div');
+    ghostEl.className = 'drag-ghost-el';
+    ghostEl.style.height = liEl.offsetHeight + 'px';
+    ghostEl.style.width = liEl.offsetWidth + 'px';
+    ghostEl.innerHTML = `<span class="handle">&#8942;&#8942;</span><span style="flex:1">testing</span>`;
+    ghostEl.style.left = (e.clientX - offsetX) + 'px';
+    ghostEl.style.top = (e.clientY - offsetY) + 'px';
+    document.body.appendChild(ghostEl);
+    liEl.classList.add('is-dragging');
+    window.addEventListener('mousemove', onMouseMove);
+
+    function onMouseMove(e) {
+      if (!ghostEl) return;
+      ghostEl.style.left = (e.clientX - offsetX) + 'px';
+      ghostEl.style.top = (e.clientY - offsetY) + 'px';
+    }
+
+
+  }
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     const trash = el.querySelector('.trash-btn')
     const actions = el.querySelector('.action-btns')
@@ -420,6 +453,27 @@ function attachListeners() {
     editBtn.addEventListener('click', () => {
       editOpen();
     })
+
+
+
+
+
+    if (!el) return;
+    else {
+      el.addEventListener('mousedown', (e) => {
+        startDrag(e, i, el);
+      });
+    }
+
+
+
+
+
+
+
+
+
+
   })
 
   // add Notes
@@ -448,14 +502,17 @@ function attachListeners() {
       // RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
 
       addBox.remove();
-      render(search(input.value));
       storageManager('update-data', 'notes', RAW_DATA2)
+      render(search(input.value));
     })
 
     addBox.querySelector('#CancelButton').addEventListener('click', (el) => {
       addBox.remove();
     })
   });
+
+
+
 }
 
 function updateSelected() {
