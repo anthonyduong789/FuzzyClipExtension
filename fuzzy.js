@@ -350,29 +350,89 @@ function attachListeners() {
     console.log("list element offsetHeight", liEl.offsetHeight)
     dragIdx = idx;
     hoverIdx = idx;
-    itemHeight = liEl.offsetHeight + 8;
+    itemHeight = liEl.offsetHeight;
     const rect = liEl.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
+    // ghostEl = liEl.cloneNode(false);
     ghostEl = document.createElement('div');
     ghostEl.className = 'drag-ghost-el';
     ghostEl.style.height = liEl.offsetHeight + 'px';
     ghostEl.style.width = liEl.offsetWidth + 'px';
-    ghostEl.innerHTML = `<span class="handle">&#8942;&#8942;</span><span style="flex:1">testing</span>`;
+    // ghostEl.innerHTML = `<span class="handle">&#8942;&#8942;</span><span style="flex:1">testing</span>`;
+    ghostEl.innerHTML = liEl.cloneNode(true).innerHTML;
     ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
     document.body.appendChild(ghostEl);
     liEl.classList.add('is-dragging');
     window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
 
-    function onMouseMove(e) {
-      if (!ghostEl) return;
-      ghostEl.style.left = (e.clientX - offsetX) + 'px';
-      ghostEl.style.top = (e.clientY - offsetY) + 'px';
+  function onMouseMove(e) {
+    if (!ghostEl) return;
+    ghostEl.style.left = (e.clientX - offsetX) + 'px';
+    ghostEl.style.top = (e.clientY - offsetY) + 'px';
+
+    const resultsRect = resultsEl.getBoundingClientRect();
+    const relativeY = e.clientY - resultsRect.top;
+    let newHover = Math.floor(relativeY / itemHeight);
+    newHover = Math.max(0, Math.min(visibleResults.length - 1, newHover));
+    console.log("newHover", newHover)
+    if (newHover !== hoverIdx) {
+      hoverIdx = newHover;
+      applyTransforms(dragIdx, hoverIdx);
+      console.log("previous hoverIdx", dragIdx, "new hoverIdx", hoverIdx)
+    }
+  }
+
+  function onMouseUp(e) {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    if (ghostEl) {
+      ghostEl.remove();
+      ghostEl = null;
     }
 
-
+    if (dragIdx !== null && hoverIdx !== null && dragIdx !== hoverIdx) {
+      const movedItem = RAW_DATA2.splice(dragIdx, 1)[0];
+      RAW_DATA2.splice(hoverIdx, 0, movedItem);
+    }
+    dragIdx = null;
+    hoverIdx = null;
+    // TODO: in the future will optimize wrting to storage only when browser is closed
+    storageManager('update-data', 'notes', RAW_DATA2)
+    render(search(input.value));
   }
+
+  function getOrderedIndices(from, to) {
+    const arr = RAW_DATA2.map((_, i) => i);
+    console.log("array original", arr);
+    const [moved] = arr.splice(from, 1);
+    console.log("moved", moved);
+    arr.splice(to, 0, moved);
+    console.log("array final", arr);
+    return arr;
+  }
+
+
+  function applyTransforms(from, to) {
+    const lis = document.querySelectorAll('.itemContainer');
+    const order = getOrderedIndices(from, to);
+
+    lis.forEach((li, origIdx) => {
+      if (origIdx === from) {
+        li.style.transform = '';
+        return;
+      }
+      const newPos = order.indexOf(origIdx);
+      const shift = newPos - origIdx;
+      li.style.transform = shift !== 0 ? `translateY(${shift * itemHeight}px)` : '';
+    });
+  }
+
+
+
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     const trash = el.querySelector('.trash-btn')
     const actions = el.querySelector('.action-btns')
@@ -453,27 +513,15 @@ function attachListeners() {
     editBtn.addEventListener('click', () => {
       editOpen();
     })
-
-
-
-
-
     if (!el) return;
     else {
-      el.addEventListener('mousedown', (e) => {
+      el.querySelector('.handle').addEventListener('mousedown', (e) => {
         startDrag(e, i, el);
       });
+      // el.addEventListener('mousedown', (e) => {
+      //   startDrag(e, i, el);
+      // });
     }
-
-
-
-
-
-
-
-
-
-
   })
 
   // add Notes
@@ -557,3 +605,7 @@ function initMessaging() {
 }
 
 initMessaging();
+
+addEventListener("beforeunload", (event) => {
+  storageManager('update-data', 'notes', RAW_DATA2)
+})
