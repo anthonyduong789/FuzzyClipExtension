@@ -11,6 +11,10 @@ let currentAlgo = 'fzf';
 let selectedIndex = 0;
 let debounceTimer;
 
+let holdTimer = null;
+const HOLD_DURATION = 200; // ms before drag activates
+
+
 // =============================================================
 // DOM refs
 // =============================================================
@@ -19,6 +23,11 @@ const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
 const addEl = document.getElementById('addNotesButton')
+let addBox = null
+
+const overlay = document.createElement('div');
+overlay.style.cssText = 'display:none;position:fixed;inset:0;cursor:grabbing;z-index:99999';
+document.body.appendChild(overlay);
 
 /**
  * Search Logic
@@ -264,7 +273,6 @@ function render(results) {
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
         <div class="item">
-            <span class="handle">&#8942;&#8942;</span>
             <input class="input-key"/>
             <div class="edit-btns">
               <button class="btn confirm-btn" id="confirmEditBtn" aria-label="Confirm delete">
@@ -347,10 +355,10 @@ function attachListeners() {
   let offsetX = 0, offsetY = 0;
   let itemHeight = 0;
   function startDrag(e, idx, liEl) {
-    console.log("list element offsetHeight", liEl.offsetHeight)
     dragIdx = idx;
     hoverIdx = idx;
     itemHeight = liEl.offsetHeight;
+    overlay.style.display = 'block';
     const rect = liEl.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
@@ -364,31 +372,33 @@ function attachListeners() {
     ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
     document.body.appendChild(ghostEl);
+
     liEl.classList.add('is-dragging');
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   }
 
+
   function onMouseMove(e) {
     if (!ghostEl) return;
-    ghostEl.style.left = (e.clientX - offsetX) + 'px';
+    // ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
-
     const resultsRect = resultsEl.getBoundingClientRect();
     const relativeY = e.clientY - resultsRect.top;
     let newHover = Math.floor(relativeY / itemHeight);
     newHover = Math.max(0, Math.min(visibleResults.length - 1, newHover));
-    console.log("newHover", newHover)
     if (newHover !== hoverIdx) {
       hoverIdx = newHover;
       applyTransforms(dragIdx, hoverIdx);
-      console.log("previous hoverIdx", dragIdx, "new hoverIdx", hoverIdx)
     }
   }
 
   function onMouseUp(e) {
+    clearTimeout(holdTimer);
+    overlay.style.display = 'none';
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
+
     if (ghostEl) {
       ghostEl.remove();
       ghostEl = null;
@@ -407,11 +417,8 @@ function attachListeners() {
 
   function getOrderedIndices(from, to) {
     const arr = RAW_DATA2.map((_, i) => i);
-    console.log("array original", arr);
     const [moved] = arr.splice(from, 1);
-    console.log("moved", moved);
     arr.splice(to, 0, moved);
-    console.log("array final", arr);
     return arr;
   }
 
@@ -490,7 +497,6 @@ function attachListeners() {
       // delete RAW_DATA1[oldKey]
       // RAW_DATA1[inputKey.value] = inputContent.value
       RAW_DATA2[index] = { key: newKey, value: newValue }
-      console.log("updates data", RAW_DATA2)
 
 
 
@@ -508,6 +514,7 @@ function attachListeners() {
     })
 
     el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
+      console.log("dropdown clicked")
       el.classList.toggle('open');
     })
     editBtn.addEventListener('click', () => {
@@ -515,19 +522,21 @@ function attachListeners() {
     })
     if (!el) return;
     else {
-      el.querySelector('.handle').addEventListener('mousedown', (e) => {
-        startDrag(e, i, el);
+      el.querySelector('.resultText').addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        holdTimer = setTimeout(() => {
+          startDrag(e, i, el);
+        }, HOLD_DURATION);
       });
-      // el.addEventListener('mousedown', (e) => {
-      //   startDrag(e, i, el);
-      // });
+
     }
   })
 
   // add Notes
   if (!addEl) return;
   addEl.addEventListener('click', (e) => {
-    const addBox = document.createElement('div');
+    if (addBox) return;
+    addBox = document.createElement('div');
     addBox.className = 'itemContainer open';
     addBox.innerHTML =
       `
@@ -550,12 +559,14 @@ function attachListeners() {
       // RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
 
       addBox.remove();
+      addBox = null;
       storageManager('update-data', 'notes', RAW_DATA2)
       render(search(input.value));
     })
 
     addBox.querySelector('#CancelButton').addEventListener('click', (el) => {
       addBox.remove();
+      addBox = null;
     })
   });
 
@@ -576,7 +587,6 @@ function updateSelected() {
  * @param {Object} data 
  */
 function storageManager(action, key, data) {
-  console.log(action, key, data)
   if (action === 'update-data') {
     window.parent.postMessage({ action: action, key: key, data: data }, '*')
   }
