@@ -39,6 +39,12 @@ function handlMessages() {
       case 'update-data':
         storeData(event.data.key, event.data.data)
         loadAllData()
+      case 'copy-to-clipboard':
+        navigator.clipboard.writeText(event.data.data.text).then(() => {
+          console.log('Text copied to clipboard');
+        }).catch(err => {
+          console.error('Error copying to clipboard: ', err);
+        });
 
       default:
         break;

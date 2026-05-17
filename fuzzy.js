@@ -12,7 +12,8 @@ let selectedIndex = 0;
 let debounceTimer;
 
 let holdTimer = null;
-const HOLD_DURATION = 200; // ms before drag activates
+const HOLD_DURATION = 400; // ms before drag activates
+let copyTimer = null;
 
 
 // =============================================================
@@ -223,7 +224,10 @@ function handleKeys() {
   if (closeButton) {
     document.addEventListener('keydown', function (event) {
 
-      if ((event.ctrlKey && event.key === 'q') || (event.key === 'Escape')) {
+      if (event.ctrlKey && event.key === 'q') {
+        input.focus();
+      }
+      if (event.key === 'Escape') {
         window.parent.postMessage({ action: 'hide-iframe' }, '*'); // sends UP to content.js
       }
       if (event.key === 'ArrowDown' || (event.ctrlKey && event.key === 'j')) {
@@ -269,6 +273,35 @@ function handleKeys() {
 function render(results) {
   visibleResults = results;
   selectedIndex = 0;
+
+  function dropDownIcon() {
+    return `
+      <span class="DropDownIcon">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+    `
+  }
+
+  function copyIcon() {
+    return `
+    <div class="copy-group">
+    <button class="copy-btn" id="copyBtn" title="Copy to clipboard">
+      <svg class="icon icon-copy" width="15" height="15" viewBox="0 0 24 24" fill="none"
+      stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      <svg class="icon icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none"
+      stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </button> 
+    </div>
+    `
+  }
+
+
+
   resultsEl.innerHTML = results.map((r, i) => {
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
@@ -293,6 +326,7 @@ function render(results) {
 
             <span class="resultText" data-index="${i}" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
 
+            ${copyIcon()}
             <div class="edit-group">
               <button class="edit-btn btn">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -329,15 +363,14 @@ function render(results) {
             </div>
 
             </div>
-            <span class="DropDownIcon">
-              <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </span>
+            ${dropDownIcon()}
+          
         <div> 
         </div>
         </div>
         <div class="itemContent">
-          <input class="input-content"/>
-          <p class="contentText" data-content="${r.value}">${r.value}</p>
+        <textarea class="input-content"></textarea>
+          <p class="contentText" data-content="${escHtml(r.value)}">${escHtml(r.value)}</p>
         </div>
        </div>
         `
@@ -452,6 +485,7 @@ function attachListeners() {
     const contentText = el.querySelector('.contentText')
     const inputKey = el.querySelector('.input-key')
     const inputContent = el.querySelector('.input-content')
+    const copyBtn = el.querySelector('.copy-btn')
     el.querySelector('.item').addEventListener('click', (e) => {
       selectedIndex = i;
       updateSelected();
@@ -520,13 +554,33 @@ function attachListeners() {
     editBtn.addEventListener('click', () => {
       editOpen();
     })
+
+    copyBtn.addEventListener('click', () => {
+      console.log("Copy button clicked for: ", contentText.dataset.content)
+      postMessageToParent('copy-to-clipboard', { text: contentText.dataset.content })
+      copyBtn.classList.add("copied");
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
+    });
+
     if (!el) return;
     else {
       el.querySelector('.resultText').addEventListener('mousedown', (e) => {
         e.preventDefault();
         holdTimer = setTimeout(() => {
-          startDrag(e, i, el);
+          if (holdTimer) {
+            startDrag(e, i, el);
+          } else {
+            // Reset the timer if it was already cleared
+            holdTimer = setTimeout(() => {
+              startDrag(e, i, el);
+            }, HOLD_DURATION);
+          }
         }, HOLD_DURATION);
+      });
+      el.querySelector('.resultText').addEventListener('mouseup', (e) => {
+        clearTimeout(holdTimer);
+        holdTimer = null;
       });
 
     }
@@ -537,24 +591,52 @@ function attachListeners() {
   addEl.addEventListener('click', (e) => {
     if (addBox) return;
     addBox = document.createElement('div');
-    addBox.className = 'itemContainer open';
+    addBox.className = 'itemContainer edit';
+    //  addBox.innerHTML =
+    //    `
+    //    <div class="item">
+    //      <input class="item-add-key" placeholder="Key That will be used when searching">
+    //    </div>
+    //    <button id="SaveButon">save button</button>
+    //    <button id="CancelButton">cancel button</button>
+    //    <div class="itemContent">
+    //      <textarea class="item-add-value" name="" id=""></textarea>
+    //    </div>
+    // `
     addBox.innerHTML =
       `
-      <div class="item">
-        <input class="item-add-key" placeholder="Key That will be used when searching">
-      </div>
-      <button id="SaveButon">save button</button>
-      <button id="CancelButton">cancel button</button>
-      <div class="itemContent">
-        <textarea class="item-add-value" name="" id=""></textarea>
-      </div>
-   `
+        <div class="item">
+            <input class="input-key" id="item-add-key"/>
+            <div class="edit-btns">
+              <button class="btn confirm-btn" id="SaveButon" aria-label="Confirm delete">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
+                stroke="var(--color-text-success)" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2.5,8 6.5,12 13.5,4"/>
+                </svg>
+              </button> 
+              <button class="btn cancel-btn" id="CancelButton" aria-label="Cancel">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                  stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
+                <line x1="1" y1="1" x2="11" y2="11"/>
+                <line x1="11" y1="1" x2="1" y2="11"/>
+                </svg>
+              </button>
+            </div>
+        </div>
+        <div class="itemContent">
+          <textarea class="input-content" id="item-add-value"></textarea>
+        </div>
+      `
+
+
+
     resultsEl.prepend(addBox)
     addBox.querySelector('#SaveButon').addEventListener('click', (el) => {
       // RAW_DATA1[addBox.querySelector('.item-add-key').value] = addBox.querySelector('.item-add-value').value
 
 
-      RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
+      RAW_DATA2.push({ key: addBox.querySelector('#item-add-key').value, value: addBox.querySelector('#item-add-value').value })
 
       // RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
 
@@ -569,8 +651,6 @@ function attachListeners() {
       addBox = null;
     })
   });
-
-
 
 }
 
@@ -590,6 +670,10 @@ function storageManager(action, key, data) {
   if (action === 'update-data') {
     window.parent.postMessage({ action: action, key: key, data: data }, '*')
   }
+}
+
+function postMessageToParent(action, data) {
+  window.parent.postMessage({ action: action, data: data }, '*')
 }
 
 function initMessaging() {
@@ -616,6 +700,3 @@ function initMessaging() {
 
 initMessaging();
 
-addEventListener("beforeunload", (event) => {
-  storageManager('update-data', 'notes', RAW_DATA2)
-})

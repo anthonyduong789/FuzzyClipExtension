@@ -200,6 +200,7 @@ OnMouseMoveUp
 []  make helper function that works on storage of interface/ commands between fuzzy.js -> content.js
 []  make search algo class/ function/ search
 []  make Ui class
+[] check security with inputs
 
 
 
