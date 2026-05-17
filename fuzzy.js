@@ -13,6 +13,7 @@ let debounceTimer;
 
 let holdTimer = null;
 const HOLD_DURATION = 400; // ms before drag activates
+const GHOST_ELEMENT_SNAPBACK_DURATION = 300; // ms for the ghost element to animate back to place
 let copyTimer = null;
 
 
@@ -387,26 +388,32 @@ function attachListeners() {
   let ghostEl = null;
   let offsetX = 0, offsetY = 0;
   let itemHeight = 0;
+  let dragElement = null;
   function startDrag(e, idx, liEl) {
     dragIdx = idx;
     hoverIdx = idx;
-    itemHeight = liEl.offsetHeight;
+    liEl.classList.remove('open');
+    itemHeight = liEl.querySelector('.item').offsetHeight;
+    // itemHeight = liEl.offsetHeight;
     overlay.style.display = 'block';
+
     const rect = liEl.getBoundingClientRect();
+
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
+
     // ghostEl = liEl.cloneNode(false);
     ghostEl = document.createElement('div');
     ghostEl.className = 'drag-ghost-el';
-    ghostEl.style.height = liEl.offsetHeight + 'px';
+    ghostEl.style.height = itemHeight + 'px';
     ghostEl.style.width = liEl.offsetWidth + 'px';
     // ghostEl.innerHTML = `<span class="handle">&#8942;&#8942;</span><span style="flex:1">testing</span>`;
     ghostEl.innerHTML = liEl.cloneNode(true).innerHTML;
     ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
     document.body.appendChild(ghostEl);
-
     liEl.classList.add('is-dragging');
+    dragElement = liEl;
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   }
@@ -414,7 +421,7 @@ function attachListeners() {
 
   function onMouseMove(e) {
     if (!ghostEl) return;
-    // ghostEl.style.left = (e.clientX - offsetX) + 'px';
+    ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
     const resultsRect = resultsEl.getBoundingClientRect();
     const relativeY = e.clientY - resultsRect.top;
@@ -426,26 +433,55 @@ function attachListeners() {
     }
   }
 
+
+  function snapBack(source, target) {
+    const from = source.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+
+    const dx = to.left - from.left;
+    const dy = to.top - from.top;
+
+    const animation = source.animate([
+      { transform: 'translate(0, 0)' },
+      { transform: `translate(${dx}px, ${dy}px)` }
+    ], {
+      duration: GHOST_ELEMENT_SNAPBACK_DURATION,
+      easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', // springy
+      fill: 'forwards'
+    });
+
+    animation.onfinish = () => {
+      source.style.transform = '';
+      source.remove();
+      ghostEl = null;
+    };
+  }
+
   function onMouseUp(e) {
     clearTimeout(holdTimer);
     overlay.style.display = 'none';
+    console.log("Mouse up, dragIdx:", dragIdx, "hoverIdx:", hoverIdx);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
 
-    if (ghostEl) {
-      ghostEl.remove();
-      ghostEl = null;
-    }
+
+
+
+    // if (ghostEl) {
+    //   ghostEl.remove();
+    //   ghostEl = null;
+    // }
 
     if (dragIdx !== null && hoverIdx !== null && dragIdx !== hoverIdx) {
       const movedItem = RAW_DATA2.splice(dragIdx, 1)[0];
       RAW_DATA2.splice(hoverIdx, 0, movedItem);
     }
-    dragIdx = null;
-    hoverIdx = null;
     // TODO: in the future will optimize wrting to storage only when browser is closed
     storageManager('update-data', 'notes', RAW_DATA2)
     render(search(input.value));
+    snapBack(ghostEl, resultsEl.children[hoverIdx]);
+    dragIdx = null;
+    hoverIdx = null;
   }
 
   function getOrderedIndices(from, to) {
