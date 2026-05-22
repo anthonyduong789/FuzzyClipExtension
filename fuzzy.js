@@ -48,7 +48,7 @@ function highlight(str, positions) {
   ).join('');
 }
 function escHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(" ", "&nbsp;");
 }
 
 /**
@@ -224,6 +224,13 @@ function trigrams(s) {
 function handleKeys() {
   if (closeButton) {
     document.addEventListener('keydown', function (event) {
+      if (event.ctrlKey && event.key == 'a') {
+        if (!addEl) return;
+        addBox = createAddBox();
+        resultsEl.prepend(addBox)
+
+
+      }
 
       if (event.ctrlKey && event.key === 'q') {
         input.focus();
@@ -245,7 +252,13 @@ function handleKeys() {
 
       if (event.key === 'Enter') {
         resultsEl.children[selectedIndex].classList.toggle('open')
+      }
 
+      if (event.ctrlKey && event.key === 'c') {
+        postMessageToParent('copy-to-clipboard', { text: RAW_DATA2[selectedIndex].value })
+        resultsEl.children[selectedIndex].querySelector('.copy-btn').classList.add("copied");
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => resultsEl.children[selectedIndex].querySelector('.copy-btn').classList.remove("copied"), 500);
       }
 
 
@@ -309,14 +322,14 @@ function render(results) {
         <div class="item">
             <input class="input-key"/>
             <div class="edit-btns">
-              <button class="btn confirm-btn" id="confirmEditBtn" aria-label="Confirm delete">
+              <button class="btn confirm-btn" aria-label="Confirm delete">
                 <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
                 stroke="var(--color-text-success)" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="2.5,8 6.5,12 13.5,4"/>
                 </svg>
               </button> 
-              <button class="btn cancel-btn" id="cancelEditBtn" aria-label="Cancel">
+              <button class="btn cancel-btn cancelEditBtn" aria-label="Cancel">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
                   stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
                 <line x1="1" y1="1" x2="11" y2="11"/>
@@ -347,14 +360,14 @@ function render(results) {
                   </svg>
               </button>
               <div class="action-btns " id="actionBtns">
-                <button class="btn confirm-btn" id="confirmDeleteBtn" aria-label="Confirm delete">
+                <button class="btn confirm-btn confirmDeleteBtn" aria-label="Confirm delete">
                   <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
                   stroke="var(--color-text-success)" stroke-width="2"
                   stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="2.5,8 6.5,12 13.5,4"/>
                   </svg>
                 </button> 
-                <button class="btn cancel-btn" id="cancelDeleteBtn" aria-label="Cancel">
+                <button class="btn cancel-btn cancelDeleteBtn" aria-label="Cancel">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
                       stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
                     <line x1="1" y1="1" x2="11" y2="11"/>
@@ -392,7 +405,7 @@ function attachListeners() {
   function startDrag(e, idx, liEl) {
     dragIdx = idx;
     hoverIdx = idx;
-    liEl.classList.remove('open');
+    resultsEl.querySelectorAll('.itemContainer').forEach(el => el.classList.remove('open'))
     itemHeight = liEl.querySelector('.item').offsetHeight;
     // itemHeight = liEl.offsetHeight;
     overlay.style.display = 'block';
@@ -411,14 +424,13 @@ function attachListeners() {
     ghostEl.innerHTML = liEl.cloneNode(true).innerHTML;
     ghostEl.style.left = (e.clientX - offsetX) + 'px';
     ghostEl.style.top = (e.clientY - offsetY) + 'px';
+
     document.body.appendChild(ghostEl);
     liEl.classList.add('is-dragging');
     dragElement = liEl;
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
   }
-
-
   function onMouseMove(e) {
     if (!ghostEl) return;
     ghostEl.style.left = (e.clientX - offsetX) + 'px';
@@ -432,14 +444,12 @@ function attachListeners() {
       applyTransforms(dragIdx, hoverIdx);
     }
   }
-
-
   function snapBack(source, target) {
     const from = source.getBoundingClientRect();
     const to = target.getBoundingClientRect();
 
     const dx = to.left - from.left;
-    const dy = to.top - from.top;
+    const dy = resultsEl.offsetTop + hoverIdx * itemHeight - from.top;
 
     const animation = source.animate([
       { transform: 'translate(0, 0)' },
@@ -454,19 +464,17 @@ function attachListeners() {
       source.style.transform = '';
       source.remove();
       ghostEl = null;
+      setTimeout(() => {
+        render(search(input.value));
+      }, 50);
     };
   }
-
   function onMouseUp(e) {
     clearTimeout(holdTimer);
     overlay.style.display = 'none';
     console.log("Mouse up, dragIdx:", dragIdx, "hoverIdx:", hoverIdx);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
-
-
-
-
     // if (ghostEl) {
     //   ghostEl.remove();
     //   ghostEl = null;
@@ -478,20 +486,18 @@ function attachListeners() {
     }
     // TODO: in the future will optimize wrting to storage only when browser is closed
     storageManager('update-data', 'notes', RAW_DATA2)
-    render(search(input.value));
+    // resultsEl.children[hoverIdx].classList.add('is-dragging');
     snapBack(ghostEl, resultsEl.children[hoverIdx]);
+    resultsEl.children[hoverIdx].classList.remove('is-dragging');
     dragIdx = null;
     hoverIdx = null;
   }
-
   function getOrderedIndices(from, to) {
     const arr = RAW_DATA2.map((_, i) => i);
     const [moved] = arr.splice(from, 1);
     arr.splice(to, 0, moved);
     return arr;
   }
-
-
   function applyTransforms(from, to) {
     const lis = document.querySelectorAll('.itemContainer');
     const order = getOrderedIndices(from, to);
@@ -506,16 +512,13 @@ function attachListeners() {
       li.style.transform = shift !== 0 ? `translateY(${shift * itemHeight}px)` : '';
     });
   }
-
-
-
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
     const trash = el.querySelector('.trash-btn')
     const actions = el.querySelector('.action-btns')
-    const cancelDeleteBtn = el.querySelector('#cancelDeleteBtn')
-    const confirmDeleteBtn = el.querySelector('#confirmDeleteBtn')
-    const cancelEditBtn = el.querySelector('#cancelEditBtn')
-    const confirmEditBtn = el.querySelector('#confirmEditBtn')
+    const cancelDeleteBtn = el.querySelector('.cancelDeleteBtn')
+    const confirmDeleteBtn = el.querySelector('.confirmDeleteBtn')
+    const cancelEditBtn = el.querySelector('.cancelEditBtn')
+    const confirmEditBtn = el.querySelector('.confirm-btn')
     const editBtn = el.querySelector('.edit-btn')
     const resultText = el.querySelector('.resultText')
     const contentText = el.querySelector('.contentText')
@@ -584,7 +587,6 @@ function attachListeners() {
     })
 
     el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
-      console.log("dropdown clicked")
       el.classList.toggle('open');
     })
     editBtn.addEventListener('click', () => {
@@ -598,49 +600,41 @@ function attachListeners() {
       clearTimeout(copyTimer);
       copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
     });
+    el.querySelector('.resultText').addEventListener('mousedown', (e) => {
+      e.preventDefault();
 
-    if (!el) return;
-    else {
-      el.querySelector('.resultText').addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        holdTimer = setTimeout(() => {
-          if (holdTimer) {
-            startDrag(e, i, el);
-          } else {
-            // Reset the timer if it was already cleared
-            holdTimer = setTimeout(() => {
-              startDrag(e, i, el);
-            }, HOLD_DURATION);
-          }
-        }, HOLD_DURATION);
-      });
-      el.querySelector('.resultText').addEventListener('mouseup', (e) => {
-        clearTimeout(holdTimer);
-        holdTimer = null;
-      });
+      holdTimer = setTimeout(() => {
 
-    }
+        startDrag(e, i, el);
+      }, HOLD_DURATION);
+    });
+    el.querySelector('.resultText').addEventListener('mouseup', (e) => {
+      clearTimeout(holdTimer);
+      holdTimer = null;
+    });
+    el.querySelector('.resultText').addEventListener('dblclick', (event) => {
+      el.classList.toggle('open');
+    })
+
   })
 
   // add Notes
   if (!addEl) return;
-  addEl.addEventListener('click', (e) => {
+  addEl.addEventListener('click', () => {
     if (addBox) return;
-    addBox = document.createElement('div');
-    addBox.className = 'itemContainer edit';
-    //  addBox.innerHTML =
-    //    `
-    //    <div class="item">
-    //      <input class="item-add-key" placeholder="Key That will be used when searching">
-    //    </div>
-    //    <button id="SaveButon">save button</button>
-    //    <button id="CancelButton">cancel button</button>
-    //    <div class="itemContent">
-    //      <textarea class="item-add-value" name="" id=""></textarea>
-    //    </div>
-    // `
-    addBox.innerHTML =
-      `
+    addBox = createAddBox();
+    resultsEl.prepend(addBox)
+  })
+
+
+}
+
+function createAddBox() {
+  if (!addEl) return;
+  const newAddElement = document.createElement('div');
+  newAddElement.className = 'itemContainer edit';
+  newAddElement.innerHTML =
+    `
         <div class="item">
             <input class="input-key" id="item-add-key"/>
             <div class="edit-btns">
@@ -664,31 +658,28 @@ function attachListeners() {
           <textarea class="input-content" id="item-add-value"></textarea>
         </div>
       `
-
-
-
-    resultsEl.prepend(addBox)
-    addBox.querySelector('#SaveButon').addEventListener('click', (el) => {
-      // RAW_DATA1[addBox.querySelector('.item-add-key').value] = addBox.querySelector('.item-add-value').value
-
-
-      RAW_DATA2.push({ key: addBox.querySelector('#item-add-key').value, value: addBox.querySelector('#item-add-value').value })
-
-      // RAW_DATA2.push({ key: addBox.querySelector('.item-add-key').value, value: addBox.querySelector('.item-add-value').value })
-
-      addBox.remove();
-      addBox = null;
-      storageManager('update-data', 'notes', RAW_DATA2)
-      render(search(input.value));
-    })
-
-    addBox.querySelector('#CancelButton').addEventListener('click', (el) => {
-      addBox.remove();
-      addBox = null;
-    })
+  newAddElement.querySelector('#SaveButon').addEventListener('click', () => {
+    RAW_DATA2.push({
+      key: newAddElement.querySelector('#item-add-key').value,
+      value: newAddElement.querySelector('#item-add-value').value
+    });
+    newAddElement.remove();
+    storageManager('update-data', 'notes', RAW_DATA2);
+    render(search(input.value));
   });
-
+  newAddElement.querySelector('#CancelButton').addEventListener('click', () => {
+    closeAddBox();
+  })
+  return newAddElement;
 }
+
+function closeAddBox() {
+  if (addBox) {
+    addBox.remove();
+    addBox = null;
+  }
+}
+
 
 function updateSelected() {
   resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {

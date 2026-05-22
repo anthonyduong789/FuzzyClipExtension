@@ -452,26 +452,17 @@
 }
 
 .itemContent {
-  max-height: 0;
+  height: 0;
   overflow: hidden;
   transition:
-    max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.3s;
+    height .15s cubic-bezier(0.4,0,0.2,1), padding .15s cubic-bezier(0.4,0,0.2,1);
   padding: 0 22px;
   color: #1a1a1a;
+  interpolate-size: allow-keywords; /* Enables 'auto' animation */
 }
-
-.itemContainer.selected .itemContent {
-  /* color: #f0ede6; */
-}
-
-/* .itemContent.open {
-  max-height: fit-content;
-  padding: 0 22px 20px;
-} */
 
 .itemContainer.open .itemContent {
-  max-height: fit-content;
+  height: fit-content;
   padding: 0 22px 20px;
 }
 
@@ -644,7 +635,7 @@
 }
 
 .itemContainer.edit .itemContent {
-  max-height: fit-content;
+  height: fit-content;
   padding: 0 22px 20px;
 }
 
