@@ -1,7 +1,7 @@
 // Top Bar
 const wrapper = document.createElement('div');
 wrapper.style.cssText = `
-      display: flex;
+      display: none;
       flex-direction: column;
       position: fixed;
       top: 5px;
@@ -16,14 +16,13 @@ wrapper.style.cssText = `
 
 const topBar = document.createElement('div');
 topBar.style.cssText = `
-  position: relative;   /* taken out of flow */
-  top: 0px;
-  left: 0px;
+  display: flex;
   height: 30px;
-  z-index: 1;
-  background-color: #f4f1eb;
-  border-radius: 10px 10px 0 0;
+  background-color: rgb(244, 241, 235);
+  border-radius: 10px 10px 0px 0px;
   cursor: grab;
+  justify-content: center;
+  align-items: center;
 `;
 
 
@@ -31,45 +30,20 @@ topBar.innerHTML = `
   <div style="
     width: 40px;
     height: 4px;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: 2px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 50%;
-    margin-top: -2px;
   "></div>
 `;
 
 const iframe = document.createElement('iframe');
 const test = "content.js file exposed"
 async function intializeIframe() {
-  // iframe.style.cssText = `
-  //     display: none;
-  //     position: fixed;
-  //     top: 5px;
-  //     right: 5px;
-  //     min-height: 700px;
-  //     min-width: 500px;
-  //     border-radius: 10px;
-  //     // width: 300px;
-  //     z-index: 10000;
-  // `;
-
   iframe.style.cssText = `
     flex: 1;
   `
-
-
-  // Point it to your extension's HTML file
   iframe.src = chrome.runtime.getURL('fuzzy.html');
-
   wrapper.appendChild(topBar);
   wrapper.appendChild(iframe);
-
-
-  // Inject it into the page
-  // document.documentElement.appendChild(iframe);
   document.body.appendChild(wrapper);
   const dataPromise = loadAllData();
   window.addEventListener('message', async (event) => {
@@ -89,7 +63,7 @@ function handlMessages() {
     if (!event.origin.startsWith('chrome-extension://')) return;
     switch (event.data.action) {
       case 'hide-iframe':
-        iframe.style.display = 'none';
+        wrapper.style.display = 'none';
         break;
       case 'update-data':
         storeData(event.data.key, event.data.data)
@@ -109,16 +83,16 @@ function handlMessages() {
 function handleKeyMaps() {
   // removes toggles it to remove the element
   document.addEventListener('keydown', function (event) {
-    if (iframe) {
+    if (wrapper) {
       if (event.ctrlKey && event.key === 'q') {
-        console.log("Ctrl q triggered", iframe.style.display)
-        if (iframe.style.display == 'none') {
-          iframe.style.display = 'block';
+        console.log("Ctrl q triggered", wrapper.style.display)
+        if (wrapper.style.display == 'none') {
+          wrapper.style.display = 'flex';
           iframe.focus();
           iframe.contentWindow.postMessage({ type: "FROM_CONTENT", data: "world" }, "*")
 
         } else {
-          iframe.style.display = 'none';
+          wrapper.style.display = 'none';
         }
       }
     }
@@ -152,13 +126,7 @@ async function loadAllData() {
     return {};
   }
 }
-
-
-
-
 let offsetX, offsetY;
-
-
 function makeDraggable(e) {
   const rect = wrapper.getBoundingClientRect();
   console.log("Wrapper rect:", rect);
@@ -174,7 +142,7 @@ function makeDraggable(e) {
   wrapper.style.top = `${e.clientY - offsetY}px`;
   document.body.style.userSelect = 'none';
   topBar.style.cursor = 'grabbing';
-  
+
 
 
   console.log("Mouse down on top bar, starting drag with offsets:", offsetX, offsetY);
