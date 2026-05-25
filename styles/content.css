@@ -1,0 +1,27 @@
+.wrapper.active {
+    border: 1.5px solid #141312;
+}
+
+
+
+/* Visual edge indicator on hover */
+.handle-e::before {
+  content: "";
+  position: absolute;
+  background: #141312;
+  border-radius: 99px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.handle-e::before {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 40px;
+}
+
+.handle-e:hover::before {
+  opacity: 0.7;
+}
