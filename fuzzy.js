@@ -48,8 +48,9 @@ function highlight(str, positions) {
   ).join('');
 }
 function escHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(" ", "&nbsp;");
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+
 
 /**
  * Executes a search query against a dataset using a dynamically selected algorithm.
@@ -314,9 +315,17 @@ function render(results) {
     `
   }
 
+  function sanitize(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.textContent;
+  }
 
 
   resultsEl.innerHTML = results.map((r, i) => {
+
+
+
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
         <div class="item">
@@ -338,7 +347,7 @@ function render(results) {
               </button>
             </div>
 
-            <span class="resultText" data-index="${i}" data-key="${r.key}">${highlight(r.key, r.positions)}</span>
+            <span class="resultText" data-index="${i}" data-key="${r.key}">${highlight(sanitize(r.key), r.positions)}</span>
 
             ${copyIcon()}
             <div class="edit-group">
@@ -727,3 +736,17 @@ function initMessaging() {
 
 initMessaging();
 
+function addTestData() {
+  for (let i = 0; i < 500; i++) {
+    RAW_DATA2.push({ key: `Test Note ${i}`, value: `This is the content of test note number ${i}. It contains some sample text to demonstrate the fuzzy search functionality. You can edit or delete this note.` })
+  }
+  storageManager('update-data', 'notes', RAW_DATA2)
+  render(search(input.value));
+}
+
+
+const testData = document.getElementById('addDummyDataButton');
+
+testData.addEventListener('click', () => {
+  addTestData();
+});

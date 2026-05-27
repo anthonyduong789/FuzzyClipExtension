@@ -66,6 +66,7 @@
   font-family: "IBM Plex Mono", monospace;
   border-radius: 16px;
   /* border: 1.5px solid #e2ddd6; */
+  overflow: hidden; /* no scroll, no scrollbar */
 }
 
 /* Header */
@@ -479,9 +480,11 @@
 }
 
 .resultText {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  display: block;
   width: 100%;
-  display: flex;
-  align-items: center;
 }
 
 .resultText mark {

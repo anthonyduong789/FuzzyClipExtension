@@ -122,10 +122,6 @@ document.addEventListener('keydown', (e) => {
 </html>
 ```
 
-
-```
----
-
 ## How it all connects
 ```
 User presses key
