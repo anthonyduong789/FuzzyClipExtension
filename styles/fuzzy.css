@@ -48,20 +48,10 @@
 }
 
 .ff-container {
-  flex: 1;
-  /* width: 100%; */
-  /* min-width: 500px; */
-  /* background: #f5f3ef; */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #f4f1eb;
-  /* background-color: var(--bg);
-  background-image: radial-gradient(
-    ellipse at 50% 0%,
-    rgba(0, 255, 136, 0.05) 0%,
-    transparent 60%
-  ); */
-  /* border-radius: 16px;
-  border: 1.5px solid #e2ddd6; */
-  /* overflow: hidden; */
   color: white;
   font-family: "IBM Plex Mono", monospace;
   border-radius: 16px;
@@ -77,6 +67,7 @@
   padding: 4px 18px 14px 18px;
   border-bottom: 1.5px solid #e2ddd6;
   background: #f4f1eb;
+  flex-shrink: 0;
 }
 
 .ff-left {
@@ -209,16 +200,14 @@
 
 #results {
   display: flex;
-  /* width: 100%; */
-  flex: 1;
   flex-direction: column;
   margin-top: 2px;
-  height: 100%;
-  max-height: 575px;
-  overflow-y: auto;
   scrollbar-width: none;
   scrollbar-color: var(--border) transparent;
   background: #f4f1eb;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .handle {
@@ -281,6 +270,7 @@
   padding: 0 18px;
   border-bottom: 1.5px solid #e2ddd6;
   background: #f4f1eb;
+  flex-shrink: 0;
 }
 
 .ff-search-row:has(#search-input:focus-within) {
@@ -342,9 +332,8 @@
   align-items: center;
   justify-content: space-between;
   background: #ece8e0;
-  position: fixed;
-  bottom: 0px;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .ff-hints {
