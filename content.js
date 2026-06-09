@@ -39,6 +39,7 @@ const iframe = document.createElement('iframe');
 const test = "content.js file exposed"
 async function intializeIframe() {
   iframe.style.cssText = `
+    all: unset;
     flex: 1;
     background: #f4f1eb;
     border-radius: 0px 0px 10px 10px;

@@ -10,6 +10,8 @@ let visibleResults;
 let currentAlgo = 'fzf';
 let selectedIndex = 0;
 let debounceTimer;
+let deleteMode = false;
+let deleteIndices = new Set();
 
 let holdTimer = null;
 const HOLD_DURATION = 400; // ms before drag activates
@@ -25,6 +27,7 @@ const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
 const addEl = document.getElementById('addNotesButton')
+const deleteEl = document.getElementById('deleteNotesButton')
 let addBox = null
 
 const overlay = document.createElement('div');
@@ -322,13 +325,27 @@ function render(results) {
   }
 
 
+  function checkBoxIcon(i) {
+    return `
+    <div class="checkbox-group">
+      <input type="checkbox" class="item-checkbox" data-index="${i}"/>
+    </div>
+    `
+
+  }
+
+
+
   resultsEl.innerHTML = results.map((r, i) => {
 
 
 
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
+
         <div class="item">
+            ${deleteMode ? checkBoxIcon(i) : ''}
+
             <input class="input-key"/>
             <div class="edit-btns">
               <button class="btn confirm-btn" aria-label="Confirm delete">
@@ -534,6 +551,7 @@ function attachListeners() {
     const inputKey = el.querySelector('.input-key')
     const inputContent = el.querySelector('.input-content')
     const copyBtn = el.querySelector('.copy-btn')
+    let checkbox;
     el.querySelector('.item').addEventListener('click', (e) => {
       selectedIndex = i;
       updateSelected();
@@ -625,6 +643,20 @@ function attachListeners() {
       el.classList.toggle('open');
     })
 
+    if (deleteMode) {
+      checkbox = el.querySelector('.item-checkbox');
+      checkbox.addEventListener('change', (e) => {
+        const idx = Number(checkbox.dataset.index);
+        if (checkbox.checked) {
+          deleteIndices.add(idx);
+        } else {
+          deleteIndices.delete(idx);
+        }
+        console.log("Delete indices: ", deleteIndices);
+      })
+    }
+
+
   })
 
   // add Notes
@@ -635,6 +667,12 @@ function attachListeners() {
     resultsEl.prepend(addBox)
   })
 
+  if (deleteEl) {
+    deleteEl.addEventListener('click', () => {
+      deleteMode = !deleteMode;
+      // Handle delete notes functionality
+    });
+  }
 
 }
 
@@ -750,3 +788,10 @@ const testData = document.getElementById('addDummyDataButton');
 testData.addEventListener('click', () => {
   addTestData();
 });
+
+
+deleteEl.addEventListener('click', () => {
+  deleteEl.classList.toggle('active');
+  deleteMode = !deleteMode;
+  render(search(input.value));
+})
