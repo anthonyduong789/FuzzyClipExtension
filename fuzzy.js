@@ -92,9 +92,9 @@ function search(query) {
   //   if (res.matched) results.push({ key: key, value: value, score: res.score, positions: res.positions });
   // }
 
-  for (const note of RAW_DATA2) {
+  for (const [index, note] of RAW_DATA2.entries()) {
     const res = algo(query, note.key);
-    if (res.matched) results.push({ key: note.key, value: note.value, score: res.score, positions: res.positions });
+    if (res.matched) results.push({ key: note.key, value: note.value, score: res.score, positions: res.positions, index: index });
   }
 
   // for (const { key, value } of RAW_DATA2) {
@@ -324,18 +324,6 @@ function render(results) {
     return div.textContent;
   }
 
-
-  function checkBoxIcon(i) {
-    return `
-    <div class="checkbox-group">
-      <input type="checkbox" class="item-checkbox" data-index="${i}"/>
-    </div>
-    `
-
-  }
-
-
-
   resultsEl.innerHTML = results.map((r, i) => {
 
 
@@ -344,7 +332,9 @@ function render(results) {
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
 
         <div class="item">
-            ${deleteMode ? checkBoxIcon(i) : ''}
+            <div class="checkbox-group">
+              <input type="checkbox" class="item-checkbox" data-index="${r.index}"/>
+            </div>
 
             <input class="input-key"/>
             <div class="edit-btns">
@@ -364,7 +354,7 @@ function render(results) {
               </button>
             </div>
 
-            <span class="resultText" data-index="${i}" data-key="${r.key}">${highlight(sanitize(r.key), r.positions)}</span>
+            <span class="resultText" data-index="${r.index}" data-key="${r.key}">${highlight(sanitize(r.key), r.positions)}</span>
 
             ${copyIcon()}
             <div class="edit-group">
@@ -790,8 +780,27 @@ testData.addEventListener('click', () => {
 });
 
 
+
+let deleteElements = 0;
+
 deleteEl.addEventListener('click', () => {
   deleteEl.classList.toggle('active');
+  addEl.classList.toggle('hidden');
+  testData.classList.toggle('hidden');
   deleteMode = !deleteMode;
-  render(search(input.value));
+  document.querySelectorAll('.checkbox-group').forEach((el) => {
+    el.classList.toggle('active');
+    console.log("Toggled checkbox visibility: ", el.classList.contains('active'));
+  });
+
+
+  document.querySelectorAll('.item-checkbox').forEach((checkbox) => {
+    checkbox.addEventListener('change', (e) => {
+      const idx = Number(checkbox.dataset.index);
+      console.log("Checkbox changed for index: ", idx, "Checked: ", checkbox.checked);
+
+    })
+  })
+
+
 })

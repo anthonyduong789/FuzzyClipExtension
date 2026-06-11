@@ -64,8 +64,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 18px 14px 18px;
-  border-bottom: 1.5px solid #e2ddd6;
+  padding: 4px 18px 0px 18px;
+  /* border-bottom: 1.5px solid #e2ddd6; */
   background: #f4f1eb;
   flex-shrink: 0;
 }
@@ -110,6 +110,7 @@
   color: #1a1a1a;
   letter-spacing: -0.01em;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .ff-subtitle {
@@ -118,12 +119,20 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .ff-right {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.ff-buttons {
+  display: flex;
+  padding: 4px 18px 4px 18px;
+  border-bottom: 1.5px solid #e2ddd6;
+  gap: 5px;
 }
 
 .ff-pill-btn {
@@ -793,4 +802,16 @@
 }
 .select-to-delete.active .select-to-delete-content-after {
   display: flex;
+}
+
+.checkbox-group {
+  display: none;
+}
+
+.checkbox-group.active {
+  display: block;
+}
+
+.hidden {
+  display: none;
 }

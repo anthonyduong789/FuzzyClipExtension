@@ -18,7 +18,7 @@ wrapper.classList.add('wrapper');
 const topBar = document.createElement('div');
 topBar.style.cssText = `
   display: flex;
-  height: 30px;
+  height: 20px;
   background-color: rgb(244, 241, 235);
   border-radius: 10px 10px 0px 0px;
   cursor: grab;
