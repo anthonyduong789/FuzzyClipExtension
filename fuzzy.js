@@ -10,7 +10,6 @@ let visibleResults;
 let currentAlgo = 'fzf';
 let selectedIndex = 0;
 let debounceTimer;
-let deleteMode = false;
 let deleteIndices = new Set();
 
 let holdTimer = null;
@@ -27,7 +26,16 @@ const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
 const addEl = document.getElementById('addNotesButton')
+
+// selectors for delete mode
+let deleteMode = false;
 const deleteEl = document.getElementById('deleteNotesButton')
+const deleteGroupEl = document.getElementById('deleteGroup')
+const selectToDelete = document.getElementById('selectAllDeleteMode')
+let selectAll = false;
+
+// =============================================================
+
 let addBox = null
 
 const overlay = document.createElement('div');
@@ -272,7 +280,16 @@ function handleKeys() {
     });
     input.addEventListener('input', () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => render(search(input.value)), 10);
+      debounceTimer = setTimeout(() => {
+        render(search(input.value));
+        requestAnimationFrame(() => {
+          // selectAll = false;
+          // if (selectToDelete) {
+          //   selectToDelete.textContent = 'Select All';
+          // }
+          selectAllDeleteMode(); // reset select all state after rerender
+        });
+      }, 10);
     });
 
   }
@@ -326,14 +343,14 @@ function render(results) {
 
   resultsEl.innerHTML = results.map((r, i) => {
 
-
+    console.log("deleteMode: ", deleteMode)
 
     return `
        <div class = 'itemContainer ${i === 0 ? 'selected' : ''}'>
 
         <div class="item">
-            <div class="checkbox-group">
-              <input type="checkbox" class="item-checkbox" data-index="${r.index}"/>
+            <div class="checkbox-group ${deleteMode ? 'active' : ''}">
+              <input type="checkbox" class="item-checkbox" data-index="${r.index}" ${selectAll ? 'checked' : ''}/>
             </div>
 
             <input class="input-key"/>
@@ -598,9 +615,12 @@ function attachListeners() {
 
     cancelEditBtn.addEventListener('click', () => {
       let oldKey = el.querySelector('.resultText').dataset.key;
+      // selectAll = false;
+      // selectToDelete.textContent = "Select All";
+
       // RAW_DATA1[inputKey.value] = 
       // delete RAW_DATA1[oldKey]
-      el.classList.toggle('edit');
+      // el.classList.toggle('edit');
     })
 
     el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
@@ -633,21 +653,30 @@ function attachListeners() {
       el.classList.toggle('open');
     })
 
-    if (deleteMode) {
-      checkbox = el.querySelector('.item-checkbox');
-      checkbox.addEventListener('change', (e) => {
-        const idx = Number(checkbox.dataset.index);
-        if (checkbox.checked) {
-          deleteIndices.add(idx);
-        } else {
-          deleteIndices.delete(idx);
-        }
-        console.log("Delete indices: ", deleteIndices);
-      })
-    }
+    // if (deleteMode) {
+    //   checkbox = el.querySelector('.item-checkbox');
+    //   checkbox.addEventListener('change', (e) => {
+    //     const idx = Number(checkbox.dataset.index);
+    //     if (checkbox.checked) {
+    //       deleteIndices.add(idx);
+    //     } else {
+    //       deleteIndices.delete(idx);
+    //     }
+    //     console.log("Delete indices: ", deleteIndices);
+    //   })
+    // }
 
 
   })
+
+  document.querySelectorAll('.item-checkbox').forEach((checkbox) => {
+    checkbox.addEventListener('change', (e) => {
+      const idx = Number(checkbox.dataset.index);
+      console.log("Checkbox changed for index: ", idx, "Checked: ", checkbox.checked);
+
+    })
+  })
+
 
   // add Notes
   if (!addEl) return;
@@ -657,14 +686,42 @@ function attachListeners() {
     resultsEl.prepend(addBox)
   })
 
-  if (deleteEl) {
-    deleteEl.addEventListener('click', () => {
-      deleteMode = !deleteMode;
-      // Handle delete notes functionality
-    });
+  console.log("test", selectAll);
+  selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
+}
+let checkboxes = [];
+
+function toggleSelectAll() {
+  selectAll = !selectAll;
+  let newCheckboxes = document.querySelectorAll('.item-checkbox');
+  newCheckboxes.forEach((checkbox) => {
+    checkbox.checked = selectAll;
+    const idx = Number(checkbox.dataset.index);
+    console.log("Checkbox changed for index: ", idx, "Checked: ", checkbox.checked);
+  });
+  // checkboxes.forEach((checkbox) => {
+  //   checkbox.checked = selectAll;
+  // });
+
+  if (selectAll) {
+    checkboxes = [];
+    for (let i = 0; i < newCheckboxes.length; i++) {
+      checkboxes.push(RAW_DATA2[newCheckboxes[i].dataset.index]);
+    }
+    console.log("Select all, checkboxes: ", checkboxes);
   }
+  console.log("checkboxes toggled, selectAll: ", checkboxes.length);
+
+  selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
+}
+
+
+function selectAllDeleteMode() {
+  selectToDelete.removeEventListener('click', toggleSelectAll);
+  selectToDelete.addEventListener('click', toggleSelectAll);
 
 }
+
 
 function createAddBox() {
   if (!addEl) return;
@@ -787,20 +844,22 @@ deleteEl.addEventListener('click', () => {
   deleteEl.classList.toggle('active');
   addEl.classList.toggle('hidden');
   testData.classList.toggle('hidden');
+  deleteGroupEl.classList.toggle('active');
   deleteMode = !deleteMode;
-  document.querySelectorAll('.checkbox-group').forEach((el) => {
-    el.classList.toggle('active');
-    console.log("Toggled checkbox visibility: ", el.classList.contains('active'));
-  });
 
+  if (deleteMode) {
+    console.log("Entered delete mode");
+    selectAll = false;
+    selectToDelete.textContent = "Select All";
+  }
 
-  document.querySelectorAll('.item-checkbox').forEach((checkbox) => {
-    checkbox.addEventListener('change', (e) => {
-      const idx = Number(checkbox.dataset.index);
-      console.log("Checkbox changed for index: ", idx, "Checked: ", checkbox.checked);
+  // document.querySelectorAll('.checkbox-group').forEach((el) => {
+  //   el.classList.toggle('active');
+  //   console.log("Toggled checkbox visibility: ", el.classList.contains('active'));
+  // });
+  render(search(input.value));
 
-    })
-  })
-
-
+  selectAllDeleteMode();
 })
+
+
