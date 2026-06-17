@@ -290,20 +290,24 @@ function handleKeys() {
         render(search(input.value));
         requestAnimationFrame(() => {
           selectAllDeleteMode(); // reseset all listeners
-          toggleSelectAll();
-          // if (selectAll) {
-          //   const newCheckboxes = document.querySelectorAll('.item-checkbox');
-          //   newCheckboxes.forEach((checkbox) => {
-          //     checkbox.checked = true;
-          //   });
 
-          //   checkboxes.clear();
-          //   console.log(newCheckboxes)
-          //   for (let i = 0; i < newCheckboxes.length; i++) {
-          //     checkboxes.add(newCheckboxes[i].dataset.index);
-          //   }
-          //   selectToDelete.textContent = "Deselect All";
-          // }
+          if (selectAll) {
+            const newCheckboxes = document.querySelectorAll('.item-checkbox');
+            console.log(newCheckboxes)
+
+            newCheckboxes.forEach((checkbox) => {
+              checkbox.checked = true;
+            });
+
+            checkboxes.clear();
+            for (let i = 0; i < newCheckboxes.length; i++) {
+              checkboxes.add(newCheckboxes[i].dataset.index);
+            }
+
+            console.log(checkboxes)
+
+            selectToDelete.textContent = "Deselect All";
+          }
         });
       }, 10);
     });
@@ -575,7 +579,16 @@ function attachListeners() {
     const inputContent = el.querySelector('.input-content')
     const copyBtn = el.querySelector('.copy-btn')
 
-    const checkBox = el.querySelector('.checkbox');
+    const checkBox = el.querySelector('.item-checkbox');
+    checkBox.addEventListener('click', (e) => {
+      const idx = checkBox.dataset.index;
+      if (checkBox.checked) {
+        checkboxes.add(idx);
+      } else {
+        checkboxes.delete(idx);
+      }
+      console.log(checkboxes);
+    });
 
     el.querySelector('.item').addEventListener('click', (e) => {
       selectedIndex = i;
@@ -723,7 +736,7 @@ function deleteConfirm() {
   confirmDeleteSelectedBtn.addEventListener('click', () => {
     console.log("Confirm delete selected, checkboxes: ", checkboxes);
     console.log("before", RAW_DATA2)
-    RAW_DATA2 = RAW_DATA2.filter((_, i) => checkboxes.has(i));
+    RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(String(i)));
     console.log("after delete", RAW_DATA2)
     storageManager('update-data', 'notes', RAW_DATA2)
     render(search(input.value));
@@ -746,21 +759,29 @@ function toggleSelectAll() {
   selectAll = !selectAll;
   const newCheckboxes = document.querySelectorAll('.item-checkbox');
   newCheckboxes.forEach((checkbox) => {
-    checkbox.checked = selectAll;
+    if (selectAll) {
+      checkbox.checked = true
+    }
+    else {
+
+      checkbox.checked = false
+    }
     const idx = Number(checkbox.dataset.index);
   });
-  // checkboxes.forEach((checkbox) => {
-  //   checkbox.checked = selectAll;
-  // });
 
   if (selectAll) {
     checkboxes.clear();
     for (let i = 0; i < newCheckboxes.length; i++) {
       checkboxes.add(newCheckboxes[i].dataset.index);
     }
+
+  }
+  else {
+    checkboxes.clear()
   }
 
   selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
+
 }
 
 
