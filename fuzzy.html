@@ -65,8 +65,34 @@
     </button>
     <div class="delete-mode" id="deleteGroup">
       <button class="ff-pill-btn" id="selectAllDeleteMode">
-        select all
+        Select All
       </button>
+      <button class="ff-pill-btn" id="deleteSelectedElements">
+        <svg class="trash-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3,5 15,5" />
+          <path d="M6 5V3.5A0.5 0.5 0 0 1 6.5 3h5a0.5 0.5 0 0 1 0.5 0.5V5" />
+          <rect x="4" y="5" width="10" height="10" rx="1.5" />
+          <line x1="7" y1="8" x2="7" y2="12" />
+          <line x1="11" y1="8" x2="11" y2="12" />
+        </svg>
+        Delete
+      </button>
+      <div class="action-btns " id="actionBtnsSelectDelete">
+        <button class="btn confirm-btn confirmDeleteBtn" id="confirmDeleteSelected" aria-label="Confirm delete">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--color-text-success)"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2.5,8 6.5,12 13.5,4" />
+          </svg>
+        </button>
+        <button class="btn cancel-btn cancelDeleteBtn" id="cancelDeleteSelectBtn" aria-label="Cancel">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--color-text-secondary)"
+            stroke-width="1.5" stroke-linecap="round">
+            <line x1="1" y1="1" x2="11" y2="11" />
+            <line x1="11" y1="1" x2="1" y2="11" />
+          </svg>
+        </button>
+      </div>
 
     </div>
 
