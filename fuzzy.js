@@ -26,6 +26,7 @@ const closeButton = document.getElementById('closeInjected');
 const input = document.getElementById('search-input');
 const resultsEl = document.getElementById('results');
 const addEl = document.getElementById('addNotesButton')
+const numberOfResults = document.getElementById('ff-count');
 
 // selectors for delete mode
 let deleteMode = false;
@@ -94,12 +95,16 @@ function escHtml(s) {
 function search(query) {
   // assigns the funciton that is being implemented
   const algo = algos[currentAlgo].fn;
-
-  // if (!query.trim()) {
-  //   return RAW_DATA.slice(0, 200).map(s => ({ str: s, score: 0, positions: [] }));
-  // }
-  query = query.trim();
   const results = [];
+
+  if (!query.trim()) {
+    for (const [index, note] of RAW_DATA2.entries()) {
+      const res = algo(query, note.key);
+      if (res.matched) results.push({ key: note.key, value: note.value, score: res.score, positions: res.positions, index: index });
+    }
+    return results
+  }
+  query = query.trim();
   // for (const [key, value] of Object.entries(RAW_DATA1)) {
   //   const res = algo(query, key);
   //   if (res.matched) results.push({ key: key, value: value, score: res.score, positions: res.positions });
@@ -110,14 +115,8 @@ function search(query) {
     if (res.matched) results.push({ key: note.key, value: note.value, score: res.score, positions: res.positions, index: index });
   }
 
-  // for (const { key, value } of RAW_DATA2) {
-  //   const res = algo(query, key);
-  //   if (res.matched) result2.push({ key: key, value: value, score: res.score, positions: res.positions });
-  // }
   results.sort((a, b) => b.score - a.score);
-  // return results.slice(0, 200);
-  return results
-  // return result2.slice(0, 200);
+  return results.slice(0, 200);
 }
 
 
@@ -361,6 +360,15 @@ function render(results) {
     return div.textContent;
   }
 
+  if (!deleteMode) {
+    numberOfResults.innerText = `${results.length} results`;
+  }
+  else {
+    numberOfResults.innerText = `${checkboxes.size} selected`;
+  }
+
+
+
   resultsEl.innerHTML = results.map((r, i) => {
 
     console.log("deleteMode: ", deleteMode)
@@ -582,12 +590,15 @@ function attachListeners() {
     const checkBox = el.querySelector('.item-checkbox');
     checkBox.addEventListener('click', (e) => {
       const idx = checkBox.dataset.index;
+      actionBtnsSelectDelete.classList.remove('open');
+      deleteConfirmBtn.style.borderColor = '';
       if (checkBox.checked) {
         checkboxes.add(idx);
       } else {
         checkboxes.delete(idx);
       }
       console.log(checkboxes);
+      numberOfResults.innerText = `${checkboxes.size} selected`;
     });
 
     el.querySelector('.item').addEventListener('click', (e) => {
@@ -734,6 +745,9 @@ function deleteConfirm() {
   });
 
   confirmDeleteSelectedBtn.addEventListener('click', () => {
+    if (checkboxes.size == 0) {
+      return
+    }
     console.log("Confirm delete selected, checkboxes: ", checkboxes);
     console.log("before", RAW_DATA2)
     RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(String(i)));
@@ -757,6 +771,10 @@ deleteConfirm();
 
 function toggleSelectAll() {
   selectAll = !selectAll;
+  actionBtnsSelectDelete.classList.remove('open');
+  deleteConfirmBtn.style.borderColor = '';
+
+
   const newCheckboxes = document.querySelectorAll('.item-checkbox');
   newCheckboxes.forEach((checkbox) => {
     if (selectAll) {
@@ -781,6 +799,7 @@ function toggleSelectAll() {
   }
 
   selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
+  numberOfResults.innerText = `${checkboxes.size} selected`;
 
 }
 
@@ -915,6 +934,7 @@ deleteEl.addEventListener('click', () => {
   testData.classList.toggle('hidden');
   deleteGroupEl.classList.toggle('active');
   deleteMode = !deleteMode;
+  checkboxes.clear();
 
   if (deleteMode) {
     console.log("Entered delete mode");
