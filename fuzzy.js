@@ -307,6 +307,11 @@ function handleKeys() {
 
             selectToDelete.textContent = "Deselect All";
           }
+
+          if (addBox) {
+            addBox.remove();
+            addBox = null;
+          }
         });
       }, 10);
     });
@@ -619,6 +624,11 @@ function attachListeners() {
       inputContent.value = contentText.dataset.content
       el.classList.toggle('edit');
     }
+    function editClose() {
+      el.classList.toggle('edit');
+      inputKey.value = el.querySelector('.resultText').dataset.key;
+      inputContent.value = el.querySelector('.contentText').dataset.content;
+    }
     el.querySelector('.trash-btn').addEventListener('click', (e) => {
       openConfirm();
       // example to delete data reset search 
@@ -656,13 +666,7 @@ function attachListeners() {
     })
 
     cancelEditBtn.addEventListener('click', () => {
-      let oldKey = el.querySelector('.resultText').dataset.key;
-      // selectAll = false;
-      // selectToDelete.textContent = "Select All";
-
-      // RAW_DATA1[inputKey.value] = 
-      // delete RAW_DATA1[oldKey]
-      // el.classList.toggle('edit');
+      editClose();
     })
 
     el.querySelector('.DropDownIcon').addEventListener('click', (e) => {
@@ -720,53 +724,11 @@ function attachListeners() {
   })
 
 
-  // add Notes
-  if (!addEl) return;
-  addEl.addEventListener('click', () => {
-    if (addBox) return;
-    addBox = createAddBox();
-    resultsEl.prepend(addBox)
-  })
 
-  console.log("test", selectAll);
   selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
 }
 let checkboxes = new Set();
 
-
-function deleteConfirm() {
-  deleteConfirmBtn.addEventListener('click', () => {
-    if (!actionBtnsSelectDelete.classList.contains('open')) {
-      deleteConfirmBtn.style.borderColor = 'var(--color-border-danger)';
-      actionBtnsSelectDelete.classList.add('open');
-    }
-
-
-  });
-
-  confirmDeleteSelectedBtn.addEventListener('click', () => {
-    if (checkboxes.size == 0) {
-      return
-    }
-    console.log("Confirm delete selected, checkboxes: ", checkboxes);
-    console.log("before", RAW_DATA2)
-    RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(String(i)));
-    console.log("after delete", RAW_DATA2)
-    storageManager('update-data', 'notes', RAW_DATA2)
-    render(search(input.value));
-    actionBtnsSelectDelete.classList.remove('open');
-    deleteConfirmBtn.style.borderColor = '';
-
-  })
-
-  cancelDeleteSelectBtn.addEventListener('click', () => {
-    actionBtnsSelectDelete.classList.remove('open');
-    deleteConfirmBtn.style.borderColor = '';
-  })
-
-
-}
-deleteConfirm();
 
 
 function toggleSelectAll() {
@@ -811,8 +773,21 @@ function selectAllDeleteMode() {
 }
 
 
+
+
+addEl.addEventListener('click', () => {
+  if (addBox) return;
+  console.log("Add element clicked");
+  addBox = createAddBox();
+  resultsEl.prepend(addBox)
+})
+
+
 function createAddBox() {
-  if (!addEl) return;
+  if (!addEl) {
+    console.log("Add element not found");
+  }
+
   const newAddElement = document.createElement('div');
   newAddElement.className = 'itemContainer edit';
   newAddElement.innerHTML =
@@ -848,6 +823,7 @@ function createAddBox() {
     newAddElement.remove();
     storageManager('update-data', 'notes', RAW_DATA2);
     render(search(input.value));
+    closeAddBox();
   });
   newAddElement.querySelector('#CancelButton').addEventListener('click', () => {
     closeAddBox();
@@ -918,37 +894,74 @@ function addTestData() {
 }
 
 
-const testData = document.getElementById('addDummyDataButton');
+// const testData = document.getElementById('addDummyDataButton');
 
-testData.addEventListener('click', () => {
-  addTestData();
-});
+// testData.addEventListener('click', () => {
+//   addTestData();
+// });
 
 
 
 let deleteElements = 0;
 
-deleteEl.addEventListener('click', () => {
-  deleteEl.classList.toggle('active');
-  addEl.classList.toggle('hidden');
-  testData.classList.toggle('hidden');
-  deleteGroupEl.classList.toggle('active');
-  deleteMode = !deleteMode;
-  checkboxes.clear();
+function deleteMultipleElements() {
+  deleteEl.addEventListener('click', () => {
+    deleteEl.classList.toggle('active');
+    addEl.classList.toggle('hidden');
+    // testData.classList.toggle('hidden');
+    deleteGroupEl.classList.toggle('active');
+    deleteMode = !deleteMode;
+    checkboxes.clear();
 
-  if (deleteMode) {
-    console.log("Entered delete mode");
+    if (deleteMode) {
+      console.log("Entered delete mode");
+      selectAll = false;
+      selectToDelete.textContent = "Select All";
+    }
+
+    // document.querySelectorAll('.checkbox-group').forEach((el) => {
+    //   el.classList.toggle('active');
+    //   console.log("Toggled checkbox visibility: ", el.classList.contains('active'));
+    // });
+    render(search(input.value));
+
+    selectAllDeleteMode();
+  })
+
+  deleteConfirmBtn.addEventListener('click', () => {
+    if (!actionBtnsSelectDelete.classList.contains('open')) {
+      deleteConfirmBtn.style.borderColor = 'var(--color-border-danger)';
+      actionBtnsSelectDelete.classList.add('open');
+    }
+
+
+  });
+
+  confirmDeleteSelectedBtn.addEventListener('click', () => {
+    if (checkboxes.size == 0) {
+      return
+    }
+
+    console.log("Confirm delete selected, checkboxes: ", checkboxes);
+    console.log("before", RAW_DATA2)
+    RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(String(i)));
+    console.log("after delete", RAW_DATA2)
+    storageManager('update-data', 'notes', RAW_DATA2)
+    render(search(input.value));
+    actionBtnsSelectDelete.classList.remove('open');
+    deleteConfirmBtn.style.borderColor = '';
+    numberOfResults.textContent = `${checkboxes.size} notes deleted`;
     selectAll = false;
     selectToDelete.textContent = "Select All";
-  }
+    checkboxes.clear();
+  })
 
-  // document.querySelectorAll('.checkbox-group').forEach((el) => {
-  //   el.classList.toggle('active');
-  //   console.log("Toggled checkbox visibility: ", el.classList.contains('active'));
-  // });
-  render(search(input.value));
+  cancelDeleteSelectBtn.addEventListener('click', () => {
+    actionBtnsSelectDelete.classList.remove('open');
+    deleteConfirmBtn.style.borderColor = '';
+  })
 
-  selectAllDeleteMode();
-})
+}
 
 
+deleteMultipleElements();
