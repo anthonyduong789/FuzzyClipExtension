@@ -508,16 +508,11 @@
   margin: auto;
 }
 
-.resultText mark {
-  /* background: none;
-  color: var(--match);
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5); */
+/* .resultText mark {
   background: #fde68a;
   color: #92400e;
-  /* border-radius: 2px; */
   padding: 0 1px;
-}
+} */
 
 .contentText {
   font-size: 14px;
@@ -571,6 +566,8 @@
 /* edit Mode */
 .itemContainer.edit .edit-btns {
   display: flex;
+  justify-content: end;
+  padding-right: 9px;
 }
 
 .copy-group {
@@ -650,6 +647,9 @@
 }
 
 .itemContainer.edit .delete-group {
+  display: none;
+}
+.itemContainer.edit .copy-group {
   display: none;
 }
 
@@ -797,11 +797,9 @@
   text-align: left;
 }
 
-
 .toggle-delete-mode {
   display: flex;
 }
-
 
 .select-to-delete-before {
   display: flex;
@@ -811,7 +809,6 @@
   display: none;
 }
 
-
 .toggle-delete-mode.active .select-to-delete-before {
   display: none;
 }
@@ -819,8 +816,6 @@
 .toggle-delete-mode.active .select-to-delete-after {
   display: flex;
 }
-
-
 
 .checkbox-group {
   display: hidden;
@@ -831,9 +826,11 @@
 }
 
 .hidden {
-  display: none;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  flex-grow: 0;
 }
-
 
 .delete-mode {
   display: none;
@@ -841,4 +838,87 @@
 
 .delete-mode.active {
   display: flex;
+}
+
+/* HIGHLIGHT SUGGESTION ROW */
+.ff-highlight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  background: none;
+  flex-wrap: wrap;
+}
+.ff-hl-label {
+  font-size: 10px;
+  color: #a09880;
+  white-space: nowrap;
+}
+.ff-hl-swatch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 10px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.12s;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.ff-hl-swatch.amber {
+  background: #fde68a;
+  color: #92400e;
+}
+.ff-hl-swatch.green {
+  background: #bbf7d0;
+  color: #14532d;
+}
+.ff-hl-swatch.blue {
+  background: #bfdbfe;
+  color: #1e3a8a;
+}
+.ff-hl-swatch.pink {
+  background: #fce7f3;
+  color: #831843;
+}
+.ff-hl-swatch.coral {
+  background: #fed7aa;
+  color: #7c2d12;
+}
+
+.ff-hl-swatch.selected {
+  border-color: #1a1a1a;
+}
+.ff-hl-swatch:hover {
+  opacity: 0.8;
+}
+
+.ff-overlay {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.ff-overlay.hidden {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  flex-grow: 0;
+}
+
+.settings-button {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: auto; /* This forces the item to the right side */
+}
+.settings-button svg {
+  border: none;
+  width: 25px;
+  height: 25px;
+  stroke: #5a534a;
 }

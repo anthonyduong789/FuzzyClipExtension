@@ -53,10 +53,14 @@ async function intializeIframe() {
     if (event.data?.action === 'iframeReady') {
       const results = await dataPromise;
       let notes = {}
+      let personal_settings = {"highlightColor": "amber"};
       if (results.notes) {
         notes = results.notes
       }
-      iframe.contentWindow.postMessage({ action: 'intializeIframe', notes: notes }, '*');
+      if (results.personal_settings) {
+        personal_settings = results.personal_settings
+      }
+      iframe.contentWindow.postMessage({ action: 'intializeIframe', notes: notes, personal_settings: personal_settings }, '*');
     }
   });
 }
@@ -226,11 +230,8 @@ function onTopBarMouseUp(e) {
   window.removeEventListener('mousemove', onTopBarMouseMove);
   window.removeEventListener('mouseup', onTopBarMouseUp);
 }
-
 const MIN_W = 160, MIN_H = 90;
-
 let startRight;
-
 function makeHandle(el, resizeW, resizeH) {
   el.addEventListener('pointerdown', e => {
     e.preventDefault();
@@ -282,13 +283,6 @@ function makeHandle(el, resizeW, resizeH) {
     el.addEventListener('pointerup', onUp);
   });
 }
-
-
-
-
-
 topBar.addEventListener('mousedown', (e) => {
   makeDraggable(e);
 });
-
-
