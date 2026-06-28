@@ -1,11 +1,15 @@
+let height = 700, width = 500
+let position = { left: 0, top: 0 }
+let personal_settings = { "highlightColor": "amber", height: "700px", width: "500px", top: 5, left: 5 };
+
+
+
 // Top Bar
 const wrapper = document.createElement('div');
 wrapper.style.cssText = `
       display: none;
       flex-direction: column;
       position: fixed;
-      top: 5px;
-      right: 5px;
       height: 700px;
       width: 500px;
       border-radius: 10px;
@@ -37,31 +41,53 @@ topBar.innerHTML = `
 // Iframe
 const iframe = document.createElement('iframe');
 const test = "content.js file exposed"
-async function intializeIframe() {
+async function initializeIframe() {
   iframe.style.cssText = `
     all: unset;
     flex: 1;
     background: #f4f1eb;
     border-radius: 0px 0px 10px 10px;
-  `
+  `;
   iframe.src = chrome.runtime.getURL('fuzzy.html');
   wrapper.appendChild(topBar);
   wrapper.appendChild(iframe);
   document.body.appendChild(wrapper);
-  const dataPromise = loadAllData();
+
+  const results = await loadAllData(); // resolved before listener is even registered
+  const notes = results.notes
+  if (results.personal_settings) personal_settings = results.personal_settings
+
+  console.log(results);
+  console.log("Personal settings:", personal_settings);
+
+  wrapper.style.height = personal_settings.height ?? '700px';
+  wrapper.style.width = personal_settings.width ?? '500px';
+  if (personal_settings.top !== undefined) {
+    wrapper.style.top = `${personal_settings.top}px`;
+    console.log("Top setting found, using:", personal_settings.top);
+  }
+  else {
+    wrapper.style.top = '5px';
+    console.log("No top setting found, defaulting to 5px");
+  }
+  if (personal_settings.left !== undefined) {
+    wrapper.style.left = `${personal_settings.left}px`;
+    console.log("Left setting found, using:", personal_settings.left);
+  }
+  else {
+    wrapper.style.left = '5px';
+    console.log("No left setting found, defaulting to 5px");
+  }
+
+
   window.addEventListener('message', async (event) => {
-    if (event.data?.action === 'iframeReady') {
-      const results = await dataPromise;
-      let notes = {}
-      let personal_settings = {"highlightColor": "amber"};
-      if (results.notes) {
-        notes = results.notes
-      }
-      if (results.personal_settings) {
-        personal_settings = results.personal_settings
-      }
-      iframe.contentWindow.postMessage({ action: 'intializeIframe', notes: notes, personal_settings: personal_settings }, '*');
-    }
+    if (event.data?.action !== 'iframeReady') return;
+
+
+    iframe.contentWindow.postMessage(
+      { action: 'initializeIframe', notes, personal_settings },
+      '*'
+    );
   });
 }
 
@@ -128,7 +154,6 @@ function handlMessages() {
         loadAllData()
       case 'copy-to-clipboard':
         navigator.clipboard.writeText(event.data.data.text).then(() => {
-          console.log('Text copied to clipboard');
         }).catch(err => {
           console.error('Error copying to clipboard: ', err);
         });
@@ -156,7 +181,7 @@ function handleKeyMaps() {
     }
   })
 }
-intializeIframe();
+initializeIframe();
 handlMessages();
 handleKeyMaps();
 function storeData(key, value) {
@@ -165,10 +190,12 @@ function storeData(key, value) {
   })
 }
 
-function loadData(key) {
-  chrome.storage.local.get(key, (result) => {
-    console.log(result[key])   // the value
-  })
+async function loadData(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(key, (result) => {
+      resolve(result[key]);
+    });
+  });
 }
 
 async function loadAllData() {
@@ -185,6 +212,15 @@ async function loadAllData() {
   }
 }
 let offsetX, offsetY;
+
+
+
+/**
+ * 
+ * @param {number} left - raw number for left position
+ * @param {number} top  raw number for top position
+ * @returns {left: number, top: number}
+ */
 function clampPosition(left, top) {
   const maxLeft = Math.max(0, window.innerWidth - wrapper.offsetWidth);
   const maxTop = Math.max(0, window.innerHeight - wrapper.offsetHeight);
@@ -227,6 +263,11 @@ function onTopBarMouseUp(e) {
   topBar.style.cursor = 'grab';
   document.body.style.userSelect = 'auto';
   iframe.style.pointerEvents = 'auto';
+  personal_settings.top = Number(String(wrapper.style.top).replace(/[^\d.-]/g, ""));
+  personal_settings.left = Number(String(wrapper.style.left).replace(/[^\d.-]/g, ""))
+
+  console.log("storing personal_settings", personal_settings);
+  storeData('personal_settings', personal_settings);
   window.removeEventListener('mousemove', onTopBarMouseMove);
   window.removeEventListener('mouseup', onTopBarMouseUp);
 }
@@ -272,6 +313,7 @@ function makeHandle(el, resizeW, resizeH) {
     function onUp() {
       // el.classList.remove('active');
       // wrapper.classList.remove('active');
+
       el.removeEventListener('pointermove', onMove);
       el.removeEventListener('pointerup', onUp);
       // pointerup

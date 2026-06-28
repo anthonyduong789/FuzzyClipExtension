@@ -11,9 +11,8 @@ let RAW_DATA2 = [
   { key: 'example1', value: 'example1' },
 ];
 
-let personal_settings = { "highlightColor": "amber" };
+let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5,};
 let new_personal_settings = {};
-
 let visibleResults = [];
 let currentAlgo = 'fzf';
 let selectedIndex = 0;
@@ -66,7 +65,8 @@ const confirmSettingsButton = document.getElementById('confirmSettingsButton');
 const cancelSettingsButton = document.getElementById('cancelSettingsButton');
 const returnFromSettingsButton = document.getElementById('returnFromSettings');
 
-
+// reset 
+const resetButton = document.getElementById('resetData');
 
 // =============================================================
 // Utils
@@ -674,7 +674,7 @@ function createAddBox() {
     const key = el.querySelector('.input-key').value.trim();
     const value = el.querySelector('.input-content').value;
     if (!key) return;
-    RAW_DATA2.push({ key, value });
+    RAW_DATA2.push({ key: key, value: value })
     storageManager('update-data', 'notes', RAW_DATA2);
     closeAddBox();
     render(search(input.value));
@@ -731,7 +731,7 @@ function initDeleteMode() {
 
 function initKeyboard() {
   document.addEventListener('keydown', (e) => {
-    if (e.key === '?') {
+    if (e.ctrlKey && e.key === '/') {
       showHotKeys();
     }
 
@@ -822,8 +822,6 @@ function initAddButton() {
   });
 }
 
-
-
 // =============================================================
 // settings 
 // =============================================================
@@ -908,13 +906,14 @@ function postMessageToParent(action, data) {
 
 
 
-function initMessaging() {
+function intializeApp() {
   window.addEventListener('message', (event) => {
     if (event.data.type === 'FROM_CONTENT') {
       input.focus();
     }
     if (event.data.action === 'intializeIframe') {
       RAW_DATA2 = event.data.notes;
+      console.log('RAW_DATA2', RAW_DATA2);
       personal_settings = event.data.personal_settings
       console.log('personal_settings', personal_settings);
       render(search(input.value));
@@ -934,5 +933,15 @@ function initMessaging() {
 
 initAddButton();
 initDeleteMode();
-initMessaging();
+intializeApp();
 initColorPicker();
+
+
+resetButton.addEventListener('click', () => {
+  RAW_DATA2 = [{ key: 'example', value: 'example' },
+  { key: 'example1', value: 'example1' },];
+  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5,};
+  storageManager('update-data', 'notes', RAW_DATA2);
+  storageManager('update-data', 'personal_settings', personal_settings);
+  render(search(input.value));
+})
