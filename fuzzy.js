@@ -11,7 +11,7 @@ let RAW_DATA2 = [
   { key: 'example1', value: 'example1' },
 ];
 
-let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5,};
+let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
 let new_personal_settings = {};
 let visibleResults = [];
 let currentAlgo = 'fzf';
@@ -842,8 +842,6 @@ function showSettings() {
       el.classList.add('selected');
     }
   })
-
-
 }
 
 function initColorPicker() {
@@ -911,7 +909,7 @@ function intializeApp() {
     if (event.data.type === 'FROM_CONTENT') {
       input.focus();
     }
-    if (event.data.action === 'intializeIframe') {
+    if (event.data.action === 'initializeIframe') {
       RAW_DATA2 = event.data.notes;
       console.log('RAW_DATA2', RAW_DATA2);
       personal_settings = event.data.personal_settings
@@ -940,7 +938,7 @@ initColorPicker();
 resetButton.addEventListener('click', () => {
   RAW_DATA2 = [{ key: 'example', value: 'example' },
   { key: 'example1', value: 'example1' },];
-  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5,};
+  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
   storageManager('update-data', 'notes', RAW_DATA2);
   storageManager('update-data', 'personal_settings', personal_settings);
   render(search(input.value));

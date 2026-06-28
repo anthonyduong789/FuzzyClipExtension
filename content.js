@@ -2,8 +2,6 @@ let height = 700, width = 500
 let position = { left: 0, top: 0 }
 let personal_settings = { "highlightColor": "amber", height: "700px", width: "500px", top: 5, left: 5 };
 
-
-
 // Top Bar
 const wrapper = document.createElement('div');
 wrapper.style.cssText = `
@@ -52,42 +50,30 @@ async function initializeIframe() {
   wrapper.appendChild(topBar);
   wrapper.appendChild(iframe);
   document.body.appendChild(wrapper);
-
   const results = await loadAllData(); // resolved before listener is even registered
   const notes = results.notes
   if (results.personal_settings) personal_settings = results.personal_settings
-
-  console.log(results);
-  console.log("Personal settings:", personal_settings);
-
   wrapper.style.height = personal_settings.height ?? '700px';
   wrapper.style.width = personal_settings.width ?? '500px';
-  if (personal_settings.top !== undefined) {
-    wrapper.style.top = `${personal_settings.top}px`;
-    console.log("Top setting found, using:", personal_settings.top);
-  }
-  else {
-    wrapper.style.top = '5px';
-    console.log("No top setting found, defaulting to 5px");
-  }
-  if (personal_settings.left !== undefined) {
-    wrapper.style.left = `${personal_settings.left}px`;
-    console.log("Left setting found, using:", personal_settings.left);
-  }
-  else {
-    wrapper.style.left = '5px';
-    console.log("No left setting found, defaulting to 5px");
-  }
 
+  if (personal_settings.top !== undefined && personal_settings.left !== undefined) {
+    let pos = clampPosition(personal_settings.left, personal_settings.top);
+    setWrapperPosition(pos.left, pos.top);
+
+  }
+  else {
+    setWrapperPosition(5, 5);
+    console.log("No top or left setting found, defaulting to 5px");
+  }
 
   window.addEventListener('message', async (event) => {
     if (event.data?.action !== 'iframeReady') return;
-
-
-    iframe.contentWindow.postMessage(
-      { action: 'initializeIframe', notes, personal_settings },
-      '*'
-    );
+    if (event.data.action === 'iframeReady') {
+      iframe.contentWindow.postMessage(
+        { action: 'initializeIframe', notes, personal_settings },
+        '*'
+      );
+    }
   });
 }
 
@@ -213,8 +199,6 @@ async function loadAllData() {
 }
 let offsetX, offsetY;
 
-
-
 /**
  * 
  * @param {number} left - raw number for left position
@@ -222,8 +206,10 @@ let offsetX, offsetY;
  * @returns {left: number, top: number}
  */
 function clampPosition(left, top) {
-  const maxLeft = Math.max(0, window.innerWidth - wrapper.offsetWidth);
-  const maxTop = Math.max(0, window.innerHeight - wrapper.offsetHeight);
+  const maxLeft = Math.max(0, window.innerWidth - personal_settings.width);
+  const maxTop = Math.max(0, window.innerHeight - personal_settings.height);
+  console.log("Max left:", maxLeft, "Max top:", maxTop);
+
   return {
     left: Math.min(Math.max(0, left), maxLeft),
     top: Math.min(Math.max(0, top), maxTop),
@@ -234,6 +220,7 @@ function setWrapperPosition(left, top) {
   const pos = clampPosition(left, top);
   wrapper.style.left = `${pos.left}px`;
   wrapper.style.top = `${pos.top}px`;
+  console.log(wrapper.style.left, wrapper.style.top);
 }
 
 function makeDraggable(e) {
@@ -327,4 +314,9 @@ function makeHandle(el, resizeW, resizeH) {
 }
 topBar.addEventListener('mousedown', (e) => {
   makeDraggable(e);
+});
+
+
+window.addEventListener("resize", () => {
+  setWrapperPosition(personal_settings.left, personal_settings.top);
 });
