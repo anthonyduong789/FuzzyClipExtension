@@ -849,6 +849,7 @@ function initColorPicker() {
     el.addEventListener('click', () => {
       document.querySelectorAll('.ff-hl-swatch').forEach(s => s.classList.remove('selected'));
       el.classList.add('selected');
+      saveSettingsButton.style.display = 'block';
       new_personal_settings["highlightColor"] = el.dataset.color;
     });
   });
@@ -860,6 +861,7 @@ function closeSettings() {
   defaultOverlayContainer.classList.remove('hidden');
   hotkeyOverlayContainer.classList.add('hidden');
   settingOverlayContainer.classList.add('hidden');
+  saveSettingsButton.style.display = 'none';
   render(search(input.value));
 }
 
@@ -882,6 +884,7 @@ confirmSettingsButton.addEventListener('click', () => {
   actionBtnsSettings.classList.remove('open');
   storageManager('update-data', 'personal_settings', new_personal_settings);
   personal_settings = JSON.parse(JSON.stringify(new_personal_settings));
+  saveSettingsButton.style.display = 'none';
 });
 
 cancelSettingsButton.addEventListener('click', () => {

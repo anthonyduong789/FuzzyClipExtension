@@ -1,6 +1,6 @@
 let height = 700, width = 500
 let position = { left: 0, top: 0 }
-let personal_settings = { "highlightColor": "amber", height: "700px", width: "500px", top: 5, left: 5 };
+let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
 
 // Top Bar
 const wrapper = document.createElement('div');
@@ -42,7 +42,7 @@ const test = "content.js file exposed"
 async function initializeIframe() {
   iframe.style.cssText = `
     all: unset;
-    flex: 1;
+    flex-grow: 1;
     background: #f4f1eb;
     border-radius: 0px 0px 10px 10px;
   `;
@@ -51,15 +51,24 @@ async function initializeIframe() {
   wrapper.appendChild(iframe);
   document.body.appendChild(wrapper);
   const results = await loadAllData(); // resolved before listener is even registered
-  const notes = results.notes
+  let notes = []
+  if (results.notes !== undefined) {
+    notes = results.notes
+  }
   if (results.personal_settings) personal_settings = results.personal_settings
-  wrapper.style.height = personal_settings.height ?? '700px';
-  wrapper.style.width = personal_settings.width ?? '500px';
+  if (personal_settings.height !== undefined && personal_settings.width !== undefined) {
+    wrapper.style.height = `${personal_settings.height}px`;
+    wrapper.style.width = `${personal_settings.width}px`;
+  }
+  else {
+    wrapper.style.height = '700px';
+    wrapper.style.width = '500px';
+    console.log('No height or width setting found, defaulting to 700px x 500px');
+  }
 
   if (personal_settings.top !== undefined && personal_settings.left !== undefined) {
     let pos = clampPosition(personal_settings.left, personal_settings.top);
     setWrapperPosition(pos.left, pos.top);
-
   }
   else {
     setWrapperPosition(5, 5);
@@ -306,6 +315,11 @@ function makeHandle(el, resizeW, resizeH) {
       // pointerup
       wrapper.style.willChange = 'auto';
       wrapper.classList.remove('active');
+
+      personal_settings.height = Number(String(wrapper.style.height).replace(/[^\d.-]/g, ""));
+      personal_settings.width = Number(String(wrapper.style.width).replace(/[^\d.-]/g, ""));
+      console.log("storing personal_settings", personal_settings);
+      storeData('personal_settings', personal_settings);
     }
 
     el.addEventListener('pointermove', onMove);

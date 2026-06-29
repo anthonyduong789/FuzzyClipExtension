@@ -119,12 +119,19 @@
   </div>
   </div>
   <!-- Hotkey Overlay -->
-  <div class="ff-overlay hidden" id="hotkey-overlay">
+  <div  class="ff-overlay hidden" id="hotkey-overlay">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px;" class="ff-buttons">
+      <span class="ff-hint"><kbd>ctrl+c</kbd> copy selected content to clipboard</span>
+      <span class="ff-hint"><kbd>enter</kbd> open selected item</span>
+      <span class="ff-hint"><kbd>ctrl + j</kbd> go to next result</span>
+      <span class="ff-hint"><kbd>ctrl + k</kbd> go to previous result</span>
+    </div>
+
   </div>
   <!-- Setting Overlay -->
   <div class="ff-overlay hidden" id="setting-overlay">
     <div class="ff-buttons">
-      <button class="ff-pill-btn" id="saveSettingsButton">save</button>
+      <button style="display: none;" class="ff-pill-btn" id="saveSettingsButton">Save Changes</button>
       <div class="action-btns " id="actionBtnsSettings">
         <button class="btn confirm-btn confirmDeleteBtn" id="confirmSettingsButton" aria-label="Confirm delete">
           <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--color-text-success)"
