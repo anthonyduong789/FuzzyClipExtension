@@ -73,7 +73,7 @@ async function initializeIframe() {
     setWrapperPosition(5, 5);
     console.log("No top or left setting found, defaulting to 5px");
   }
-  
+
 
 
 
@@ -163,20 +163,24 @@ function handlMessages() {
     }
   });
 }
+
+
+function toggleIframe() {
+  if (wrapper.style.display == 'none') {
+    wrapper.style.display = 'flex';
+    iframe.focus();
+    iframe.contentWindow.postMessage({ type: "FROM_CONTENT", data: "world" }, "*")
+  } else {
+    wrapper.style.display = 'none';
+  }
+}
+
 function handleKeyMaps() {
   // removes toggles it to remove the element
   document.addEventListener('keydown', function (event) {
     if (wrapper) {
       if (event.ctrlKey && event.key === 'q') {
-        console.log("Ctrl q triggered", wrapper.style.display)
-        if (wrapper.style.display == 'none') {
-          wrapper.style.display = 'flex';
-          iframe.focus();
-          iframe.contentWindow.postMessage({ type: "FROM_CONTENT", data: "world" }, "*")
-
-        } else {
-          wrapper.style.display = 'none';
-        }
+        toggleIframe();
       }
     }
   })
@@ -239,7 +243,7 @@ function setWrapperPosition(left, top) {
   console.log(wrapper.style.left, wrapper.style.top);
 }
 
-function clampHeight(newHeight){
+function clampHeight(newHeight) {
   return Math.min(Math.max(MIN_H, newHeight), window.innerHeight - 10)
 }
 
@@ -358,3 +362,16 @@ window.addEventListener("resize", () => {
   wrapper.style.width = `${newW}px`
 
 });
+
+
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "TOGGLE_PANEL") {
+    if (wrapper) {
+      toggleIframe();
+    }
+  }
+});
+
+
