@@ -57,15 +57,14 @@ async function initializeIframe() {
   }
   if (results.personal_settings) personal_settings = results.personal_settings
   if (personal_settings.height !== undefined && personal_settings.width !== undefined) {
-    wrapper.style.height = `${personal_settings.height}px`;
-    wrapper.style.width = `${personal_settings.width}px`;
+    wrapper.style.height = `${clampHeight(personal_settings.height)}px`;
+    wrapper.style.width = `${clampWidth(personal_settings.width)}px`;
   }
   else {
-    wrapper.style.height = '700px';
-    wrapper.style.width = '500px';
+    wrapper.style.height = `${clampHeight(700)}px`;
+    wrapper.style.width = `${clampWidth(500)}px`
     console.log('No height or width setting found, defaulting to 700px x 500px');
   }
-
   if (personal_settings.top !== undefined && personal_settings.left !== undefined) {
     let pos = clampPosition(personal_settings.left, personal_settings.top);
     setWrapperPosition(pos.left, pos.top);
@@ -74,6 +73,12 @@ async function initializeIframe() {
     setWrapperPosition(5, 5);
     console.log("No top or left setting found, defaulting to 5px");
   }
+  
+
+
+
+
+
 
   window.addEventListener('message', async (event) => {
     if (event.data?.action !== 'iframeReady') return;
@@ -215,8 +220,8 @@ let offsetX, offsetY;
  * @returns {left: number, top: number}
  */
 function clampPosition(left, top) {
-  const maxLeft = Math.max(0, window.innerWidth - personal_settings.width);
-  const maxTop = Math.max(0, window.innerHeight - personal_settings.height);
+  const maxLeft = Math.max(4, window.innerWidth - personal_settings.width - 2);
+  const maxTop = Math.max(2, window.innerHeight - personal_settings.height - 2);
   console.log("Max left:", maxLeft, "Max top:", maxTop);
 
   return {
@@ -225,11 +230,21 @@ function clampPosition(left, top) {
   };
 }
 
+
+
 function setWrapperPosition(left, top) {
   const pos = clampPosition(left, top);
   wrapper.style.left = `${pos.left}px`;
   wrapper.style.top = `${pos.top}px`;
   console.log(wrapper.style.left, wrapper.style.top);
+}
+
+function clampHeight(newHeight){
+  return Math.min(Math.max(MIN_H, newHeight), window.innerHeight - 10)
+}
+
+function clampWidth(newWidth) {
+  return Math.min(Math.max(MIN_W, newWidth), window.innerWidth - 5)
 }
 
 function makeDraggable(e) {
@@ -282,25 +297,25 @@ function makeHandle(el, resizeW, resizeH) {
     const startH = wrapper.offsetHeight;
     // const startRight = window.innerWidth - wrapper.getBoundingClientRect().right; // distance from right edge of viewport
 
+    let wrapperRect = wrapper.getBoundingClientRect();
+    console.log(`starting wrapper pos ${wrapperRect.top} ${wrapper.left}`)
     startRight = window.innerWidth - wrapper.getBoundingClientRect().right; // distance from right edge of viewport
     wrapper.style.right = startRight + 'px'
     wrapper.style.left = 'unset'; // 👈 clear any left value
 
     wrapper.style.willChange = 'width';
     wrapper.classList.add('active');
-
-
     console.log("starting right position:", startRight);
 
     function onMove(e) {
       if (resizeW) {
         // const newW = Math.max(MIN_W, startW + (e.clientX - startX));
-        const newW = Math.max(MIN_W, startW + (startX - e.clientX)); // invert horizontal movement  
+        const newW = clampWidth(startW + (startX - e.clientX))
         wrapper.style.width = newW + 'px';
         wrapper.style.right = startRight + 'px'
       }
       if (resizeH) {
-        const newH = Math.max(MIN_H, startH + (e.clientY - startY));
+        const newH = clampHeight(startH + (e.clientY - startY))
         console.log("New height:", newH, "min height:", MIN_H);
         wrapper.style.height = newH + 'px';
       }
@@ -315,9 +330,13 @@ function makeHandle(el, resizeW, resizeH) {
       // pointerup
       wrapper.style.willChange = 'auto';
       wrapper.classList.remove('active');
-
+      const rect = wrapper.getBoundingClientRect();
+      console.log("new left", rect.left)
+      console.log("new top", rect.top)
       personal_settings.height = Number(String(wrapper.style.height).replace(/[^\d.-]/g, ""));
       personal_settings.width = Number(String(wrapper.style.width).replace(/[^\d.-]/g, ""));
+      personal_settings.top = rect.top
+      personal_settings.left = rect.left
       console.log("storing personal_settings", personal_settings);
       storeData('personal_settings', personal_settings);
     }
@@ -333,4 +352,9 @@ topBar.addEventListener('mousedown', (e) => {
 
 window.addEventListener("resize", () => {
   setWrapperPosition(personal_settings.left, personal_settings.top);
+  let newH = clampHeight(wrapper.offsetHeight)
+  let newW = clampWidth(wrapper.offsetWidth)
+  wrapper.style.height = `${newH}px`
+  wrapper.style.width = `${newW}px`
+
 });

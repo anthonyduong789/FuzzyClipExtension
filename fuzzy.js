@@ -729,7 +729,7 @@ function initDeleteMode() {
 // Keyboard shortcuts
 // =============================================================
 
-function initKeyboard() {
+function intializeKeyMaps() {
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === '/') {
       showHotKeys();
@@ -743,7 +743,7 @@ function initKeyboard() {
 
     if (e.ctrlKey && e.key === 'q') input.focus();
 
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' || (e.ctrlKey && e.key === 'q')) {
       window.parent.postMessage({ action: 'hide-iframe' }, '*');
     }
 
@@ -918,7 +918,7 @@ function intializeApp() {
       personal_settings = event.data.personal_settings
       console.log('personal_settings', personal_settings);
       render(search(input.value));
-      initKeyboard();
+      intializeKeyMaps();
       initSearch();
     }
   });
