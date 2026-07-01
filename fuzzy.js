@@ -931,13 +931,10 @@ function intializeApp() {
 // =============================================================
 // Boot
 // =============================================================
-
 initAddButton();
 initDeleteMode();
 intializeApp();
 initColorPicker();
-
-
 resetButton.addEventListener('click', () => {
   RAW_DATA2 = [{ key: 'example', value: 'example' },
   { key: 'example1', value: 'example1' },];
