@@ -11,7 +11,7 @@ wrapper.style.cssText = `
       height: 700px;
       width: 500px;
       border-radius: 10px;
-      z-index: 10000;
+      z-index: 2147483647;
       will-change: transform;
       transition: transform 0.6s linear(0, 0.08, 0.52, 1.1, 0.98, 1);
   `;
@@ -38,6 +38,7 @@ topBar.innerHTML = `
 
 // Iframe
 const iframe = document.createElement('iframe');
+iframe.allow = "clipboard-read; clipboard-write"
 const test = "content.js file exposed"
 async function initializeIframe() {
   iframe.style.cssText = `
@@ -165,11 +166,6 @@ function handlMessages() {
       case 'update-data':
         storeData(event.data.key, event.data.data)
         loadAllData()
-      case 'copy-to-clipboard':
-        navigator.clipboard.writeText(event.data.data.text).then(() => {
-        }).catch(err => {
-          console.error('Error copying to clipboard: ', err);
-        });
 
       default:
         break;

@@ -467,7 +467,11 @@ function attachItemListeners() {
 
     // ---- Copy ----
     copyBtn.addEventListener('click', () => {
-      postMessageToParent('copy-to-clipboard', { text: contentText.dataset.content });
+      navigator.clipboard.writeText(contentText.dataset.content).then(() => {
+      }).catch(err => {
+        console.error('Error copying to clipboard: ', err);
+      });
+
       copyBtn.classList.add('copied');
       clearTimeout(copyTimer);
       copyTimer = setTimeout(() => copyBtn.classList.remove('copied'), 500);
@@ -767,7 +771,11 @@ function intializeKeyMaps() {
     if (e.ctrlKey && e.key === 'c') {
       const item = visibleResults[selectedIndex];
       if (!item) return;
-      postMessageToParent('copy-to-clipboard', { text: item.value });
+      navigator.clipboard.writeText(item.value).then(() => {
+      }).catch(err => {
+        console.error('Error copying to clipboard: ', err);
+      });
+
       const copyBtn = resultsEl.children[selectedIndex]?.querySelector('.copy-btn');
       if (copyBtn) {
         copyBtn.classList.add('copied');
@@ -942,3 +950,9 @@ resetButton.addEventListener('click', () => {
   storageManager('update-data', 'personal_settings', personal_settings);
   render(search(input.value));
 })
+
+
+
+document.addEventListener("click", e => {
+  console.log("clicked", e.target);
+}, true);
