@@ -57,8 +57,13 @@ async function initializeIframe() {
   }
   if (results.personal_settings) personal_settings = results.personal_settings
   if (personal_settings.height !== undefined && personal_settings.width !== undefined) {
+    console.log("wrapper style height before clamp", wrapper.style.height)
+    console.log("wrapper style width before clamp", wrapper.style.width)
     wrapper.style.height = `${clampHeight(personal_settings.height)}px`;
     wrapper.style.width = `${clampWidth(personal_settings.width)}px`;
+    console.log("wrapper style height after clamp", wrapper.style.height)
+    console.log("wrapper style width after clamp", wrapper.style.width)
+
   }
   else {
     wrapper.style.height = `${clampHeight(700)}px`;
@@ -66,8 +71,16 @@ async function initializeIframe() {
     console.log('No height or width setting found, defaulting to 700px x 500px');
   }
   if (personal_settings.top !== undefined && personal_settings.left !== undefined) {
-    let pos = clampPosition(personal_settings.left, personal_settings.top);
-    setWrapperPosition(pos.left, pos.top);
+
+    console.log("wrapper style height before clamp position", wrapper.style.height)
+    console.log("wrapper style width before clamp positon", wrapper.style.width)
+
+    setWrapperPosition(personal_settings.left, personal_settings.top);
+
+    console.log("wrapper style height AFTER clamp position", wrapper.style.height)
+    console.log("wrapper style width AFTER clamp positon", wrapper.style.width)
+
+
   }
   else {
     setWrapperPosition(5, 5);
@@ -344,7 +357,6 @@ function makeHandle(el, resizeW, resizeH) {
       console.log("storing personal_settings", personal_settings);
       storeData('personal_settings', personal_settings);
     }
-
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerup', onUp);
   });
@@ -352,19 +364,13 @@ function makeHandle(el, resizeW, resizeH) {
 topBar.addEventListener('mousedown', (e) => {
   makeDraggable(e);
 });
-
-
 window.addEventListener("resize", () => {
   setWrapperPosition(personal_settings.left, personal_settings.top);
-  let newH = clampHeight(wrapper.offsetHeight)
-  let newW = clampWidth(wrapper.offsetWidth)
+  let newH = clampHeight(personal_settings.height)
+  let newW = clampWidth(personal_settings.width)
   wrapper.style.height = `${newH}px`
   wrapper.style.width = `${newW}px`
-
 });
-
-
-
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "TOGGLE_PANEL") {

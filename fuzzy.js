@@ -5,6 +5,7 @@
 // personal_settings = {"highlight color": "selectedColor"}
 // 
 // =============================================================
+// TODO: hello
 
 let RAW_DATA2 = [
   { key: 'example', value: 'example' },
@@ -323,7 +324,7 @@ function deleteBtnsHTML() {
 function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? 'checked' : '';
   return `
-    <div class="itemContainer ${i === 0 ? 'selected' : ''}">
+    <div class="itemContainer">
       <div class="item">
         <div class="checkbox-group ${deleteMode ? 'active' : ''}">
           <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
@@ -360,10 +361,13 @@ function render(results) {
   visibleResults = results;
   selectedIndex = 0;
   injectMatchStyle(personal_settings.highlightColor);
-  resultsEl.innerHTML = results.map(resultItemHTML).join('');
+  resultsEl.innerHTML = results.map((item, index) => {
+    return resultItemHTML(item, index);
+  }).join('');
   updateResultCount();
   attachItemListeners();
   syncSelectAllButton();
+  updateSelected(selectedIndex);
 }
 
 function updateResultCount() {
@@ -376,10 +380,10 @@ function syncSelectAllButton() {
   selectToDelete.textContent = selectAll ? 'Deselect All' : 'Select All';
 }
 
-function updateSelected() {
-  resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
-    el.classList.toggle('selected', i === selectedIndex);
-  });
+function updateSelected(newIndex) {
+  resultsEl.children[selectedIndex].classList.remove('selected');
+  resultsEl.children[newIndex].classList.add('selected');
+  selectedIndex = newIndex
   const sel = resultsEl.querySelector('.selected');
   if (sel) sel.scrollIntoView({ block: 'nearest' });
 }
@@ -419,8 +423,7 @@ function attachItemListeners() {
 
     // ---- Item click (select) ----
     el.querySelector('.item').addEventListener('click', () => {
-      selectedIndex = i;
-      updateSelected();
+      updateSelected(i);
     });
 
     // ---- Trash / delete single ----
@@ -453,14 +456,12 @@ function attachItemListeners() {
       el.classList.remove('edit');
     });
 
-    console.log(confirmEditBtn);
     confirmEditBtn.addEventListener('click', () => {
       const newKey = inputKey.value.trim();
       const newValue = inputContent.value;
       if (!newKey) return;
       RAW_DATA2[rawIndex] = { key: newKey, value: newValue };
       storageManager('update-data', 'notes', RAW_DATA2);
-      console.log("updated-data");
       render(search(input.value));
     });
 
@@ -749,14 +750,14 @@ function intializeKeyMaps() {
 
     if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'j')) {
       e.preventDefault();
-      selectedIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
-      updateSelected();
+      let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
+      updateSelected(newIndex);
     }
 
     if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'k')) {
       e.preventDefault();
-      selectedIndex = Math.max(selectedIndex - 1, 0);
-      updateSelected();
+      let newIndex = Math.max(selectedIndex - 1, 0);
+      updateSelected(newIndex);
     }
 
     if (e.key === 'Enter') {
@@ -914,9 +915,7 @@ function intializeApp() {
     }
     if (event.data.action === 'initializeIframe') {
       RAW_DATA2 = event.data.notes;
-      console.log('RAW_DATA2', RAW_DATA2);
       personal_settings = event.data.personal_settings
-      console.log('personal_settings', personal_settings);
       render(search(input.value));
       intializeKeyMaps();
       initSearch();
