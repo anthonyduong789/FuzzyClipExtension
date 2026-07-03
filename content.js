@@ -377,3 +377,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
+// Close on outside click
+document.addEventListener('click', (event) => {
+  // Check if popup is open AND the click is outside the popup and button
+  if (wrapper.style.display === 'flex' && 
+      !wrapper.contains(event.target)) {
+    wrapper.style.display = 'none';
+  }
+});

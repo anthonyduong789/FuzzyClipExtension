@@ -344,7 +344,7 @@
 .ff-kbd {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;
-  color: #b0a99f;
+  color: #6b6660;
   background: #f0ede8;
   border: 1px solid #ddd8d0;
   border-radius: 5px;
@@ -460,6 +460,8 @@
   border-left: 4px solid var(--accent);
 }
 
+
+
 .item.selected {
   /* border-left: 2px solid var(--accent); */
   /* background: rgba(255, 255, 255, 0.06); */
@@ -467,7 +469,8 @@
 }
 
 .itemContainer.selected {
-  /* background: #1a1a1a; */
+  background: rgba(0,0,0,0.04);
+
 }
 
 .itemContainer.selected .resultText {
@@ -817,14 +820,6 @@
   display: flex;
 }
 
-.checkbox-group {
-  display: hidden;
-}
-
-.checkbox-group.active {
-  display: block;
-}
-
 .hidden {
   width: 0;
   height: 0;
@@ -914,7 +909,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: auto; /* This forces the item to the right side */
+  /* margin-left: auto;  */
 }
 .settings-button svg {
   border: none;
@@ -922,3 +917,9 @@
   height: 25px;
   stroke: #5a534a;
 }
+
+
+.itemContainer {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+.itemContainer:last-child { border-bottom: none; }

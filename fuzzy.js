@@ -381,8 +381,8 @@ function syncSelectAllButton() {
 }
 
 function updateSelected(newIndex) {
-  resultsEl.children[selectedIndex].classList.remove('selected');
-  resultsEl.children[newIndex].classList.add('selected');
+  resultsEl.children[selectedIndex]?.classList.remove('selected');
+  resultsEl.children[newIndex]?.classList.add('selected');
   selectedIndex = newIndex
   const sel = resultsEl.querySelector('.selected');
   if (sel) sel.scrollIntoView({ block: 'nearest' });
@@ -715,7 +715,9 @@ function initDeleteMode() {
   });
 
   confirmDeleteSelectedBtn.addEventListener('click', () => {
+    closeDeleteConfirm();
     if (checkboxes.size === 0) return;
+    console.log("checkboxes + sizes")
     const deleted = checkboxes.size;
     // Filter out checked items (checkboxes stores RAW_DATA2 indexes)
     RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(i));
@@ -952,7 +954,3 @@ resetButton.addEventListener('click', () => {
 })
 
 
-
-document.addEventListener("click", e => {
-  console.log("clicked", e.target);
-}, true);
