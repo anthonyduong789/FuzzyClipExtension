@@ -35,7 +35,6 @@
   <!-- Default Overlay -->
   <div class="ff-overlay" id="default-overlay">
     <div class="ff-buttons">
-      <button id="resetData">Reset Data</button>
       <button class="ff-pill-btn" id="addNotesButton">
         <svg viewBox="0 0 24 24">
           <path d="M12 5v14M5 12h14" />
@@ -136,7 +135,7 @@
   </div>
   <!-- Hotkey Overlay -->
   <div class="ff-overlay hidden" id="hotkey-overlay">
-    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px;" class="ff-buttons">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px;">
       <span class="ff-hint"><kbd>ctrl+c</kbd> copy selected content to clipboard</span>
       <span class="ff-hint"><kbd>enter</kbd> open selected item</span>
       <span class="ff-hint"><kbd>ctrl + j</kbd> go to next result</span>
@@ -148,6 +147,7 @@
   <!-- Setting Overlay -->
   <div class="ff-overlay hidden" id="setting-overlay">
     <div class="ff-buttons">
+      <button id="resetData">Reset Data</button>
       <button style="display: none;" class="ff-pill-btn" id="saveSettingsButton">Save Changes</button>
       <div class="action-btns " id="actionBtnsSettings">
         <button class="btn confirm-btn confirmDeleteBtn" id="confirmSettingsButton" aria-label="Confirm delete">
@@ -190,9 +190,8 @@
       <span class="ff-hint"><kbd>↑↓</kbd> navigate</span>
       <span class="ff-hint"><kbd>↵</kbd> open</span>
       <span class="ff-hint"><kbd>esc</kbd> close</span>
-      <span class="ff-hint"><kbd>ctrl+/</kbd></span>
+      <span class="ff-hint"><kbd>ctrl+/</kbd> hotkeys</span>
     </div>
-    <span class="ff-count" id="ff-count">5 results</span>
   </div>
 </body>
 

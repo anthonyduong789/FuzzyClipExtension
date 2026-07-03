@@ -945,12 +945,29 @@ initDeleteMode();
 intializeApp();
 initColorPicker();
 resetButton.addEventListener('click', () => {
-  RAW_DATA2 = [{ key: 'example', value: 'example' },
-  { key: 'example1', value: 'example1' },];
-  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
+  RAW_DATA2 = [
+    { key: 'example', value: 'example' },
+    { key: 'example1', value: 'example1' },
+    { key: 'example2', value: 'a second example variant' },
+    { key: 'Hello', value: 'Hello world' },
+    { key: 'hello', value: 'hello there' },
+    { key: 'helllo', value: 'typo test - extra l' },
+    { key: 'Hallo', value: 'German greeting' },
+    { key: 'javascript snippet', value: 'const x = () => console.log("test")' },
+    { key: 'js snippet', value: 'short alias for the above' },
+    { key: 'meeting notes', value: 'Discussed Q3 roadmap and budget' },
+    { key: 'grocery list', value: 'milk, eggs, bread, coffee' },
+    { key: 'todo', value: 'finish fuzzy search implementation' },
+    { key: 'password reset', value: 'security question flow notes' },
+    { key: 'quick brown fox', value: 'jumps over the lazy dog' },
+    { key: 'api key', value: 'sk-test-1234567890abcdef' },
+    { key: '', value: 'empty key edge case' },
+    { key: 'a', value: 'single character key' },
+    { key: 'very long key name that goes on for a while to test truncation behavior', value: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered' },
+  ];
+  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
   storageManager('update-data', 'notes', RAW_DATA2);
   storageManager('update-data', 'personal_settings', personal_settings);
   render(search(input.value));
-})
-
+});
 
