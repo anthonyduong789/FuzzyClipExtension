@@ -1,16 +1,19 @@
 // =============================================================
 // State
-// google storage
-// notes = RAW_DATA2-> [{}, {}, {}]
-// personal_settings = {"highlight color": "selectedColor"}
-// 
 // =============================================================
-// TODO: hello
 
+// Data shape:
+// {
+//   id: "1",
+//   title: "React hooks tutorial",
+//   content: "Learn useState and useEffect",
+//   tags: ["react", "frontend", "javascript"]
+// }
 let RAW_DATA2 = [
-  { key: 'example', value: 'example' },
-  { key: 'example1', value: 'example1' },
+  { id: crypto.randomUUID(), title: 'example', content: 'example', tags: [] },
+  { id: crypto.randomUUID(), title: 'example1', content: 'example1', tags: [] },
 ];
+
 
 let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
 let new_personal_settings = {};
@@ -66,12 +69,17 @@ const confirmSettingsButton = document.getElementById('confirmSettingsButton');
 const cancelSettingsButton = document.getElementById('cancelSettingsButton');
 const returnFromSettingsButton = document.getElementById('returnFromSettings');
 
-// reset 
+// reset
 const resetButton = document.getElementById('resetData');
 
 // =============================================================
 // Utils
 // =============================================================
+
+/** Generate a unique id for a new note */
+function generateId() {
+  return crypto.randomUUID();
+}
 
 /** Escape HTML for safe insertion into templates */
 function escHtml(s) {
@@ -219,8 +227,8 @@ const algos = {
 
 /**
  * Search RAW_DATA2 with the active algorithm.
- * Returns results with a stable `rawIndex` pointing to the item's
- * position in RAW_DATA2 at the time of the search.
+ * Matches against `title`. Returns results with a stable `rawIndex`
+ * pointing to the item's position in RAW_DATA2 at the time of the search.
  */
 function search(query) {
   const algo = algos[currentAlgo].fn;
@@ -229,11 +237,13 @@ function search(query) {
 
   for (let i = 0; i < RAW_DATA2.length; i++) {
     const note = RAW_DATA2[i];
-    const res = algo(trimmed, note.key);
+    const res = algo(trimmed, note.title);
     if (res.matched) {
       results.push({
-        key: note.key,
-        value: note.value,
+        id: note.id,
+        title: note.title,
+        content: note.content,
+        tags: note.tags || [],
         score: res.score,
         positions: res.positions,
         rawIndex: i,          // stable index into RAW_DATA2
@@ -321,6 +331,11 @@ function deleteBtnsHTML() {
   </div>`;
 }
 
+function tagsHTML(tags) {
+  if (!tags || tags.length === 0) return '';
+  return `<div class="tags-group">${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>`;
+}
+
 function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? 'checked' : '';
   return `
@@ -332,8 +347,9 @@ function resultItemHTML(r, i) {
         <input class="input-key"/>
         <span class="resultText"
           data-raw-index="${r.rawIndex}"
-          data-key="${escHtml(r.key)}"
-        >${highlight(r.key, r.positions)}</span>
+          data-id="${escHtml(r.id)}"
+          data-title="${escHtml(r.title)}"
+        >${highlight(r.title, r.positions)}</span>
         ${copyIconHTML()}
         <div class="edit-group">
           <button class="edit-btn btn">
@@ -347,7 +363,8 @@ function resultItemHTML(r, i) {
       </div>
       <div class="itemContent">
         <textarea class="input-content"></textarea>
-        <p class="contentText" data-content="${escHtml(r.value)}">${escHtml(r.value)}</p>
+        <p class="contentText" data-content="${escHtml(r.content)}">${escHtml(r.content)}</p>
+        ${tagsHTML(r.tags)}
       </div>
       ${editBtnsHTML()}
     </div>`;
@@ -361,6 +378,7 @@ function render(results) {
   visibleResults = results;
   selectedIndex = 0;
   injectMatchStyle(personal_settings.highlightColor);
+  console.log(results);
   resultsEl.innerHTML = results.map((item, index) => {
     return resultItemHTML(item, index);
   }).join('');
@@ -447,7 +465,7 @@ function attachItemListeners() {
 
     // ---- Edit ----
     editBtn.addEventListener('click', () => {
-      inputKey.value = resultText.dataset.key;
+      inputKey.value = resultText.dataset.title;
       inputContent.value = contentText.dataset.content;
       el.classList.add('edit');
     });
@@ -457,10 +475,16 @@ function attachItemListeners() {
     });
 
     confirmEditBtn.addEventListener('click', () => {
-      const newKey = inputKey.value.trim();
-      const newValue = inputContent.value;
-      if (!newKey) return;
-      RAW_DATA2[rawIndex] = { key: newKey, value: newValue };
+      const newTitle = inputKey.value.trim();
+      const newContent = inputContent.value;
+      if (!newTitle) return;
+      const existing = RAW_DATA2[rawIndex];
+      RAW_DATA2[rawIndex] = {
+        id: existing.id,
+        title: newTitle,
+        content: newContent,
+        tags: existing.tags || [],
+      };
       storageManager('update-data', 'notes', RAW_DATA2);
       render(search(input.value));
     });
@@ -672,14 +696,14 @@ function createAddBox() {
         <line x1="11" y1="1" x2="1" y2="11"/>
         </svg>
       </button>
-    </div> 
+    </div>
     `;
 
   el.querySelector('.confirm-btn').addEventListener('click', () => {
-    const key = el.querySelector('.input-key').value.trim();
-    const value = el.querySelector('.input-content').value;
-    if (!key) return;
-    RAW_DATA2.push({ key: key, value: value })
+    const title = el.querySelector('.input-key').value.trim();
+    const content = el.querySelector('.input-content').value;
+    if (!title) return;
+    RAW_DATA2.push({ id: generateId(), title, content, tags: [] });
     storageManager('update-data', 'notes', RAW_DATA2);
     closeAddBox();
     render(search(input.value));
@@ -717,7 +741,6 @@ function initDeleteMode() {
   confirmDeleteSelectedBtn.addEventListener('click', () => {
     closeDeleteConfirm();
     if (checkboxes.size === 0) return;
-    console.log("checkboxes + sizes")
     const deleted = checkboxes.size;
     // Filter out checked items (checkboxes stores RAW_DATA2 indexes)
     RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(i));
@@ -773,7 +796,7 @@ function intializeKeyMaps() {
     if (e.ctrlKey && e.key === 'c') {
       const item = visibleResults[selectedIndex];
       if (!item) return;
-      navigator.clipboard.writeText(item.value).then(() => {
+      navigator.clipboard.writeText(item.content).then(() => {
       }).catch(err => {
         console.error('Error copying to clipboard: ', err);
       });
@@ -834,7 +857,7 @@ function initAddButton() {
 }
 
 // =============================================================
-// settings 
+// settings
 // =============================================================
 
 function showHotKeys() {
@@ -946,28 +969,27 @@ intializeApp();
 initColorPicker();
 resetButton.addEventListener('click', () => {
   RAW_DATA2 = [
-    { key: 'example', value: 'example' },
-    { key: 'example1', value: 'example1' },
-    { key: 'example2', value: 'a second example variant' },
-    { key: 'Hello', value: 'Hello world' },
-    { key: 'hello', value: 'hello there' },
-    { key: 'helllo', value: 'typo test - extra l' },
-    { key: 'Hallo', value: 'German greeting' },
-    { key: 'javascript snippet', value: 'const x = () => console.log("test")' },
-    { key: 'js snippet', value: 'short alias for the above' },
-    { key: 'meeting notes', value: 'Discussed Q3 roadmap and budget' },
-    { key: 'grocery list', value: 'milk, eggs, bread, coffee' },
-    { key: 'todo', value: 'finish fuzzy search implementation' },
-    { key: 'password reset', value: 'security question flow notes' },
-    { key: 'quick brown fox', value: 'jumps over the lazy dog' },
-    { key: 'api key', value: 'sk-test-1234567890abcdef' },
-    { key: '', value: 'empty key edge case' },
-    { key: 'a', value: 'single character key' },
-    { key: 'very long key name that goes on for a while to test truncation behavior', value: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered' },
+    { id: generateId(), title: 'example', content: 'example', tags: [] },
+    { id: generateId(), title: 'example1', content: 'example1', tags: [] },
+    { id: generateId(), title: 'example2', content: 'a second example variant', tags: [] },
+    { id: generateId(), title: 'Hello', content: 'Hello world', tags: [] },
+    { id: generateId(), title: 'hello', content: 'hello there', tags: [] },
+    { id: generateId(), title: 'helllo', content: 'typo test - extra l', tags: [] },
+    { id: generateId(), title: 'Hallo', content: 'German greeting', tags: [] },
+    { id: generateId(), title: 'javascript snippet', content: 'const x = () => console.log("test")', tags: ['javascript'] },
+    { id: generateId(), title: 'js snippet', content: 'short alias for the above', tags: ['javascript'] },
+    { id: generateId(), title: 'meeting notes', content: 'Discussed Q3 roadmap and budget', tags: ['work'] },
+    { id: generateId(), title: 'grocery list', content: 'milk, eggs, bread, coffee', tags: [] },
+    { id: generateId(), title: 'todo', content: 'finish fuzzy search implementation', tags: ['work'] },
+    { id: generateId(), title: 'password reset', content: 'security question flow notes', tags: [] },
+    { id: generateId(), title: 'quick brown fox', content: 'jumps over the lazy dog', tags: [] },
+    { id: generateId(), title: 'api key', content: 'sk-test-1234567890abcdef', tags: [] },
+    { id: generateId(), title: '', content: 'empty key edge case', tags: [] },
+    { id: generateId(), title: 'a', content: 'single character key', tags: [] },
+    { id: generateId(), title: 'very long key name that goes on for a while to test truncation behavior', content: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered', tags: [] },
   ];
   personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
   storageManager('update-data', 'notes', RAW_DATA2);
   storageManager('update-data', 'personal_settings', personal_settings);
   render(search(input.value));
 });
-

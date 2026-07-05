@@ -198,14 +198,14 @@ initializeIframe();
 handlMessages();
 handleKeyMaps();
 function storeData(key, value) {
-  chrome.storage.local.set({ [key]: value }, () => {
+  chrome.storage.sync.set({ [key]: value }, () => {
     console.log('Saved!')
   })
 }
 
 async function loadData(key) {
   return new Promise((resolve) => {
-    chrome.storage.local.get(key, (result) => {
+    chrome.storage.sync.get(key, (result) => {
       resolve(result[key]);
     });
   });
@@ -215,7 +215,7 @@ async function loadAllData() {
   try {
     // We MUST await here to get the actual object, 
     // otherwise we just return the pending Promise.
-    const allData = await chrome.storage.local.get(null);
+    const allData = await chrome.storage.sync.get(null);
     // Example: Accessing specific keys from the result
 
     return allData;
