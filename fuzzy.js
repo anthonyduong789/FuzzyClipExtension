@@ -1,19 +1,13 @@
-// =============================================================
-// State
-// =============================================================
-
-// Data shape:
-// {
-//   id: "1",
-//   title: "React hooks tutorial",
-//   content: "Learn useState and useEffect",
-//   tags: ["react", "frontend", "javascript"]
-// }
+// fuzz.js
+// 
+// runs to control the direct iframe of fuzz.html
+// 
 let RAW_DATA2 = [
   { id: crypto.randomUUID(), title: 'example', content: 'example', tags: [] },
   { id: crypto.randomUUID(), title: 'example1', content: 'example1', tags: [] },
 ];
 
+let tags = []
 
 let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
 let new_personal_settings = {};
@@ -226,11 +220,33 @@ const algos = {
 // =============================================================
 
 /**
- * Search RAW_DATA2 with the active algorithm.
- * Matches against `title`. Returns results with a stable `rawIndex`
- * pointing to the item's position in RAW_DATA2 at the time of the search.
+ * Search RAW_DATA2 using the active fuzzy-match algorithm.
+ *
+ * NOTE: if `query` starts with '#', a `tagQuery` is derived but not
+ * currently used — the function still falls through to matching
+ * against `note.title` for every note. Tag-filtering isn't wired up yet.
+ *
+ * @param {string} query - Raw search input from the search box. Leading/
+ *   trailing whitespace is trimmed before matching; a leading '#' is
+ *   intended to trigger tag-based filtering (not yet implemented).
+ * @returns {Array<{
+ *   id: string,
+ *   title: string,
+ *   content: string,
+ *   tags: string[],
+ *   score: number,
+ *   positions: number[],
+ *   rawIndex: number
+ * }>} Matching notes, sorted by descending match score when `query` is
+ *   non-empty, capped at 200 results. `rawIndex` is the note's position
+ *   in RAW_DATA2 at the time of this call.
  */
 function search(query) {
+  if (query[0] === '#') {
+    let tagQuery = query.slice(0);
+   
+    return;
+  }
   const algo = algos[currentAlgo].fn;
   const results = [];
   const trimmed = query.trim();
@@ -949,6 +965,8 @@ function intializeApp() {
     if (event.data.action === 'initializeIframe') {
       RAW_DATA2 = event.data.notes;
       personal_settings = event.data.personal_settings
+      tags = event.data.tags
+      console.log("tags", tags)
       render(search(input.value));
       intializeKeyMaps();
       initSearch();
@@ -967,29 +985,37 @@ initAddButton();
 initDeleteMode();
 intializeApp();
 initColorPicker();
-resetButton.addEventListener('click', () => {
-  RAW_DATA2 = [
-    { id: generateId(), title: 'example', content: 'example', tags: [] },
-    { id: generateId(), title: 'example1', content: 'example1', tags: [] },
-    { id: generateId(), title: 'example2', content: 'a second example variant', tags: [] },
-    { id: generateId(), title: 'Hello', content: 'Hello world', tags: [] },
-    { id: generateId(), title: 'hello', content: 'hello there', tags: [] },
-    { id: generateId(), title: 'helllo', content: 'typo test - extra l', tags: [] },
-    { id: generateId(), title: 'Hallo', content: 'German greeting', tags: [] },
-    { id: generateId(), title: 'javascript snippet', content: 'const x = () => console.log("test")', tags: ['javascript'] },
-    { id: generateId(), title: 'js snippet', content: 'short alias for the above', tags: ['javascript'] },
-    { id: generateId(), title: 'meeting notes', content: 'Discussed Q3 roadmap and budget', tags: ['work'] },
-    { id: generateId(), title: 'grocery list', content: 'milk, eggs, bread, coffee', tags: [] },
-    { id: generateId(), title: 'todo', content: 'finish fuzzy search implementation', tags: ['work'] },
-    { id: generateId(), title: 'password reset', content: 'security question flow notes', tags: [] },
-    { id: generateId(), title: 'quick brown fox', content: 'jumps over the lazy dog', tags: [] },
-    { id: generateId(), title: 'api key', content: 'sk-test-1234567890abcdef', tags: [] },
-    { id: generateId(), title: '', content: 'empty key edge case', tags: [] },
-    { id: generateId(), title: 'a', content: 'single character key', tags: [] },
-    { id: generateId(), title: 'very long key name that goes on for a while to test truncation behavior', content: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered', tags: [] },
-  ];
-  personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
-  storageManager('update-data', 'notes', RAW_DATA2);
-  storageManager('update-data', 'personal_settings', personal_settings);
-  render(search(input.value));
-});
+
+
+function resetData() {
+  resetButton.addEventListener('click', () => {
+    tags = ["one", "two", "there"]
+    RAW_DATA2 = [
+      { id: generateId(), title: 'example', content: 'example', tags: [] },
+      { id: generateId(), title: 'example1', content: 'example1', tags: [] },
+      { id: generateId(), title: 'example2', content: 'a second example variant', tags: [] },
+      { id: generateId(), title: 'Hello', content: 'Hello world', tags: [] },
+      { id: generateId(), title: 'hello', content: 'hello there', tags: [] },
+      { id: generateId(), title: 'helllo', content: 'typo test - extra l', tags: [] },
+      { id: generateId(), title: 'Hallo', content: 'German greeting', tags: [] },
+      { id: generateId(), title: 'javascript snippet', content: 'const x = () => console.log("test")', tags: ['javascript'] },
+      { id: generateId(), title: 'js snippet', content: 'short alias for the above', tags: ['javascript'] },
+      { id: generateId(), title: 'meeting notes', content: 'Discussed Q3 roadmap and budget', tags: ['work'] },
+      { id: generateId(), title: 'grocery list', content: 'milk, eggs, bread, coffee', tags: [] },
+      { id: generateId(), title: 'todo', content: 'finish fuzzy search implementation', tags: ['work'] },
+      { id: generateId(), title: 'password reset', content: 'security question flow notes', tags: [] },
+      { id: generateId(), title: 'quick brown fox', content: 'jumps over the lazy dog', tags: [] },
+      { id: generateId(), title: 'api key', content: 'sk-test-1234567890abcdef', tags: [] },
+      { id: generateId(), title: '', content: 'empty key edge case', tags: [] },
+      { id: generateId(), title: 'a', content: 'single character key', tags: [] },
+      { id: generateId(), title: 'very long key name that goes on for a while to test truncation behavior', content: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered', tags: [] },
+    ];
+    personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
+    storageManager('update-data', 'notes', RAW_DATA2);
+    storageManager('update-data', 'personal_settings', personal_settings);
+    storageManager('update-data', 'tags', tags);
+    render(search(input.value));
+  });
+}
+
+resetData();
