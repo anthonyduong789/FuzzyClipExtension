@@ -242,11 +242,6 @@ const algos = {
  *   in RAW_DATA2 at the time of this call.
  */
 function search(query) {
-  if (query[0] === '#') {
-    let tagQuery = query.slice(0);
-   
-    return;
-  }
   const algo = algos[currentAlgo].fn;
   const results = [];
   const trimmed = query.trim();
@@ -389,6 +384,11 @@ function resultItemHTML(r, i) {
 // =============================================================
 // Render
 // =============================================================
+
+
+function renderTags(query) {
+ console.log("renderTags", query) 
+}
 
 function render(results) {
   visibleResults = results;
@@ -839,7 +839,14 @@ function initSearch() {
   input.addEventListener(
     'input',
     debounce(() => {
+
+      let query = input.value.trim().toLowerCase();
+      if (query[0] === '#') {
+        renderTags(query);
+      }
+      else {
       render(search(input.value));
+      }
       requestAnimationFrame(() => {
         bindSelectAllListener();
 
