@@ -66,6 +66,10 @@ const returnFromSettingsButton = document.getElementById('returnFromSettings');
 // reset
 const resetButton = document.getElementById('resetData');
 
+// tags
+const tagDropDown = document.getElementById('tagDropdown');
+
+
 // =============================================================
 // Utils
 // =============================================================
@@ -106,6 +110,15 @@ function debounce(fn, ms) {
 // Search algorithms
 // =============================================================
 
+/**
+ * Fuzzy-matches a pattern against a string (fzf-style, case-insensitive,
+ * order-preserving). Scores favor start-of-string, consecutive, and
+ * post-separator/uppercase matches; penalizes late matches and long strings.
+ *
+ * @param {string} pattern - Pattern to search for.
+ * @param {string} str - String to search within.
+ * @returns {{matched: boolean, score?: number, positions?: number[]}}
+ */
 function fzfMatch(pattern, str) {
   if (!pattern) return { matched: true, score: 0, positions: [] };
   const p = pattern.toLowerCase();
@@ -241,6 +254,40 @@ const algos = {
  *   non-empty, capped at 200 results. `rawIndex` is the note's position
  *   in RAW_DATA2 at the time of this call.
  */
+
+function searchTags(query) {
+  const algo = algos[currentAlgo].fn;
+  const results = [];
+  const trimmed = query.trim();
+  for (let i = 0; i < tags.length; i++) {
+    const res = algo(trimmed, tags[i]);
+    if (res.matched) {
+      results.push({ tag: tags[i], score: res.score })
+    }
+  }
+  if (trimmed) results.sort((a, b) => b.score - a.score);
+  console.log("tag results", results)
+  return results
+
+}
+
+/**
+ * 
+ * @param {Array<{tag: string, score: number}>} tags 
+ */
+
+function displayTags(tags) {
+  let results = tags.map((item, i) => {
+    return `<div class="tag-option">
+      ${item.tag}
+    </div>`
+  }).join('')
+  console.log("display Tags", results)
+  tagDropDown.innerHTML = results
+
+
+}
+
 function search(query) {
   const algo = algos[currentAlgo].fn;
   const results = [];
@@ -387,7 +434,7 @@ function resultItemHTML(r, i) {
 
 
 function renderTags(query) {
- console.log("renderTags", query) 
+  console.log("renderTags", query)
 }
 
 function render(results) {
@@ -839,13 +886,12 @@ function initSearch() {
   input.addEventListener(
     'input',
     debounce(() => {
-
-      let query = input.value.trim().toLowerCase();
-      if (query[0] === '#') {
-        renderTags(query);
+      if (input.value[0] === '#') {
+        displayTags(searchTags(input.value.slice(1))
+        )
       }
       else {
-      render(search(input.value));
+        render(search(input.value));
       }
       requestAnimationFrame(() => {
         bindSelectAllListener();
