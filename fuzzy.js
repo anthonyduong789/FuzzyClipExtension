@@ -69,6 +69,7 @@ const resetButton = document.getElementById('resetData');
 // tags
 const tagDropDown = document.getElementById('tagDropdown');
 let selectedTagIndex = 0;
+let tagSelecteOn = false;
 
 
 // =============================================================
@@ -839,15 +840,32 @@ function intializeKeyMaps() {
     }
 
     if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'j')) {
+
+      if (tagSelecteOn) {
+        let newIndex = Math.min(selectedTagIndex + 1, tagDropDown.children.length)
+        tagDropDown.children[selectedTagIndex].classList.remove('selected')
+        tagDropDown.children[newIndex].classList.add('selected')
+        selectedTagIndex = newIndex
+      }
+      else {
+
+      }
       e.preventDefault();
       let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
       updateSelected(newIndex);
     }
 
     if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'k')) {
-      e.preventDefault();
-      let newIndex = Math.max(selectedIndex - 1, 0);
-      updateSelected(newIndex);
+      if (tagSelecteOn) {
+        let newIndex = Math.max(selectedTagIndex - 1, 0)
+        tagDropDown.children[selectedTagIndex].classList.remove('selected')
+        tagDropDown.children[newIndex].classList.add('selected')
+        selectedTagIndex = newIndex
+      } else {
+        e.preventDefault();
+        let newIndex = Math.max(selectedIndex - 1, 0);
+        updateSelected(newIndex);
+      }
     }
 
     if (e.key === 'Enter') {
@@ -885,9 +903,12 @@ function initSearch() {
     'input',
     debounce(() => {
       if (input.value[0] === '/') {
+        tagSelecteOn = true
         displayTags(searchTags(input.value.slice(1)))
       }
       else {
+        tagSelecteOn = false
+        displayTags([])
         render(search(input.value));
       }
       requestAnimationFrame(() => {
