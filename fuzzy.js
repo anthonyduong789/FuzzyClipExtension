@@ -68,6 +68,7 @@ const resetButton = document.getElementById('resetData');
 
 // tags
 const tagDropDown = document.getElementById('tagDropdown');
+let selectedTagIndex = 0;
 
 
 // =============================================================
@@ -278,16 +279,13 @@ function searchTags(query) {
 
 function displayTags(tags) {
   let results = tags.map((item, i) => {
-    return `<div class="tag-option">
+    return `<div class="tag-option ${selectedTagIndex == i ? 'selected' : ''}">
       ${item.tag}
     </div>`
   }).join('')
   console.log("display Tags", results)
   tagDropDown.innerHTML = results
-
-
 }
-
 function search(query) {
   const algo = algos[currentAlgo].fn;
   const results = [];
@@ -886,9 +884,8 @@ function initSearch() {
   input.addEventListener(
     'input',
     debounce(() => {
-      if (input.value[0] === '#') {
-        displayTags(searchTags(input.value.slice(1))
-        )
+      if (input.value[0] === '/') {
+        displayTags(searchTags(input.value.slice(1)))
       }
       else {
         render(search(input.value));

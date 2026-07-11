@@ -381,6 +381,9 @@
   cursor: pointer;
 }
 
+.tag-option.selected {
+  background: rgba(0, 0, 0, 0.04);
+}
 
 
 /* Search Row End */
