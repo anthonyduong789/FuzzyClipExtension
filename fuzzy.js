@@ -1,18 +1,24 @@
 // fuzz.js
-// 
+//
 // runs to control the direct iframe of fuzz.html
-// 
+//
 let RAW_DATA2 = [
-  { id: crypto.randomUUID(), title: 'example', content: 'example', tags: [] },
-  { id: crypto.randomUUID(), title: 'example1', content: 'example1', tags: [] },
+  { id: crypto.randomUUID(), title: "example", content: "example", tags: [] },
+  { id: crypto.randomUUID(), title: "example1", content: "example1", tags: [] },
 ];
 
-let tags = []
+let tags = [];
 
-let personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5, };
+let personal_settings = {
+  highlightColor: "amber",
+  height: 700,
+  width: 500,
+  top: 5,
+  left: 5,
+};
 let new_personal_settings = {};
 let visibleResults = [];
-let currentAlgo = 'fzf';
+let currentAlgo = "fzf";
 let selectedIndex = 0;
 let debounceTimer = null;
 let copyTimer = null;
@@ -26,51 +32,81 @@ const checkboxes = new Set();
 const HOLD_DURATION = 400;
 const GHOST_SNAPBACK_MS = 300;
 const colors = {
-  amber: { bg: '#fde68a', text: '#92400e', activeBg: '#854d0e', activeText: '#fef3c7' },
-  green: { bg: '#bbf7d0', text: '#14532d', activeBg: '#166534', activeText: '#dcfce7' },
-  blue: { bg: '#bfdbfe', text: '#1e3a8a', activeBg: '#1e40af', activeText: '#dbeafe' },
-  pink: { bg: '#fce7f3', text: '#831843', activeBg: '#9d174d', activeText: '#fce7f3' },
-  coral: { bg: '#fed7aa', text: '#7c2d12', activeBg: '#9a3412', activeText: '#ffedd5' },
+  amber: {
+    bg: "#fde68a",
+    text: "#92400e",
+    activeBg: "#854d0e",
+    activeText: "#fef3c7",
+  },
+  green: {
+    bg: "#bbf7d0",
+    text: "#14532d",
+    activeBg: "#166534",
+    activeText: "#dcfce7",
+  },
+  blue: {
+    bg: "#bfdbfe",
+    text: "#1e3a8a",
+    activeBg: "#1e40af",
+    activeText: "#dbeafe",
+  },
+  pink: {
+    bg: "#fce7f3",
+    text: "#831843",
+    activeBg: "#9d174d",
+    activeText: "#fce7f3",
+  },
+  coral: {
+    bg: "#fed7aa",
+    text: "#7c2d12",
+    activeBg: "#9a3412",
+    activeText: "#ffedd5",
+  },
 };
 
-let selectedColor = 'amber';
+let selectedColor = "amber";
 // =============================================================
 // DOM refs
 // =============================================================
 
-const closeButton = document.getElementById('closeInjected');
-const input = document.getElementById('search-input');
-const resultsEl = document.getElementById('results');
-const addEl = document.getElementById('addNotesButton');
-const numberOfResults = document.getElementById('ff-count');
-const deleteEl = document.getElementById('deleteNotesButton');
-const deleteGroupEl = document.getElementById('deleteGroup');
-const selectToDelete = document.getElementById('selectAllDeleteMode');
-const deleteConfirmBtn = document.getElementById('deleteSelectedElements');
-const actionBtnsSelectDelete = document.getElementById('actionBtnsSelectDelete');
-const cancelDeleteSelectBtn = document.getElementById('cancelDeleteSelectBtn');
-const confirmDeleteSelectedBtn = document.getElementById('confirmDeleteSelected');
+const closeButton = document.getElementById("closeInjected");
+const input = document.getElementById("search-input");
+const resultsEl = document.getElementById("results");
+const addEl = document.getElementById("addNotesButton");
+const numberOfResults = document.getElementById("ff-count");
+const deleteEl = document.getElementById("deleteNotesButton");
+const deleteGroupEl = document.getElementById("deleteGroup");
+const selectToDelete = document.getElementById("selectAllDeleteMode");
+const deleteConfirmBtn = document.getElementById("deleteSelectedElements");
+const actionBtnsSelectDelete = document.getElementById(
+  "actionBtnsSelectDelete",
+);
+const cancelDeleteSelectBtn = document.getElementById("cancelDeleteSelectBtn");
+const confirmDeleteSelectedBtn = document.getElementById(
+  "confirmDeleteSelected",
+);
 
-const defaultOverlayContainer = document.getElementById('default-overlay');
-const hotkeyOverlayContainer = document.getElementById('hotkey-overlay');
+const defaultOverlayContainer = document.getElementById("default-overlay");
+const hotkeyOverlayContainer = document.getElementById("hotkey-overlay");
 
 // settings elements
-const settingOverlayContainer = document.getElementById('setting-overlay');
-const showSettingsButton = document.getElementById('showSettings');
-const saveSettingsButton = document.getElementById('saveSettingsButton');
-const actionBtnsSettings = document.getElementById('actionBtnsSettings');
-const confirmSettingsButton = document.getElementById('confirmSettingsButton');
-const cancelSettingsButton = document.getElementById('cancelSettingsButton');
-const returnFromSettingsButton = document.getElementById('returnFromSettings');
+const settingOverlayContainer = document.getElementById("setting-overlay");
+const showSettingsButton = document.getElementById("showSettings");
+const saveSettingsButton = document.getElementById("saveSettingsButton");
+const actionBtnsSettings = document.getElementById("actionBtnsSettings");
+const confirmSettingsButton = document.getElementById("confirmSettingsButton");
+const cancelSettingsButton = document.getElementById("cancelSettingsButton");
+const returnFromSettingsButton = document.getElementById("returnFromSettings");
 
 // reset
-const resetButton = document.getElementById('resetData');
+const resetButton = document.getElementById("resetData");
 
 // tags
-const tagDropDown = document.getElementById('tagDropdown');
+const tagDropDown = document.getElementById("tagDropdown");
 let selectedTagIndex = 0;
 let tagSelecteOn = false;
-
+let activeTags = [];
+const currentTagsBox = document.getElementById("tagsAdded");
 
 // =============================================================
 // Utils
@@ -84,11 +120,11 @@ function generateId() {
 /** Escape HTML for safe insertion into templates */
 function escHtml(s) {
   return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /** Highlight matched character positions in a string */
@@ -96,9 +132,11 @@ function highlight(str, positions) {
   if (!positions || positions.length === 0) return escHtml(str);
   const posSet = new Set(positions);
   return str
-    .split('')
-    .map((c, i) => (posSet.has(i) ? `<mark class="match">${escHtml(c)}</mark>` : escHtml(c)))
-    .join('');
+    .split("")
+    .map((c, i) =>
+      posSet.has(i) ? `<mark class="match">${escHtml(c)}</mark>` : escHtml(c),
+    )
+    .join("");
 }
 
 function debounce(fn, ms) {
@@ -125,11 +163,15 @@ function fzfMatch(pattern, str) {
   if (!pattern) return { matched: true, score: 0, positions: [] };
   const p = pattern.toLowerCase();
   const s = str.toLowerCase();
-  let pi = 0, si = 0;
+  let pi = 0,
+    si = 0;
   const positions = [];
 
   while (pi < p.length && si < s.length) {
-    if (p[pi] === s[si]) { positions.push(si); pi++; }
+    if (p[pi] === s[si]) {
+      positions.push(si);
+      pi++;
+    }
     si++;
   }
   if (pi < p.length) return { matched: false };
@@ -145,8 +187,12 @@ function fzfMatch(pattern, str) {
     } else {
       consecutive = 0;
     }
-    if (pos > 0 && '/._- '.includes(str[pos - 1])) score += 10;
-    if (str[pos] === str[pos].toUpperCase() && str[pos] !== str[pos].toLowerCase()) score += 8;
+    if (pos > 0 && "/._- ".includes(str[pos - 1])) score += 10;
+    if (
+      str[pos] === str[pos].toUpperCase() &&
+      str[pos] !== str[pos].toLowerCase()
+    )
+      score += 8;
     score -= pos * 0.5;
   }
   score -= str.length * 0.1;
@@ -155,7 +201,9 @@ function fzfMatch(pattern, str) {
 
 function levenshtein(a, b) {
   const dp = Array.from({ length: a.length + 1 }, (_, i) =>
-    Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+    Array.from({ length: b.length + 1 }, (_, j) =>
+      i === 0 ? j : j === 0 ? i : 0,
+    ),
   );
   for (let i = 1; i <= a.length; i++)
     for (let j = 1; j <= b.length; j++)
@@ -170,7 +218,10 @@ function subsequencePositions(p, s, startOffset = 0) {
   const positions = [];
   let pi = 0;
   for (let si = startOffset; si < s.length && pi < p.length; si++) {
-    if (p[pi] === s[si]) { positions.push(si); pi++; }
+    if (p[pi] === s[si]) {
+      positions.push(si);
+      pi++;
+    }
   }
   return positions;
 }
@@ -202,7 +253,7 @@ function levenshteinMatch(pattern, str) {
 
 function trigrams(s) {
   const set = new Set();
-  const padded = ' ' + s + ' ';
+  const padded = " " + s + " ";
   for (let i = 0; i < padded.length - 2; i++) set.add(padded.slice(i, i + 3));
   return set;
 }
@@ -225,9 +276,9 @@ function trigramMatch(pattern, str) {
 }
 
 const algos = {
-  fzf: { fn: fzfMatch, label: 'fzf sequential' },
-  levenshtein: { fn: levenshteinMatch, label: 'levenshtein distance' },
-  trigram: { fn: trigramMatch, label: 'trigram similarity' },
+  fzf: { fn: fzfMatch, label: "fzf sequential" },
+  levenshtein: { fn: levenshteinMatch, label: "levenshtein distance" },
+  trigram: { fn: trigramMatch, label: "trigram similarity" },
 };
 
 // =============================================================
@@ -264,28 +315,27 @@ function searchTags(query) {
   for (let i = 0; i < tags.length; i++) {
     const res = algo(trimmed, tags[i]);
     if (res.matched) {
-      results.push({ tag: tags[i], score: res.score })
+      results.push({ tag: tags[i], score: res.score });
     }
   }
   if (trimmed) results.sort((a, b) => b.score - a.score);
-  console.log("tag results", results)
-  return results
-
+  console.log("tag results", results);
+  return results;
 }
 
 /**
- * 
- * @param {Array<{tag: string, score: number}>} tags 
+ *
+ * @param {Array<{tag: string, score: number}>} tags
  */
 
 function displayTags(tags) {
-  let results = tags.map((item, i) => {
-    return `<div class="tag-option ${selectedTagIndex == i ? 'selected' : ''}">
-      ${item.tag}
-    </div>`
-  }).join('')
-  console.log("display Tags", results)
-  tagDropDown.innerHTML = results
+  let results = tags
+    .map((item, i) => {
+      return `<div class="tag-option ${selectedTagIndex == i ? "selected" : ""}">${item.tag}</div>`;
+    })
+    .join("");
+  console.log("display Tags", results);
+  tagDropDown.innerHTML = results;
 }
 function search(query) {
   const algo = algos[currentAlgo].fn;
@@ -303,7 +353,7 @@ function search(query) {
         tags: note.tags || [],
         score: res.score,
         positions: res.positions,
-        rawIndex: i,          // stable index into RAW_DATA2
+        rawIndex: i, // stable index into RAW_DATA2
       });
     }
   }
@@ -389,16 +439,16 @@ function deleteBtnsHTML() {
 }
 
 function tagsHTML(tags) {
-  if (!tags || tags.length === 0) return '';
-  return `<div class="tags-group">${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>`;
+  if (!tags || tags.length === 0) return "";
+  return `<div class="tags-group">${tags.map((t) => `<span class="tag">${escHtml(t)}</span>`).join("")}</div>`;
 }
 
 function resultItemHTML(r, i) {
-  const isChecked = checkboxes.has(r.rawIndex) ? 'checked' : '';
+  const isChecked = checkboxes.has(r.rawIndex) ? "checked" : "";
   return `
     <div class="itemContainer">
       <div class="item">
-        <div class="checkbox-group ${deleteMode ? 'active' : ''}">
+        <div class="checkbox-group ${deleteMode ? "active" : ""}">
           <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
         </div>
         <input class="input-key"/>
@@ -431,9 +481,8 @@ function resultItemHTML(r, i) {
 // Render
 // =============================================================
 
-
 function renderTags(query) {
-  console.log("renderTags", query)
+  console.log("renderTags", query);
 }
 
 function render(results) {
@@ -441,9 +490,11 @@ function render(results) {
   selectedIndex = 0;
   injectMatchStyle(personal_settings.highlightColor);
   console.log(results);
-  resultsEl.innerHTML = results.map((item, index) => {
-    return resultItemHTML(item, index);
-  }).join('');
+  resultsEl.innerHTML = results
+    .map((item, index) => {
+      return resultItemHTML(item, index);
+    })
+    .join("");
   updateResultCount();
   attachItemListeners();
   syncSelectAllButton();
@@ -457,15 +508,15 @@ function updateResultCount() {
 }
 
 function syncSelectAllButton() {
-  selectToDelete.textContent = selectAll ? 'Deselect All' : 'Select All';
+  selectToDelete.textContent = selectAll ? "Deselect All" : "Select All";
 }
 
 function updateSelected(newIndex) {
-  resultsEl.children[selectedIndex]?.classList.remove('selected');
-  resultsEl.children[newIndex]?.classList.add('selected');
-  selectedIndex = newIndex
-  const sel = resultsEl.querySelector('.selected');
-  if (sel) sel.scrollIntoView({ block: 'nearest' });
+  resultsEl.children[selectedIndex]?.classList.remove("selected");
+  resultsEl.children[newIndex]?.classList.add("selected");
+  selectedIndex = newIndex;
+  const sel = resultsEl.querySelector(".selected");
+  if (sel) sel.scrollIntoView({ block: "nearest" });
 }
 
 // =============================================================
@@ -473,25 +524,27 @@ function updateSelected(newIndex) {
 // =============================================================
 
 function attachItemListeners() {
-  resultsEl.querySelectorAll('.itemContainer').forEach((el, i) => {
-    const checkBox = el.querySelector('.item-checkbox');
-    const resultText = el.querySelector('.resultText');
-    const contentText = el.querySelector('.contentText');
-    const inputKey = el.querySelector('.input-key');
-    const inputContent = el.querySelector('.input-content');
-    const copyBtn = el.querySelector('.copy-btn');
-    const trashBtn = el.querySelector('.trash-btn');
-    const actionBtns = el.querySelector('.action-btns');
-    const cancelDeleteBtn = el.querySelector('.cancelDeleteBtn');
-    const confirmDeleteBtn = el.querySelector('.confirmDeleteBtn');
-    const cancelEditBtn = el.querySelector('.cancelEditBtn');
-    const confirmEditBtn = el.querySelector('.edit-btns').querySelector('.confirm-btn');
-    const editBtn = el.querySelector('.edit-btn');
-    const dropDown = el.querySelector('.DropDownIcon');
+  resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
+    const checkBox = el.querySelector(".item-checkbox");
+    const resultText = el.querySelector(".resultText");
+    const contentText = el.querySelector(".contentText");
+    const inputKey = el.querySelector(".input-key");
+    const inputContent = el.querySelector(".input-content");
+    const copyBtn = el.querySelector(".copy-btn");
+    const trashBtn = el.querySelector(".trash-btn");
+    const actionBtns = el.querySelector(".action-btns");
+    const cancelDeleteBtn = el.querySelector(".cancelDeleteBtn");
+    const confirmDeleteBtn = el.querySelector(".confirmDeleteBtn");
+    const cancelEditBtn = el.querySelector(".cancelEditBtn");
+    const confirmEditBtn = el
+      .querySelector(".edit-btns")
+      .querySelector(".confirm-btn");
+    const editBtn = el.querySelector(".edit-btn");
+    const dropDown = el.querySelector(".DropDownIcon");
     const rawIndex = Number(resultText.dataset.rawIndex);
 
     // ---- Checkbox ----
-    checkBox.addEventListener('click', () => {
+    checkBox.addEventListener("click", () => {
       if (checkBox.checked) {
         checkboxes.add(rawIndex);
       } else {
@@ -502,41 +555,41 @@ function attachItemListeners() {
     });
 
     // ---- Item click (select) ----
-    el.querySelector('.item').addEventListener('click', () => {
+    el.querySelector(".item").addEventListener("click", () => {
       updateSelected(i);
     });
 
     // ---- Trash / delete single ----
-    trashBtn.addEventListener('click', () => {
-      actionBtns.classList.add('open');
-      trashBtn.style.borderColor = 'var(--color-border-danger)';
+    trashBtn.addEventListener("click", () => {
+      actionBtns.classList.add("open");
+      trashBtn.style.borderColor = "var(--color-border-danger)";
     });
 
-    cancelDeleteBtn.addEventListener('click', () => {
-      actionBtns.classList.remove('open');
-      trashBtn.style.borderColor = '';
+    cancelDeleteBtn.addEventListener("click", () => {
+      actionBtns.classList.remove("open");
+      trashBtn.style.borderColor = "";
     });
 
-    confirmDeleteBtn.addEventListener('click', () => {
+    confirmDeleteBtn.addEventListener("click", () => {
       RAW_DATA2.splice(rawIndex, 1);
       // Remove this index from checkboxes if present, rebuild shifted indexes
       rebuildCheckboxesAfterSplice(rawIndex);
-      storageManager('update-data', 'notes', RAW_DATA2);
+      storageManager("update-data", "notes", RAW_DATA2);
       render(search(input.value));
     });
 
     // ---- Edit ----
-    editBtn.addEventListener('click', () => {
+    editBtn.addEventListener("click", () => {
       inputKey.value = resultText.dataset.title;
       inputContent.value = contentText.dataset.content;
-      el.classList.add('edit');
+      el.classList.add("edit");
     });
 
-    cancelEditBtn.addEventListener('click', () => {
-      el.classList.remove('edit');
+    cancelEditBtn.addEventListener("click", () => {
+      el.classList.remove("edit");
     });
 
-    confirmEditBtn.addEventListener('click', () => {
+    confirmEditBtn.addEventListener("click", () => {
       const newTitle = inputKey.value.trim();
       const newContent = inputContent.value;
       if (!newTitle) return;
@@ -547,32 +600,34 @@ function attachItemListeners() {
         content: newContent,
         tags: existing.tags || [],
       };
-      storageManager('update-data', 'notes', RAW_DATA2);
+      storageManager("update-data", "notes", RAW_DATA2);
       render(search(input.value));
     });
 
     // ---- Copy ----
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(contentText.dataset.content).then(() => {
-      }).catch(err => {
-        console.error('Error copying to clipboard: ', err);
-      });
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(contentText.dataset.content)
+        .then(() => {})
+        .catch((err) => {
+          console.error("Error copying to clipboard: ", err);
+        });
 
-      copyBtn.classList.add('copied');
+      copyBtn.classList.add("copied");
       clearTimeout(copyTimer);
-      copyTimer = setTimeout(() => copyBtn.classList.remove('copied'), 500);
+      copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
     });
 
     // ---- Dropdown ----
-    dropDown.addEventListener('click', () => el.classList.toggle('open'));
-    resultText.addEventListener('dblclick', () => el.classList.toggle('open'));
+    dropDown.addEventListener("click", () => el.classList.toggle("open"));
+    resultText.addEventListener("dblclick", () => el.classList.toggle("open"));
 
     // ---- Drag ----
-    resultText.addEventListener('mousedown', (e) => {
+    resultText.addEventListener("mousedown", (e) => {
       e.preventDefault();
       holdTimer = setTimeout(() => startDrag(e, i, el), HOLD_DURATION);
     });
-    resultText.addEventListener('mouseup', () => {
+    resultText.addEventListener("mouseup", () => {
       clearTimeout(holdTimer);
       holdTimer = null;
     });
@@ -602,7 +657,7 @@ function toggleSelectAll() {
   selectAll = !selectAll;
   closeDeleteConfirm();
 
-  const allCheckboxes = document.querySelectorAll('.item-checkbox');
+  const allCheckboxes = document.querySelectorAll(".item-checkbox");
   checkboxes.clear();
 
   allCheckboxes.forEach((cb) => {
@@ -617,22 +672,23 @@ function toggleSelectAll() {
 }
 
 function closeDeleteConfirm() {
-  actionBtnsSelectDelete.classList.remove('open');
-  deleteConfirmBtn.style.borderColor = '';
+  actionBtnsSelectDelete.classList.remove("open");
+  deleteConfirmBtn.style.borderColor = "";
 }
 
 // Attach once — remove+add prevents duplicates on re-render
 function bindSelectAllListener() {
-  selectToDelete.removeEventListener('click', toggleSelectAll);
-  selectToDelete.addEventListener('click', toggleSelectAll);
+  selectToDelete.removeEventListener("click", toggleSelectAll);
+  selectToDelete.addEventListener("click", toggleSelectAll);
 }
 
 // =============================================================
 // Drag and drop
 // =============================================================
 
-const overlay = document.createElement('div');
-overlay.style.cssText = 'display:none;position:fixed;inset:0;cursor:grabbing;z-index:99999';
+const overlay = document.createElement("div");
+overlay.style.cssText =
+  "display:none;position:fixed;inset:0;cursor:grabbing;z-index:99999";
 document.body.appendChild(overlay);
 
 let dragIdx = null;
@@ -645,25 +701,27 @@ let itemHeight = 0;
 function startDrag(e, idx, liEl) {
   dragIdx = idx;
   hoverIdx = idx;
-  resultsEl.querySelectorAll('.itemContainer').forEach((el) => el.classList.remove('open'));
+  resultsEl
+    .querySelectorAll(".itemContainer")
+    .forEach((el) => el.classList.remove("open"));
 
-  itemHeight = liEl.querySelector('.item').offsetHeight;
-  overlay.style.display = 'block';
+  itemHeight = liEl.querySelector(".item").offsetHeight;
+  overlay.style.display = "block";
 
   const rect = liEl.getBoundingClientRect();
   offsetX = e.clientX - rect.left;
   offsetY = e.clientY - rect.top;
 
-  ghostEl = document.createElement('div');
-  ghostEl.className = 'drag-ghost-el';
+  ghostEl = document.createElement("div");
+  ghostEl.className = "drag-ghost-el";
   ghostEl.style.cssText = `height:${itemHeight}px;width:${liEl.offsetWidth}px;left:${e.clientX - offsetX}px;top:${e.clientY - offsetY}px`;
   ghostEl.innerHTML = liEl.cloneNode(true).innerHTML;
   document.body.appendChild(ghostEl);
 
-  liEl.classList.add('is-dragging');
+  liEl.classList.add("is-dragging");
 
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
 }
 
 function onMouseMove(e) {
@@ -672,7 +730,10 @@ function onMouseMove(e) {
   ghostEl.style.top = `${e.clientY - offsetY}px`;
 
   const relY = e.clientY - resultsEl.getBoundingClientRect().top;
-  const newHover = Math.max(0, Math.min(visibleResults.length - 1, Math.floor(relY / itemHeight)));
+  const newHover = Math.max(
+    0,
+    Math.min(visibleResults.length - 1, Math.floor(relY / itemHeight)),
+  );
   if (newHover !== hoverIdx) {
     hoverIdx = newHover;
     applyDragTransforms(dragIdx, hoverIdx);
@@ -681,33 +742,48 @@ function onMouseMove(e) {
 
 function onMouseUp() {
   clearTimeout(holdTimer);
-  overlay.style.display = 'none';
-  window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('mouseup', onMouseUp);
+  overlay.style.display = "none";
+  window.removeEventListener("mousemove", onMouseMove);
+  window.removeEventListener("mouseup", onMouseUp);
 
   if (dragIdx !== null && hoverIdx !== null && dragIdx !== hoverIdx) {
     const [moved] = RAW_DATA2.splice(dragIdx, 1);
     RAW_DATA2.splice(hoverIdx, 0, moved);
-    storageManager('update-data', 'notes', RAW_DATA2);
+    storageManager("update-data", "notes", RAW_DATA2);
   }
 
   snapBack(ghostEl, resultsEl.children[hoverIdx]);
   if (resultsEl.children[hoverIdx]) {
-    resultsEl.children[hoverIdx].classList.remove('is-dragging');
+    resultsEl.children[hoverIdx].classList.remove("is-dragging");
   }
   dragIdx = null;
   hoverIdx = null;
 }
 
 function snapBack(source, target) {
-  if (!source || !target) { if (source) source.remove(); return; }
+  if (!source || !target) {
+    if (source) source.remove();
+    return;
+  }
   const to = target.getBoundingClientRect();
-  const dy = resultsEl.offsetTop + hoverIdx * itemHeight - source.getBoundingClientRect().top;
+  const dy =
+    resultsEl.offsetTop +
+    hoverIdx * itemHeight -
+    source.getBoundingClientRect().top;
 
-  const anim = source.animate([
-    { transform: 'translate(0,0)' },
-    { transform: `translate(${to.left - source.getBoundingClientRect().left}px, ${dy}px)` },
-  ], { duration: GHOST_SNAPBACK_MS, easing: 'cubic-bezier(0.34,1.56,0.64,1)', fill: 'forwards' });
+  const anim = source.animate(
+    [
+      { transform: "translate(0,0)" },
+      {
+        transform: `translate(${to.left - source.getBoundingClientRect().left}px, ${dy}px)`,
+      },
+    ],
+    {
+      duration: GHOST_SNAPBACK_MS,
+      easing: "cubic-bezier(0.34,1.56,0.64,1)",
+      fill: "forwards",
+    },
+  );
 
   anim.onfinish = () => {
     source.remove();
@@ -717,15 +793,19 @@ function snapBack(source, target) {
 }
 
 function applyDragTransforms(from, to) {
-  const lis = document.querySelectorAll('.itemContainer');
+  const lis = document.querySelectorAll(".itemContainer");
   const order = RAW_DATA2.map((_, i) => i);
   const [moved] = order.splice(from, 1);
   order.splice(to, 0, moved);
 
   lis.forEach((li, origIdx) => {
-    if (origIdx === from) { li.style.transform = ''; return; }
+    if (origIdx === from) {
+      li.style.transform = "";
+      return;
+    }
     const shift = order.indexOf(origIdx) - origIdx;
-    li.style.transform = shift !== 0 ? `translateY(${shift * itemHeight}px)` : '';
+    li.style.transform =
+      shift !== 0 ? `translateY(${shift * itemHeight}px)` : "";
   });
 }
 
@@ -734,8 +814,8 @@ function applyDragTransforms(from, to) {
 // =============================================================
 
 function createAddBox() {
-  const el = document.createElement('div');
-  el.className = 'itemContainer edit';
+  const el = document.createElement("div");
+  el.className = "itemContainer edit";
   el.innerHTML = `
     <div class="item">
       <input class="input-key" placeholder="Title"/>
@@ -761,22 +841,25 @@ function createAddBox() {
     </div>
     `;
 
-  el.querySelector('.confirm-btn').addEventListener('click', () => {
-    const title = el.querySelector('.input-key').value.trim();
-    const content = el.querySelector('.input-content').value;
+  el.querySelector(".confirm-btn").addEventListener("click", () => {
+    const title = el.querySelector(".input-key").value.trim();
+    const content = el.querySelector(".input-content").value;
     if (!title) return;
     RAW_DATA2.push({ id: generateId(), title, content, tags: [] });
-    storageManager('update-data', 'notes', RAW_DATA2);
+    storageManager("update-data", "notes", RAW_DATA2);
     closeAddBox();
     render(search(input.value));
   });
 
-  el.querySelector('.cancel-btn').addEventListener('click', closeAddBox);
+  el.querySelector(".cancel-btn").addEventListener("click", closeAddBox);
   return el;
 }
 
 function closeAddBox() {
-  if (addBox) { addBox.remove(); addBox = null; }
+  if (addBox) {
+    addBox.remove();
+    addBox = null;
+  }
 }
 
 // =============================================================
@@ -784,23 +867,23 @@ function closeAddBox() {
 // =============================================================
 
 function initDeleteMode() {
-  deleteEl.addEventListener('click', () => {
+  deleteEl.addEventListener("click", () => {
     deleteMode = !deleteMode;
-    deleteEl.classList.toggle('active', deleteMode);
-    addEl.style.display = deleteMode ? 'none' : 'flex';
-    deleteGroupEl.classList.toggle('active', deleteMode);
+    deleteEl.classList.toggle("active", deleteMode);
+    addEl.style.display = deleteMode ? "none" : "flex";
+    deleteGroupEl.classList.toggle("active", deleteMode);
     checkboxes.clear();
     selectAll = false;
     render(search(input.value));
     bindSelectAllListener();
   });
 
-  deleteConfirmBtn.addEventListener('click', () => {
-    deleteConfirmBtn.style.borderColor = 'var(--color-border-danger)';
-    actionBtnsSelectDelete.classList.add('open');
+  deleteConfirmBtn.addEventListener("click", () => {
+    deleteConfirmBtn.style.borderColor = "var(--color-border-danger)";
+    actionBtnsSelectDelete.classList.add("open");
   });
 
-  confirmDeleteSelectedBtn.addEventListener('click', () => {
+  confirmDeleteSelectedBtn.addEventListener("click", () => {
     closeDeleteConfirm();
     if (checkboxes.size === 0) return;
     const deleted = checkboxes.size;
@@ -808,13 +891,13 @@ function initDeleteMode() {
     RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(i));
     checkboxes.clear();
     selectAll = false;
-    storageManager('update-data', 'notes', RAW_DATA2);
+    storageManager("update-data", "notes", RAW_DATA2);
     render(search(input.value));
     closeDeleteConfirm();
     numberOfResults.textContent = `${deleted} notes deleted`;
   });
 
-  cancelDeleteSelectBtn.addEventListener('click', closeDeleteConfirm);
+  cancelDeleteSelectBtn.addEventListener("click", closeDeleteConfirm);
 }
 
 // =============================================================
@@ -822,45 +905,45 @@ function initDeleteMode() {
 // =============================================================
 
 function intializeKeyMaps() {
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === '/') {
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "/") {
       showHotKeys();
     }
 
-    if (e.ctrlKey && e.key === 'a') {
+    if (e.ctrlKey && e.key === "a") {
       if (!addEl || addBox) return;
       addBox = createAddBox();
       resultsEl.prepend(addBox);
     }
 
-    if (e.ctrlKey && e.key === 'q') input.focus();
+    if (e.ctrlKey && e.key === "q") input.focus();
 
-    if (e.key === 'Escape' || (e.ctrlKey && e.key === 'q')) {
-      window.parent.postMessage({ action: 'hide-iframe' }, '*');
+    if (e.key === "Escape" || (e.ctrlKey && e.key === "q")) {
+      window.parent.postMessage({ action: "hide-iframe" }, "*");
     }
 
-    if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'j')) {
-
+    if (e.key === "ArrowDown" || (e.ctrlKey && e.key === "j")) {
       if (tagSelecteOn) {
-        let newIndex = Math.min(selectedTagIndex + 1, tagDropDown.children.length)
-        tagDropDown.children[selectedTagIndex].classList.remove('selected')
-        tagDropDown.children[newIndex].classList.add('selected')
-        selectedTagIndex = newIndex
-      }
-      else {
-
+        let newIndex = Math.min(
+          selectedTagIndex + 1,
+          tagDropDown.children.length,
+        );
+        tagDropDown.children[selectedTagIndex].classList.remove("selected");
+        tagDropDown.children[newIndex].classList.add("selected");
+        selectedTagIndex = newIndex;
+      } else {
       }
       e.preventDefault();
       let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
       updateSelected(newIndex);
     }
 
-    if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'k')) {
+    if (e.key === "ArrowUp" || (e.ctrlKey && e.key === "k")) {
       if (tagSelecteOn) {
-        let newIndex = Math.max(selectedTagIndex - 1, 0)
-        tagDropDown.children[selectedTagIndex].classList.remove('selected')
-        tagDropDown.children[newIndex].classList.add('selected')
-        selectedTagIndex = newIndex
+        let newIndex = Math.max(selectedTagIndex - 1, 0);
+        tagDropDown.children[selectedTagIndex].classList.remove("selected");
+        tagDropDown.children[newIndex].classList.add("selected");
+        selectedTagIndex = newIndex;
       } else {
         e.preventDefault();
         let newIndex = Math.max(selectedIndex - 1, 0);
@@ -868,29 +951,52 @@ function intializeKeyMaps() {
       }
     }
 
-    if (e.key === 'Enter') {
-      resultsEl.children[selectedIndex]?.classList.toggle('open');
+    if (e.key === "Enter") {
+      if (tagSelecteOn) {
+        const selectedTag = tagDropDown.children[selectedTagIndex]?.textContent;
+        activeTags.push(selectedTag);
+        tagDropDown.classList.remove("active");
+        input.value = "";
+        console.log(activeTags);
+        const tagsBoxes = activeTags
+          .map((value, i) => {
+            return `
+      <div class="filter-pill">
+          <button class="filter-remove" aria-label="Remove filter">×</button>
+          <span class="filter-text">${value}</span>
+      </div>
+    `;
+          })
+          .join("");
+
+        currentTagsBox.innerHTML = tagsBoxes
+      } else {
+        resultsEl.children[selectedIndex]?.classList.toggle("open");
+      }
     }
 
-    if (e.ctrlKey && e.key === 'c') {
+    if (e.ctrlKey && e.key === "c") {
       const item = visibleResults[selectedIndex];
       if (!item) return;
-      navigator.clipboard.writeText(item.content).then(() => {
-      }).catch(err => {
-        console.error('Error copying to clipboard: ', err);
-      });
+      navigator.clipboard
+        .writeText(item.content)
+        .then(() => {})
+        .catch((err) => {
+          console.error("Error copying to clipboard: ", err);
+        });
 
-      const copyBtn = resultsEl.children[selectedIndex]?.querySelector('.copy-btn');
+      const copyBtn =
+        resultsEl.children[selectedIndex]?.querySelector(".copy-btn");
       if (copyBtn) {
-        copyBtn.classList.add('copied');
+        copyBtn.classList.add("copied");
         clearTimeout(copyTimer);
-        copyTimer = setTimeout(() => copyBtn.classList.remove('copied'), 500);
+        copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
       }
     }
   });
 
-  closeButton?.addEventListener('click', () => {
-    window.parent.postMessage({ action: 'hide-iframe' }, '*');
+  closeButton?.addEventListener("click", () => {
+    window.parent.postMessage({ action: "hide-iframe" }, "*");
   });
 }
 
@@ -900,15 +1006,17 @@ function intializeKeyMaps() {
 
 function initSearch() {
   input.addEventListener(
-    'input',
+    "input",
     debounce(() => {
-      if (input.value[0] === '/') {
-        tagSelecteOn = true
-        displayTags(searchTags(input.value.slice(1)))
-      }
-      else {
-        tagSelecteOn = false
-        displayTags([])
+      if (input.value[0] === "/") {
+        selectedTagIndex = 0;
+        tagSelecteOn = true;
+        tagDropDown.classList.add("active");
+        displayTags(searchTags(input.value.slice(1)));
+      } else {
+        tagDropDown.classList.remove("active");
+        tagSelecteOn = false;
+        displayTags([]);
         render(search(input.value));
       }
       requestAnimationFrame(() => {
@@ -916,7 +1024,7 @@ function initSearch() {
 
         // Re-check boxes if selectAll is active
         if (selectAll) {
-          const allCbs = document.querySelectorAll('.item-checkbox');
+          const allCbs = document.querySelectorAll(".item-checkbox");
           checkboxes.clear();
           allCbs.forEach((cb) => {
             cb.checked = true;
@@ -927,7 +1035,7 @@ function initSearch() {
 
         if (addBox) closeAddBox();
       });
-    }, 10)
+    }, 10),
   );
 }
 
@@ -936,7 +1044,7 @@ function initSearch() {
 // =============================================================
 
 function initAddButton() {
-  addEl.addEventListener('click', () => {
+  addEl.addEventListener("click", () => {
     if (addBox) return;
     addBox = createAddBox();
     resultsEl.prepend(addBox);
@@ -948,68 +1056,73 @@ function initAddButton() {
 // =============================================================
 
 function showHotKeys() {
-  defaultOverlayContainer.classList.toggle('hidden');
-  hotkeyOverlayContainer.classList.toggle('hidden');
+  defaultOverlayContainer.classList.toggle("hidden");
+  hotkeyOverlayContainer.classList.toggle("hidden");
 }
-showSettingsButton.addEventListener('click', showSettings);
+showSettingsButton.addEventListener("click", showSettings);
 function showSettings() {
-  defaultOverlayContainer.classList.add('hidden');
-  hotkeyOverlayContainer.classList.add('hidden');
-  settingOverlayContainer.classList.remove('hidden');
+  defaultOverlayContainer.classList.add("hidden");
+  hotkeyOverlayContainer.classList.add("hidden");
+  settingOverlayContainer.classList.remove("hidden");
   new_personal_settings = JSON.parse(JSON.stringify(personal_settings));
-  document.querySelectorAll('.ff-hl-swatch').forEach(el => {
-    el.classList.remove('selected');
+  document.querySelectorAll(".ff-hl-swatch").forEach((el) => {
+    el.classList.remove("selected");
     if (el.dataset.color === new_personal_settings["highlightColor"]) {
-      el.classList.add('selected');
+      el.classList.add("selected");
     }
-  })
+  });
 }
 
 function initColorPicker() {
-  document.querySelectorAll('.ff-hl-swatch').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.ff-hl-swatch').forEach(s => s.classList.remove('selected'));
-      el.classList.add('selected');
-      saveSettingsButton.style.display = 'block';
+  document.querySelectorAll(".ff-hl-swatch").forEach((el) => {
+    el.addEventListener("click", () => {
+      document
+        .querySelectorAll(".ff-hl-swatch")
+        .forEach((s) => s.classList.remove("selected"));
+      el.classList.add("selected");
+      saveSettingsButton.style.display = "block";
       new_personal_settings["highlightColor"] = el.dataset.color;
     });
   });
-
 }
 
-returnFromSettingsButton.addEventListener('click', closeSettings);
+returnFromSettingsButton.addEventListener("click", closeSettings);
 function closeSettings() {
-  defaultOverlayContainer.classList.remove('hidden');
-  hotkeyOverlayContainer.classList.add('hidden');
-  settingOverlayContainer.classList.add('hidden');
-  saveSettingsButton.style.display = 'none';
+  defaultOverlayContainer.classList.remove("hidden");
+  hotkeyOverlayContainer.classList.add("hidden");
+  settingOverlayContainer.classList.add("hidden");
+  saveSettingsButton.style.display = "none";
   render(search(input.value));
 }
 
 function injectMatchStyle(color) {
-  let el = document.getElementById('match-style');
-  if (!el) { el = document.createElement('style'); el.id = 'match-style'; document.head.appendChild(el); }
+  let el = document.getElementById("match-style");
+  if (!el) {
+    el = document.createElement("style");
+    el.id = "match-style";
+    document.head.appendChild(el);
+  }
   const c = colors[color];
   el.textContent = `
       .match { background: ${c.bg}; color: ${c.text}; border-radius: 2px; padding: 0 1px; }
     `;
 }
 
-saveSettingsButton.addEventListener('click', () => {
-  if (!actionBtnsSettings.classList.contains('open')) {
-    actionBtnsSettings.classList.add('open');
+saveSettingsButton.addEventListener("click", () => {
+  if (!actionBtnsSettings.classList.contains("open")) {
+    actionBtnsSettings.classList.add("open");
   }
 });
 
-confirmSettingsButton.addEventListener('click', () => {
-  actionBtnsSettings.classList.remove('open');
-  storageManager('update-data', 'personal_settings', new_personal_settings);
+confirmSettingsButton.addEventListener("click", () => {
+  actionBtnsSettings.classList.remove("open");
+  storageManager("update-data", "personal_settings", new_personal_settings);
   personal_settings = JSON.parse(JSON.stringify(new_personal_settings));
-  saveSettingsButton.style.display = 'none';
+  saveSettingsButton.style.display = "none";
 });
 
-cancelSettingsButton.addEventListener('click', () => {
-  actionBtnsSettings.classList.remove('open');
+cancelSettingsButton.addEventListener("click", () => {
+  actionBtnsSettings.classList.remove("open");
 });
 
 // =============================================================
@@ -1017,35 +1130,33 @@ cancelSettingsButton.addEventListener('click', () => {
 // =============================================================
 
 function storageManager(action, key, data) {
-  if (action === 'update-data') {
-    window.parent.postMessage({ action, key, data }, '*');
+  if (action === "update-data") {
+    window.parent.postMessage({ action, key, data }, "*");
   }
 }
 
 function postMessageToParent(action, data) {
-  window.parent.postMessage({ action, data }, '*');
+  window.parent.postMessage({ action, data }, "*");
 }
 
-
-
 function intializeApp() {
-  window.addEventListener('message', (event) => {
-    if (event.data.type === 'FROM_CONTENT') {
+  window.addEventListener("message", (event) => {
+    if (event.data.type === "FROM_CONTENT") {
       input.focus();
     }
-    if (event.data.action === 'initializeIframe') {
+    if (event.data.action === "initializeIframe") {
       RAW_DATA2 = event.data.notes;
-      personal_settings = event.data.personal_settings
-      tags = event.data.tags
-      console.log("tags", tags)
+      personal_settings = event.data.personal_settings;
+      tags = event.data.tags;
+      console.log("tags", tags);
       render(search(input.value));
       intializeKeyMaps();
       initSearch();
     }
   });
 
-  window.addEventListener('DOMContentLoaded', () => {
-    window.parent.postMessage({ action: 'iframeReady' }, '*');
+  window.addEventListener("DOMContentLoaded", () => {
+    window.parent.postMessage({ action: "iframeReady" }, "*");
   });
 }
 
@@ -1057,34 +1168,106 @@ initDeleteMode();
 intializeApp();
 initColorPicker();
 
-
 function resetData() {
-  resetButton.addEventListener('click', () => {
-    tags = ["one", "two", "there"]
+  resetButton.addEventListener("click", () => {
+    tags = ["one", "two", "there"];
     RAW_DATA2 = [
-      { id: generateId(), title: 'example', content: 'example', tags: [] },
-      { id: generateId(), title: 'example1', content: 'example1', tags: [] },
-      { id: generateId(), title: 'example2', content: 'a second example variant', tags: [] },
-      { id: generateId(), title: 'Hello', content: 'Hello world', tags: [] },
-      { id: generateId(), title: 'hello', content: 'hello there', tags: [] },
-      { id: generateId(), title: 'helllo', content: 'typo test - extra l', tags: [] },
-      { id: generateId(), title: 'Hallo', content: 'German greeting', tags: [] },
-      { id: generateId(), title: 'javascript snippet', content: 'const x = () => console.log("test")', tags: ['javascript'] },
-      { id: generateId(), title: 'js snippet', content: 'short alias for the above', tags: ['javascript'] },
-      { id: generateId(), title: 'meeting notes', content: 'Discussed Q3 roadmap and budget', tags: ['work'] },
-      { id: generateId(), title: 'grocery list', content: 'milk, eggs, bread, coffee', tags: [] },
-      { id: generateId(), title: 'todo', content: 'finish fuzzy search implementation', tags: ['work'] },
-      { id: generateId(), title: 'password reset', content: 'security question flow notes', tags: [] },
-      { id: generateId(), title: 'quick brown fox', content: 'jumps over the lazy dog', tags: [] },
-      { id: generateId(), title: 'api key', content: 'sk-test-1234567890abcdef', tags: [] },
-      { id: generateId(), title: '', content: 'empty key edge case', tags: [] },
-      { id: generateId(), title: 'a', content: 'single character key', tags: [] },
-      { id: generateId(), title: 'very long key name that goes on for a while to test truncation behavior', content: 'long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered', tags: [] },
+      { id: generateId(), title: "example", content: "example", tags: [] },
+      { id: generateId(), title: "example1", content: "example1", tags: [] },
+      {
+        id: generateId(),
+        title: "example2",
+        content: "a second example variant",
+        tags: [],
+      },
+      { id: generateId(), title: "Hello", content: "Hello world", tags: [] },
+      { id: generateId(), title: "hello", content: "hello there", tags: [] },
+      {
+        id: generateId(),
+        title: "helllo",
+        content: "typo test - extra l",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "Hallo",
+        content: "German greeting",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "javascript snippet",
+        content: 'const x = () => console.log("test")',
+        tags: ["javascript"],
+      },
+      {
+        id: generateId(),
+        title: "js snippet",
+        content: "short alias for the above",
+        tags: ["javascript"],
+      },
+      {
+        id: generateId(),
+        title: "meeting notes",
+        content: "Discussed Q3 roadmap and budget",
+        tags: ["work"],
+      },
+      {
+        id: generateId(),
+        title: "grocery list",
+        content: "milk, eggs, bread, coffee",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "todo",
+        content: "finish fuzzy search implementation",
+        tags: ["work"],
+      },
+      {
+        id: generateId(),
+        title: "password reset",
+        content: "security question flow notes",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "quick brown fox",
+        content: "jumps over the lazy dog",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "api key",
+        content: "sk-test-1234567890abcdef",
+        tags: [],
+      },
+      { id: generateId(), title: "", content: "empty key edge case", tags: [] },
+      {
+        id: generateId(),
+        title: "a",
+        content: "single character key",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title:
+          "very long key name that goes on for a while to test truncation behavior",
+        content:
+          "long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered",
+        tags: [],
+      },
     ];
-    personal_settings = { "highlightColor": "amber", height: 700, width: 500, top: 5, left: 5 };
-    storageManager('update-data', 'notes', RAW_DATA2);
-    storageManager('update-data', 'personal_settings', personal_settings);
-    storageManager('update-data', 'tags', tags);
+    personal_settings = {
+      highlightColor: "amber",
+      height: 700,
+      width: 500,
+      top: 5,
+      left: 5,
+    };
+    storageManager("update-data", "notes", RAW_DATA2);
+    storageManager("update-data", "personal_settings", personal_settings);
+    storageManager("update-data", "tags", tags);
     render(search(input.value));
   });
 }
