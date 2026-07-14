@@ -7,8 +7,6 @@ let RAW_DATA2 = [
   { id: crypto.randomUUID(), title: "example1", content: "example1", tags: [] },
 ];
 
-let tags = [];
-
 let personal_settings = {
   highlightColor: "amber",
   height: 700,
@@ -105,8 +103,59 @@ const resetButton = document.getElementById("resetData");
 const tagDropDown = document.getElementById("tagDropdown");
 let selectedTagIndex = 0;
 let tagSelecteOn = false;
+let tags = [];
 let activeTags = [];
 const currentTagsBox = document.getElementById("tagsAdded");
+const addTagBox = document.getElementById("addTagButton");
+/** @type {HTMLInputElement | null} */
+const addTagInput = document.getElementById("addTagInput");
+const addInputTagError = document.getElementById("tagError");
+/** @type {HTMLButtonElement} */
+const confirmTagInput = document.getElementById("confirmAddTagButton");
+// might be better to have a datatset that i will remove the index for tags
+
+const listProjectTags = document.getElementById("itemList");
+
+function handleTagDelete() {
+  function handleTagRemoveClick(e) {
+    const btn = e.target.closest(".filter-remove");
+    if (!btn) return;
+    const pill = btn.closest(".filter-pill");
+    const index = activeTags.indexOf(btn.dataset.tag);
+    if (index !== -1) {
+      activeTags.splice(index, 1);
+    }
+    pill.remove();
+  }
+  currentTagsBox.removeEventListener("click", handleTagRemoveClick);
+  currentTagsBox.addEventListener("click", handleTagRemoveClick);
+}
+
+function handleAddTagBox() {
+  function handleConfirmTag(e) {
+    const newTag = addTagInput.value;
+    if (newTag.includes(" ") || newTag.includes("/")) {
+      addTagInput.classList.add("invalid");
+      addInputTagError.classList.add("visible");
+
+      setTimeout(() => {
+        if (addTagInput) {
+          addTagInput.classList.remove("invalid");
+          addInputTagError.classList.remove("visible");
+        }
+      }, 1500);
+    } else {
+      tags.push(newTag);
+      addTagInput.value = "";
+      storageManager("update-data", "tags", tags);
+      displayProjectTags(tags);
+    }
+  }
+  confirmTagInput.removeEventListener("click", handleConfirmTag);
+  confirmTagInput.addEventListener("click", handleConfirmTag);
+}
+
+handleAddTagBox();
 
 // =============================================================
 // Utils
@@ -325,9 +374,82 @@ function searchTags(query) {
 
 /**
  *
- * @param {Array<{tag: string, score: number}>} tags
+ * @param {Array<string>} tags
  */
 
+function displayProjectTags(tags) {
+  // <input class="item-label" type="text"/>
+  const projectTags = tags
+    .map((tag, i) => {
+      return `
+          <div class="item-row" data-id="${tag}">
+            <span class="item-label">${tag}</span>
+            <button
+              class="icon-btn edit-btn"
+              data-action="start-edit"
+              data-id="${tag}"
+              title="Edit"
+            >
+              ✎
+            </button>
+            <button
+              class="icon-btn delete-btn"
+              data-action="delete"
+              data-id="${tag}"
+              title="Delete"
+            >
+              🗑
+            </button>
+            
+          <div class="action-btns open" id="actionBtnsSelectDelete">
+            <button
+              class="btn confirmTagEditBtn"
+              aria-label="Confirm delete"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="var(--color-text-success)"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="2.5,8 6.5,12 13.5,4" />
+              </svg>
+            </button>
+            <button
+              class="btn cancelTagEditBtn"
+              id="cancelDeleteSelectBtn"
+              aria-label="Cancel"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="var(--color-text-secondary)"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              >
+                <line x1="1" y1="1" x2="11" y2="11" />
+                <line x1="11" y1="1" x2="1" y2="11" />
+              </svg>
+            </button>
+          </div>
+
+
+          </div>`;
+    })
+    .join("");
+  listProjectTags.innerHTML = projectTags;
+}
+
+/**
+ *
+ * @param {Array<{tag: string, score: number}>} tags
+ */
 function displayTags(tags) {
   let results = tags
     .map((item, i) => {
@@ -932,10 +1054,10 @@ function intializeKeyMaps() {
         tagDropDown.children[newIndex].classList.add("selected");
         selectedTagIndex = newIndex;
       } else {
+        e.preventDefault();
+        let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
+        updateSelected(newIndex);
       }
-      e.preventDefault();
-      let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
-      updateSelected(newIndex);
     }
 
     if (e.key === "ArrowUp" || (e.ctrlKey && e.key === "k")) {
@@ -962,14 +1084,14 @@ function intializeKeyMaps() {
           .map((value, i) => {
             return `
       <div class="filter-pill">
-          <button class="filter-remove" aria-label="Remove filter">×</button>
+          <button data-tag="${value}" class="filter-remove" aria-label="Remove filter">×</button>
           <span class="filter-text">${value}</span>
       </div>
     `;
           })
           .join("");
 
-        currentTagsBox.innerHTML = tagsBoxes
+        currentTagsBox.innerHTML = tagsBoxes;
       } else {
         resultsEl.children[selectedIndex]?.classList.toggle("open");
       }
@@ -1150,6 +1272,7 @@ function intializeApp() {
       tags = event.data.tags;
       console.log("tags", tags);
       render(search(input.value));
+      displayProjectTags(tags);
       intializeKeyMaps();
       initSearch();
     }
@@ -1273,3 +1396,4 @@ function resetData() {
 }
 
 resetData();
+handleTagDelete();
