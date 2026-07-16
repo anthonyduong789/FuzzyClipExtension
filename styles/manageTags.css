@@ -3,7 +3,7 @@
   display: inline-block;
 }
 
-#manageBtn {
+#toggleProjectTags {
   /* padding: 8px 14px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -27,11 +27,12 @@
   transition: all 0.15s;
   white-space: nowrap;
 }
-#manageBtn:hover {
+#toggleProjectTags:hover {
   background: #f0f0f0;
 }
 
 .popover {
+  display: none;
   position: absolute;
   top: 110%;
   left: 0;
@@ -42,9 +43,35 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
   padding: 8px;
   z-index: 100;
-  display: block;
 }
 .popover.open {
+  display: block;
+}
+
+.tag-edit {
+  display: none;
+  font-size: 13px;
+  padding: 0px 5px;
+}
+
+.item-row.edit .tag-edit {
+  flex: 1;
+  display: block;
+}
+
+.item-row.edit .item-label {
+  display: none;
+}
+
+.item-row.edit .tagButtons {
+  display: none;
+}
+
+.item-row.delete .tagButtons {
+  display: none;
+}
+
+.tagButtons {
   display: block;
 }
 

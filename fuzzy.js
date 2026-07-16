@@ -101,6 +101,8 @@ const resetButton = document.getElementById("resetData");
 
 // tags
 const tagDropDown = document.getElementById("tagDropdown");
+const toggleProjectTags = document.getElementById("toggleProjectTags");
+const tagPopup = document.getElementById("popover");
 let selectedTagIndex = 0;
 let tagSelecteOn = false;
 let tags = [];
@@ -131,13 +133,28 @@ function handleTagDelete() {
   currentTagsBox.addEventListener("click", handleTagRemoveClick);
 }
 
+toggleProjectTags.addEventListener("click", () => {
+  tagPopup.classList.toggle("open");
+});
+
 function handleAddTagBox() {
   function handleConfirmTag(e) {
     const newTag = addTagInput.value;
     if (newTag.includes(" ") || newTag.includes("/")) {
+      addInputTagError.innerText = "No spaces or / allowed";
       addTagInput.classList.add("invalid");
       addInputTagError.classList.add("visible");
-
+      setTimeout(() => {
+        if (addTagInput) {
+          addTagInput.classList.remove("invalid");
+          addInputTagError.classList.remove("visible");
+        }
+      }, 1500);
+      // tag needs to be unique for other functions to work
+    } else if (tags.includes(escHtml(newTag))) {
+      addInputTagError.innerText = "Already have Tag";
+      addTagInput.classList.add("invalid");
+      addInputTagError.classList.add("visible");
       setTimeout(() => {
         if (addTagInput) {
           addTagInput.classList.remove("invalid");
@@ -156,6 +173,147 @@ function handleAddTagBox() {
 }
 
 handleAddTagBox();
+function searchTags(query) {
+  const algo = algos[currentAlgo].fn;
+  const results = [];
+  const trimmed = query.trim();
+  for (let i = 0; i < tags.length; i++) {
+    const res = algo(trimmed, tags[i]);
+    if (res.matched) {
+      results.push({ tag: tags[i], score: res.score });
+    }
+  }
+  if (trimmed) results.sort((a, b) => b.score - a.score);
+  console.log("tag results", results);
+  return results;
+}
+
+function displayProjectTags(tags) {
+  const projectTags = tags
+    .map((tag) => {
+      return `
+          <div class="item-row" data-id="${escHtml(tag)}">
+            <span class="item-label">${escHtml(tag)}</span>
+            <input class="tag-edit"/>
+            <div class="tagButtons">
+              <button class="icon-btn edit-btn" data-action="start-edit" title="Edit">✎</button>
+              <button class="icon-btn delete-btn" data-action="start-delete" title="Delete">🗑</button>
+            </div>
+            <div class="action-btns">
+              <button class="btn confirmTagEditBtn" data-action="confirm" aria-label="Confirm">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--color-text-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="2.5,8 6.5,12 13.5,4" />
+                </svg>
+              </button>
+              <button class="btn cancelTagEditBtn" data-action="cancel" aria-label="Cancel">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
+                  <line x1="1" y1="1" x2="11" y2="11" />
+                  <line x1="11" y1="1" x2="1" y2="11" />
+                </svg>
+              </button>
+            </div>
+          </div>`;
+    })
+    .join("");
+  listProjectTags.innerHTML = projectTags;
+  listProjectTags.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    //fix
+    const action = btn.dataset.action;
+    const row = btn.closest(".item-row");
+    const id = row.dataset.id;
+
+    const actionBtns = row?.querySelector(".action-btns");
+
+    switch (action) {
+      case "start-delete":
+        row.dataset.mode = "delete";
+        row.classList.add("delete");
+        actionBtns.classList.add("open");
+        break;
+
+      case "start-edit":
+        row.dataset.mode = "edit";
+        actionBtns.classList.add("open");
+        row.querySelector(".tag-edit").value = id;
+        row.classList.add("edit");
+        break;
+
+      case "confirm":
+        if (row.dataset.mode === "delete") {
+          confirmDeleteTag(row, id);
+          row.classList.remove("delete");
+        } else if (row.dataset.mode === "edit") {
+          confirmEditTag(row, id);
+          actionBtns.classList.remove("open");
+        }
+        row.dataset.mode = "";
+        break;
+
+      case "cancel":
+        if (row.dataset.mode === "edit") {
+          row.classList.remove("edit");
+        } else if (row.dataset.mode === "delete") {
+          row.classList.remove("delete");
+        }
+
+        actionBtns.classList.remove("open");
+        row.dataset.mode = "";
+        break;
+    }
+  });
+}
+
+// attach ONCE, outside displayProjectTags, at module init
+
+function confirmDeleteTag(row, id) {
+  tags = tags.filter((tag) => tag !== id);
+  storageManager("update-data", "tags", tags);
+  row.remove();
+}
+
+/**
+ *
+ * @param {HTMLElement} row
+ * @param {string} id
+ */
+function confirmEditTag(row, id) {
+  const newTagValue = row.querySelector(".tag-edit").value.trim();
+  row.classList.remove("edit");
+
+  // no-op if empty or unchanged
+  if (!newTagValue || newTagValue === id) return;
+
+  // guard against duplicate tag names
+  if (tags.includes(newTagValue)) {
+    // optionally surface this to the user instead of silently bailing
+    console.warn(`Tag "${newTagValue}" already exists`);
+    return;
+  }
+  tags = tags.map((tag) => (tag === id ? newTagValue : tag));
+  storageManager("update-data", "tags", tags);
+
+  row.dataset.id = newTagValue;
+
+  const label = row.querySelector(".item-label");
+  if (label) label.textContent = newTagValue;
+}
+
+/**
+ *
+ * @param {Array<{tag: string, score: number}>} tags
+ */
+function displayTags(tags) {
+  let results = tags
+    .map((item, i) => {
+      return `<div class="tag-option ${selectedTagIndex == i ? "selected" : ""}">${item.tag}</div>`;
+    })
+    .join("");
+  console.log("display Tags", results);
+  tagDropDown.innerHTML = results;
+}
 
 // =============================================================
 // Utils
@@ -357,108 +515,6 @@ const algos = {
  *   in RAW_DATA2 at the time of this call.
  */
 
-function searchTags(query) {
-  const algo = algos[currentAlgo].fn;
-  const results = [];
-  const trimmed = query.trim();
-  for (let i = 0; i < tags.length; i++) {
-    const res = algo(trimmed, tags[i]);
-    if (res.matched) {
-      results.push({ tag: tags[i], score: res.score });
-    }
-  }
-  if (trimmed) results.sort((a, b) => b.score - a.score);
-  console.log("tag results", results);
-  return results;
-}
-
-/**
- *
- * @param {Array<string>} tags
- */
-
-function displayProjectTags(tags) {
-  // <input class="item-label" type="text"/>
-  const projectTags = tags
-    .map((tag, i) => {
-      return `
-          <div class="item-row" data-id="${tag}">
-            <span class="item-label">${tag}</span>
-            <button
-              class="icon-btn edit-btn"
-              data-action="start-edit"
-              data-id="${tag}"
-              title="Edit"
-            >
-              ✎
-            </button>
-            <button
-              class="icon-btn delete-btn"
-              data-action="delete"
-              data-id="${tag}"
-              title="Delete"
-            >
-              🗑
-            </button>
-            
-          <div class="action-btns open" id="actionBtnsSelectDelete">
-            <button
-              class="btn confirmTagEditBtn"
-              aria-label="Confirm delete"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="var(--color-text-success)"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="2.5,8 6.5,12 13.5,4" />
-              </svg>
-            </button>
-            <button
-              class="btn cancelTagEditBtn"
-              id="cancelDeleteSelectBtn"
-              aria-label="Cancel"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="var(--color-text-secondary)"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              >
-                <line x1="1" y1="1" x2="11" y2="11" />
-                <line x1="11" y1="1" x2="1" y2="11" />
-              </svg>
-            </button>
-          </div>
-
-
-          </div>`;
-    })
-    .join("");
-  listProjectTags.innerHTML = projectTags;
-}
-
-/**
- *
- * @param {Array<{tag: string, score: number}>} tags
- */
-function displayTags(tags) {
-  let results = tags
-    .map((item, i) => {
-      return `<div class="tag-option ${selectedTagIndex == i ? "selected" : ""}">${item.tag}</div>`;
-    })
-    .join("");
-  console.log("display Tags", results);
-  tagDropDown.innerHTML = results;
-}
 function search(query) {
   const algo = algos[currentAlgo].fn;
   const results = [];

@@ -42,15 +42,13 @@
         </button>
 
         <div class="manager-wrap">
-          <button id="manageBtn" type="button">Tags ▾</button>
+          <button id="toggleProjectTags" type="button">Tags ▾</button>
           <div class="popover" id="popover">
             <div class="item-list" id="itemList"></div>
             <div class="add-row">
               <div class="field-wrapper">
-                <div class="error-message" id="tagError">
-                  No spaces or "/" allowed
-                </div>
-                <input type="text" id="addTagInput" class=""/>
+                <div class="error-message" id="tagError"></div>
+                <input type="text" id="addTagInput" class="" />
               </div>
               <button id="confirmAddTagButton" type="button">Add</button>
             </div>
