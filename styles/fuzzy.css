@@ -641,6 +641,39 @@
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+
+.add-tag-btn-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* add tag button*/
+.add-tag-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 25%;
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border-hover);
+  cursor: pointer;
+}
+
+
+.add-tag-btn-popover {
+  display: block;
+  position: absolute;
+  width: 240px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 10000000;
+}
+
+
+
 /* edit button Notes */
 .edit-btns {
   display: none;

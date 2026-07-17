@@ -644,6 +644,11 @@ function resultItemHTML(r, i) {
           </button>
         </div>
         ${deleteBtnsHTML()}
+        <div class="add-tag-btn-container">
+          <button class="add-tag-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#000000" viewBox="0 0 256 256"><path d="M246.66,123.56,201,55.13A15.94,15.94,0,0,0,187.72,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H187.72A16,16,0,0,0,201,200.88l45.63-68.44A8,8,0,0,0,246.66,123.56ZM187.72,192H40V64H187.72l42.66,64Z"></path></svg>
+          </button>
+        </div>
         ${dropDownIconHTML()}
       </div>
       <div class="itemContent">
@@ -703,6 +708,12 @@ function updateSelected(newIndex) {
 
 function attachItemListeners() {
   resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
+    // toggle show tags
+    const tagBtn = el.querySelector(".add-tag-btn");
+    tagBtn.addEventListener("click", (el) => {
+      showTagPopover(tagBtn);
+    });
+
     const checkBox = el.querySelector(".item-checkbox");
     const resultText = el.querySelector(".resultText");
     const contentText = el.querySelector(".contentText");
@@ -811,6 +822,47 @@ function attachItemListeners() {
     });
   });
 }
+
+/**@type {HTMLElement} */
+let addNotesTag = null;
+
+function showTagPopover(triggerEl) {
+  // If popover already open for this same trigger, close it and stop
+  if (addNotesTag && addNotesTag._triggerEl === triggerEl) {
+    addNotesTag.remove();
+    addNotesTag = null;
+    return;
+  }
+
+  // Otherwise close whatever's open and open a new one
+  if (addNotesTag) {
+    addNotesTag.remove();
+  }
+
+  const popover = document.createElement("div");
+  popover.className = "add-tag-btn-popover";
+  popover.textContent = "testing here";
+  document.body.appendChild(popover);
+
+  const rect = triggerEl.getBoundingClientRect();
+  popover.style.position = "absolute";
+  popover.style.top = `${rect.bottom + 4}px`;
+  popover.style.right = `${window.innerWidth - rect.right}px`;
+  popover.style.zIndex = "9999";
+
+  popover._triggerEl = triggerEl; // remember who opened this
+  addNotesTag = popover;
+  return popover;
+}
+
+
+// TODO: better way to trigger showtag will refactor 
+document.addEventListener("click", (e) => {
+  if (!addNotesTag) return;
+  if (e.target.closest(".add-tag-btn-popover") || e.target.closest(".add-tag-btn")) return;
+  addNotesTag.remove();
+  addNotesTag = null;
+});
 
 /**
  * After splicing at `removedIndex`, any checkboxes referencing higher
