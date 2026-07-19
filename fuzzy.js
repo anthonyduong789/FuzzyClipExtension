@@ -624,7 +624,7 @@ function tagsHTML(tags) {
 function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? "checked" : "";
   return `
-    <div class="itemContainer">
+    <div class="itemContainer" data-raw-index="${r.rawIndex}">
       <div class="item">
         <div class="checkbox-group ${deleteMode ? "active" : ""}">
           <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
@@ -661,7 +661,7 @@ function resultItemHTML(r, i) {
 }
 
 // =============================================================
-// Render
+// Render TODO:
 // =============================================================
 
 function renderTags(query) {
@@ -710,8 +710,9 @@ function attachItemListeners() {
   resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
     // toggle show tags
     const tagBtn = el.querySelector(".add-tag-btn");
+    const rawIndex = Number(el.dataset.rawIndex);
     tagBtn.addEventListener("click", (el) => {
-      showTagPopover(tagBtn);
+      showTagPopover(tagBtn, rawIndex);
     });
 
     const checkBox = el.querySelector(".item-checkbox");
@@ -730,7 +731,6 @@ function attachItemListeners() {
       .querySelector(".confirm-btn");
     const editBtn = el.querySelector(".edit-btn");
     const dropDown = el.querySelector(".DropDownIcon");
-    const rawIndex = Number(resultText.dataset.rawIndex);
 
     // ---- Checkbox ----
     checkBox.addEventListener("click", () => {
@@ -826,43 +826,111 @@ function attachItemListeners() {
 /**@type {HTMLElement} */
 let addNotesTag = null;
 
-function showTagPopover(triggerEl) {
+function showTagPopover(triggerEl, currentIndex) {
   // If popover already open for this same trigger, close it and stop
-  if (addNotesTag && addNotesTag._triggerEl === triggerEl) {
+  if (
+    addNotesTag &&
+    addNotesTag._triggerEl === triggerEl &&
+    addNotesTag.isConnected
+  ) {
     addNotesTag.remove();
-    addNotesTag = null;
+    // addNotesTag = null;
     return;
   }
 
   // Otherwise close whatever's open and open a new one
   if (addNotesTag) {
     addNotesTag.remove();
+    const availableTags = tags.length
+      ? tags
+          .map(
+            (tag) => `
+    <div class="add-tag-row" data-tag="${escHtml(tag)}">
+      <span class="add-tag-label">${escHtml(tag)}</span>
+      <button class="" aria-label="Add tag ${escHtml(tag)}">
+<svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>      </button>
+    </div>
+  `,
+          )
+          .join("")
+      : `<div class="add-tag-empty">No tags yet</div>`;
+    addNotesTag.innerHTML = availableTags;
+    const rect = triggerEl.getBoundingClientRect();
+    addNotesTag.style.position = "absolute";
+    addNotesTag.style.top = `${rect.bottom + 4}px`;
+    addNotesTag.style.right = `${window.innerWidth - rect.right}px`;
+    addNotesTag.style.zIndex = "9999";
+    addNotesTag._rawIndex = currentIndex;
+    addNotesTag._triggerEl = triggerEl;
+    document.body.appendChild(addNotesTag);
+    return;
   }
 
   const popover = document.createElement("div");
   popover.className = "add-tag-btn-popover";
-  popover.textContent = "testing here";
+  const availableTags = tags.length
+    ? tags
+        .map(
+          (tag) => `
+    <div class="add-tag-row" data-tag="${escHtml(tag)}">
+      <span class="add-tag-label">${escHtml(tag)}</span>
+      <button class="" aria-label="Add tag ${escHtml(tag)}">
+<svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>      </button>
+    </div>
+  `,
+        )
+        .join("")
+    : `<div class="add-tag-empty">No tags yet</div>`;
+  popover.innerHTML = availableTags;
+
+  // popover.textContent = "testing here";
   document.body.appendChild(popover);
 
   const rect = triggerEl.getBoundingClientRect();
+
   popover.style.position = "absolute";
   popover.style.top = `${rect.bottom + 4}px`;
   popover.style.right = `${window.innerWidth - rect.right}px`;
   popover.style.zIndex = "9999";
 
   popover._triggerEl = triggerEl; // remember who opened this
+  popover._rawIndex = currentIndex;
   addNotesTag = popover;
+
+  addNotesTag.addEventListener("click", (e) => {
+    const btn = e.target.closest(".add-tag-row button");
+    if (!btn) return;
+    const row = btn.closest(".add-tag-row");
+    const tag = row?.dataset.tag;
+    RAW_DATA2[addNotesTag._rawIndex].tags.push(tag);
+    storageManager("update-data", "notes", RAW_DATA2);
+    console.log(RAW_DATA2);
+  });
+
   return popover;
 }
 
+function handleAddTagToNote(tag, tagBtn) {
+  if (tagBtn.dataset.pending === "true") return; // already processing
+  tagBtn.dataset.pending = "true";
 
-// TODO: better way to trigger showtag will refactor 
-document.addEventListener("click", (e) => {
-  if (!addNotesTag) return;
-  if (e.target.closest(".add-tag-btn-popover") || e.target.closest(".add-tag-btn")) return;
-  addNotesTag.remove();
-  addNotesTag = null;
-});
+  // your actual logic here — sync or async
+  addTagToNoteData(tag, tagBtn).finally(() => {
+    delete tagBtn.dataset.pending;
+  });
+}
+
+// TODO: better way to trigger showtag will refactor
+// document.addEventListener("click", (e) => {
+//   if (!addNotesTag) return;
+//   if (
+//     e.target.closest(".add-tag-btn-popover") ||
+//     e.target.closest(".add-tag-btn")
+//   )
+//     return;
+//   addNotesTag.remove();
+//   addNotesTag = null;
+// });
 
 /**
  * After splicing at `removedIndex`, any checkboxes referencing higher
