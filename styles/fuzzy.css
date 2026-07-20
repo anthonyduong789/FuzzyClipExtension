@@ -48,11 +48,9 @@
   flex-direction: column;
   align-items: center;
   background-color: var(--bg);
-  background-image: radial-gradient(
-    ellipse at 50% 0%,
-    rgba(0, 255, 136, 0.05) 0%,
-    transparent 60%
-  );
+  background-image: radial-gradient(ellipse at 50% 0%,
+      rgba(0, 255, 136, 0.05) 0%,
+      transparent 60%);
   color: white;
 }
 
@@ -537,7 +535,7 @@
   cursor: grab;
   display: flex;
   color: #1a1a1a;
-  border-left: 4px solid #f4f1eb;
+  /* border-left: 4px solid #f4f1eb; */
 }
 
 .item:hover {
@@ -561,7 +559,12 @@
   cursor: grabbing;
 }
 
-.itemContainer.selected .item {
+.itemAndTagBox {
+  padding: 0px 0px 0px 2px;
+}
+
+.itemContainer.selected .itemAndTagBox {
+  padding: 0px 0px 4px 5px;
   border-left: 4px solid var(--accent);
 }
 
@@ -675,6 +678,70 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* 
+.ff-result-badge {
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #7c3aed;
+  flex-shrink: 0;
+} */
+
+
+.tags-group {
+  display: flex;
+  padding: 0px 0px 5px 5px;
+  gap: 6px;
+}
+
+.ff-badge-x {
+  display: inline-flex;
+  /* instead of inline-block */
+  align-items: center;
+  /* vertically centers icon + text */
+  gap: 5px;
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: #E5EFFF;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ff-badge-x button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2px;
+  background: #4182F4;
+  border: none;
+  cursor: pointer;
+  height: 12px;
+  width: 12px;
+  font-size: 7px;
+  color: #E5EFFF;
+  line-height: 1;
+  transition: opacity 0.1s;
+  border-radius: 50%;
+
+}
+
+.ff-badge-x button:hover {
+  opacity: 1;
+}
+
+
+.ff-badge-x span {
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #4282F5;
+  padding: 0px 4px;
+}
+
+
 .add-tag-row {
   display: flex;
   align-items: center;
@@ -689,6 +756,7 @@
 .add-tag-row:hover {
   background: var(--fc-hover);
 }
+
 .add-tag-row:hover .add-btn {
   opacity: 1;
 }

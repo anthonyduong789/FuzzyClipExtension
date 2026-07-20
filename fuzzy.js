@@ -69,6 +69,7 @@ let selectedColor = "amber";
 
 const closeButton = document.getElementById("closeInjected");
 const input = document.getElementById("search-input");
+/** @type {HTMLElement} */
 const resultsEl = document.getElementById("results");
 const addEl = document.getElementById("addNotesButton");
 const numberOfResults = document.getElementById("ff-count");
@@ -106,6 +107,7 @@ const tagPopup = document.getElementById("popover");
 let selectedTagIndex = 0;
 let tagSelecteOn = false;
 let tags = [];
+/** @type {Array} tags that will be used in render to filter out elements that don't have activeTags */
 let activeTags = [];
 const currentTagsBox = document.getElementById("tagsAdded");
 const addTagBox = document.getElementById("addTagButton");
@@ -128,6 +130,7 @@ function handleTagDelete() {
       activeTags.splice(index, 1);
     }
     pill.remove();
+    render(search(input.value));
   }
   currentTagsBox.removeEventListener("click", handleTagRemoveClick);
   currentTagsBox.addEventListener("click", handleTagRemoveClick);
@@ -616,45 +619,68 @@ function deleteBtnsHTML() {
   </div>`;
 }
 
-function tagsHTML(tags) {
+function tagsOnNoteHtml(tags, rawIndex) {
   if (!tags || tags.length === 0) return "";
-  return `<div class="tags-group">${tags.map((t) => `<span class="tag">${escHtml(t)}</span>`).join("")}</div>`;
+  return `<div class="tags-group">${tags.map((t) =>
+    `<div class="ff-badge-x">
+      <span>${escHtml(t)}</span>
+      <button class="tags-group-button" data-raw-index="${rawIndex}" data-tag="${escHtml(t)}" aria-label="Remove tag">&#x2715;</button>
+    </div>`).join("")}</div>`;
 }
+
+
+/**
+ * 
+ * @param {EventListener} html 
+ */
+function deleteTagsFromNote(e) {
+  const btn = e.target.closest(".tags-group-button");
+  if (!btn) return;
+  const row = e.target.closest('.ff-badge-x');
+  const rawIndex = Number(btn.dataset.rawIndex);
+  const tag = btn.dataset.tag;
+  RAW_DATA2[rawIndex].tags = RAW_DATA2[rawIndex].tags.filter(t => t !== tag);
+  storageManager("update-data", "notes", RAW_DATA2);
+  row.remove()
+}
+
 
 function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? "checked" : "";
   return `
     <div class="itemContainer" data-raw-index="${r.rawIndex}">
-      <div class="item">
+      <div class="itemAndTagBox">
+        <div class="item">
         <div class="checkbox-group ${deleteMode ? "active" : ""}">
-          <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
+        <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
         </div>
         <input class="input-key"/>
         <span class="resultText"
-          data-raw-index="${r.rawIndex}"
-          data-id="${escHtml(r.id)}"
-          data-title="${escHtml(r.title)}"
+        data-raw-index="${r.rawIndex}"
+        data-id="${escHtml(r.id)}"
+        data-title="${escHtml(r.title)}"
         >${highlight(r.title, r.positions)}</span>
         ${copyIconHTML()}
         <div class="edit-group">
-          <button class="edit-btn btn">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81 3.23 11.33a.25.25 0 0 0-.064.108l-.618 2.162 2.162-.618a.25.25 0 0 0 .108-.064L11.19 6.25z" fill="#ffffff"/>
-            </svg>
-          </button>
+        <button class="edit-btn btn">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81 3.23 11.33a.25.25 0 0 0-.064.108l-.618 2.162 2.162-.618a.25.25 0 0 0 .108-.064L11.19 6.25z" fill="#ffffff"/>
+        </svg>
+        </button>
         </div>
         ${deleteBtnsHTML()}
         <div class="add-tag-btn-container">
-          <button class="add-tag-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#000000" viewBox="0 0 256 256"><path d="M246.66,123.56,201,55.13A15.94,15.94,0,0,0,187.72,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H187.72A16,16,0,0,0,201,200.88l45.63-68.44A8,8,0,0,0,246.66,123.56ZM187.72,192H40V64H187.72l42.66,64Z"></path></svg>
-          </button>
+        <button class="add-tag-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#000000" viewBox="0 0 256 256"><path d="M246.66,123.56,201,55.13A15.94,15.94,0,0,0,187.72,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H187.72A16,16,0,0,0,201,200.88l45.63-68.44A8,8,0,0,0,246.66,123.56ZM187.72,192H40V64H187.72l42.66,64Z"></path></svg>
+        </button>
         </div>
         ${dropDownIconHTML()}
+        </div>
+        ${tagsOnNoteHtml(r.tags, r.rawIndex)} 
       </div>
       <div class="itemContent">
         <textarea class="input-content"></textarea>
         <p class="contentText" data-content="${escHtml(r.content)}">${escHtml(r.content)}</p>
-        ${tagsHTML(r.tags)}
       </div>
       ${editBtnsHTML()}
     </div>`;
@@ -675,7 +701,12 @@ function render(results) {
   console.log(results);
   resultsEl.innerHTML = results
     .map((item, index) => {
-      return resultItemHTML(item, index);
+      if (activeTags.length === 0 || RAW_DATA2[item.rawIndex].tags.some(t => activeTags.includes(t))) {
+        return resultItemHTML(item, index);
+      }
+      else {
+        return ""
+      }
     })
     .join("");
   updateResultCount();
@@ -797,7 +828,7 @@ function attachItemListeners() {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard
         .writeText(contentText.dataset.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -838,22 +869,32 @@ function showTagPopover(triggerEl, currentIndex) {
     return;
   }
 
+  let availableTags = tags.length
+    ? tags
+      .map((tag) => {
+        if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
+          return `
+<div class="add-tag-row" data-tag="${escHtml(tag)}">
+  <span class="add-tag-label">${escHtml(tag)}</span>
+  <button class="" aria-label="Add tag ${escHtml(tag)}">
+  <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+  </button>
+</div>
+`;
+        } else {
+          return "";
+        }
+      })
+      .join("")
+    : `<div class="add-tag-empty">No tags yet</div>`;
+
+  if (availableTags == "") {
+    availableTags = `<div class="add-tag-row"><span class="add-tag-label">No Available Tags To Add</span></div>`;
+  }
+
   // Otherwise close whatever's open and open a new one
   if (addNotesTag) {
     addNotesTag.remove();
-    const availableTags = tags.length
-      ? tags
-          .map(
-            (tag) => `
-    <div class="add-tag-row" data-tag="${escHtml(tag)}">
-      <span class="add-tag-label">${escHtml(tag)}</span>
-      <button class="" aria-label="Add tag ${escHtml(tag)}">
-<svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>      </button>
-    </div>
-  `,
-          )
-          .join("")
-      : `<div class="add-tag-empty">No tags yet</div>`;
     addNotesTag.innerHTML = availableTags;
     const rect = triggerEl.getBoundingClientRect();
     addNotesTag.style.position = "absolute";
@@ -868,19 +909,6 @@ function showTagPopover(triggerEl, currentIndex) {
 
   const popover = document.createElement("div");
   popover.className = "add-tag-btn-popover";
-  const availableTags = tags.length
-    ? tags
-        .map(
-          (tag) => `
-    <div class="add-tag-row" data-tag="${escHtml(tag)}">
-      <span class="add-tag-label">${escHtml(tag)}</span>
-      <button class="" aria-label="Add tag ${escHtml(tag)}">
-<svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>      </button>
-    </div>
-  `,
-        )
-        .join("")
-    : `<div class="add-tag-empty">No tags yet</div>`;
   popover.innerHTML = availableTags;
 
   // popover.textContent = "testing here";
@@ -904,7 +932,8 @@ function showTagPopover(triggerEl, currentIndex) {
     const tag = row?.dataset.tag;
     RAW_DATA2[addNotesTag._rawIndex].tags.push(tag);
     storageManager("update-data", "notes", RAW_DATA2);
-    console.log(RAW_DATA2);
+    row.remove();
+    render(search(input.value));
   });
 
   return popover;
@@ -1268,6 +1297,7 @@ function intializeKeyMaps() {
           .join("");
 
         currentTagsBox.innerHTML = tagsBoxes;
+        render(search(input.value));
       } else {
         resultsEl.children[selectedIndex]?.classList.toggle("open");
       }
@@ -1278,7 +1308,7 @@ function intializeKeyMaps() {
       if (!item) return;
       navigator.clipboard
         .writeText(item.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -1311,6 +1341,7 @@ function initSearch() {
         tagSelecteOn = true;
         tagDropDown.classList.add("active");
         displayTags(searchTags(input.value.slice(1)));
+
       } else {
         tagDropDown.classList.remove("active");
         tagSelecteOn = false;
@@ -1573,3 +1604,5 @@ function resetData() {
 
 resetData();
 handleTagDelete();
+
+resultsEl.addEventListener("click", deleteTagsFromNote)
