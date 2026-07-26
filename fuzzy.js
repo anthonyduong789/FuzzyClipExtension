@@ -222,14 +222,11 @@ function displayProjectTags(tags) {
   listProjectTags.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
-
     //fix
     const action = btn.dataset.action;
     const row = btn.closest(".item-row");
     const id = row.dataset.id;
-
     const actionBtns = row?.querySelector(".action-btns");
-
     switch (action) {
       case "start-delete":
         row.dataset.mode = "delete";
@@ -274,6 +271,14 @@ function displayProjectTags(tags) {
 function confirmDeleteTag(row, id) {
   tags = tags.filter((tag) => tag !== id);
   storageManager("update-data", "tags", tags);
+  // TODO: better way to implement
+  for (let step = 0; step < RAW_DATA2.length; step++) {
+    if (RAW_DATA2[step].tags.includes(id)) {
+      RAW_DATA2[step].tags = RAW_DATA2[step].tags.filter((tag) => tag !== id);
+    }
+  }
+  storageManager("update-data", "notes", RAW_DATA2);
+  render(search(input.value));
   row.remove();
 }
 
@@ -621,29 +626,31 @@ function deleteBtnsHTML() {
 
 function tagsOnNoteHtml(tags, rawIndex) {
   if (!tags || tags.length === 0) return "";
-  return `<div class="tags-group">${tags.map((t) =>
-    `<div class="ff-badge-x">
+  return `<div class="tags-group">${tags
+    .map(
+      (t) =>
+        `<div class="ff-badge-x">
       <span>${escHtml(t)}</span>
       <button class="tags-group-button" data-raw-index="${rawIndex}" data-tag="${escHtml(t)}" aria-label="Remove tag">&#x2715;</button>
-    </div>`).join("")}</div>`;
+    </div>`,
+    )
+    .join("")}</div>`;
 }
 
-
 /**
- * 
- * @param {EventListener} html 
+ *
+ * @param {EventListener} html
  */
 function deleteTagsFromNote(e) {
   const btn = e.target.closest(".tags-group-button");
   if (!btn) return;
-  const row = e.target.closest('.ff-badge-x');
+  const row = e.target.closest(".ff-badge-x");
   const rawIndex = Number(btn.dataset.rawIndex);
   const tag = btn.dataset.tag;
-  RAW_DATA2[rawIndex].tags = RAW_DATA2[rawIndex].tags.filter(t => t !== tag);
+  RAW_DATA2[rawIndex].tags = RAW_DATA2[rawIndex].tags.filter((t) => t !== tag);
   storageManager("update-data", "notes", RAW_DATA2);
-  row.remove()
+  row.remove();
 }
-
 
 function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? "checked" : "";
@@ -701,11 +708,13 @@ function render(results) {
   console.log(results);
   resultsEl.innerHTML = results
     .map((item, index) => {
-      if (activeTags.length === 0 || RAW_DATA2[item.rawIndex].tags.some(t => activeTags.includes(t))) {
+      if (
+        activeTags.length === 0 ||
+        RAW_DATA2[item.rawIndex].tags.some((t) => activeTags.includes(t))
+      ) {
         return resultItemHTML(item, index);
-      }
-      else {
-        return ""
+      } else {
+        return "";
       }
     })
     .join("");
@@ -828,7 +837,7 @@ function attachItemListeners() {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard
         .writeText(contentText.dataset.content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -871,9 +880,9 @@ function showTagPopover(triggerEl, currentIndex) {
 
   let availableTags = tags.length
     ? tags
-      .map((tag) => {
-        if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
-          return `
+        .map((tag) => {
+          if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
+            return `
 <div class="add-tag-row" data-tag="${escHtml(tag)}">
   <span class="add-tag-label">${escHtml(tag)}</span>
   <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -881,11 +890,11 @@ function showTagPopover(triggerEl, currentIndex) {
   </button>
 </div>
 `;
-        } else {
-          return "";
-        }
-      })
-      .join("")
+          } else {
+            return "";
+          }
+        })
+        .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -1308,7 +1317,7 @@ function intializeKeyMaps() {
       if (!item) return;
       navigator.clipboard
         .writeText(item.content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -1341,7 +1350,6 @@ function initSearch() {
         tagSelecteOn = true;
         tagDropDown.classList.add("active");
         displayTags(searchTags(input.value.slice(1)));
-
       } else {
         tagDropDown.classList.remove("active");
         tagSelecteOn = false;
@@ -1605,4 +1613,4 @@ function resetData() {
 resetData();
 handleTagDelete();
 
-resultsEl.addEventListener("click", deleteTagsFromNote)
+resultsEl.addEventListener("click", deleteTagsFromNote);
