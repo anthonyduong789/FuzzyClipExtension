@@ -188,12 +188,6 @@ OnMouseMoveUp
 
 ----------
 
-
-
-
-
-
-
 # Refactor
 []  make helper function that displays
 [] handles user input icons
@@ -204,5 +198,9 @@ OnMouseMoveUp
 [] check security with inputs
 
 
+## how to render tags
+1. get tags from memory
+2. sort/ render based off the entry type similar to searh
+3. on enter will add tags to the search
 
 

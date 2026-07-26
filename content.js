@@ -53,9 +53,15 @@ async function initializeIframe() {
   document.body.appendChild(wrapper);
   const results = await loadAllData(); // resolved before listener is even registered
   let notes = []
+  let tags = []
   if (results.notes !== undefined) {
     notes = results.notes
   }
+  if (results.tags !== undefined){
+    tags = results.tags
+  }
+
+
   if (results.personal_settings) personal_settings = results.personal_settings
   if (personal_settings.height !== undefined && personal_settings.width !== undefined) {
     console.log("wrapper style height before clamp", wrapper.style.height)
@@ -88,17 +94,11 @@ async function initializeIframe() {
     console.log("No top or left setting found, defaulting to 5px");
   }
 
-
-
-
-
-
-
   window.addEventListener('message', async (event) => {
     if (event.data?.action !== 'iframeReady') return;
     if (event.data.action === 'iframeReady') {
       iframe.contentWindow.postMessage(
-        { action: 'initializeIframe', notes, personal_settings },
+        { action: 'initializeIframe', notes, personal_settings, tags },
         '*'
       );
     }
