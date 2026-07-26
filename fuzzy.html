@@ -159,7 +159,11 @@
         </div>
 
         <div style="margin-left: auto; display: flex; align-items: center">
-          <div title="Show Keymaps">
+          <div
+            id="showKeymaps"
+            title="Show Keymaps"
+            style="cursor: pointer; display: flex; margin-right: 5px"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="25"
@@ -178,6 +182,7 @@
             class="settings-button"
             id="showSettings"
             aria-label="Settings"
+            title="Settings"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
               <circle
@@ -224,6 +229,42 @@
       <div id="results"></div>
     </div>
     <div class="ff-overlay hidden" id="hotkey-overlay">
+      <div
+        style="
+          display: flex;
+          justify-content: end;
+          padding: 4px 18px 4px 18px;
+          border-bottom: 1.5px solid #e2ddd6;
+        "
+      >
+        <button
+          class="return-btn"
+          id="returnFromKeymaps"
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
+            cursor: pointer;
+          "
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
+      </div>
       <div
         style="
           flex-grow: 1;
@@ -290,32 +331,33 @@
             </svg>
           </button>
         </div>
+
         <button
+          class="return-btn"
+          id="returnFromSettings"
           style="
-            display: flex;
-            background: none;
-            margin-left: auto;
-            justify-content: center;
+            display: inline-flex;
             align-items: center;
-            border: none;
-            color: #5a534a;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 14px;
             cursor: pointer;
           "
-          id="returnFromSettings"
         >
-          return
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="25"
-            height="25"
-            fill="#000000"
-            viewBox="0 0 256 256"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
           >
-            <path
-              d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H208ZM82.34,133.66a8,8,0,0,1,0-11.32l32-32a8,8,0,0,1,11.32,11.32L107.31,120H168a8,8,0,0,1,0,16H107.31l18.35,18.34a8,8,0,0,1-11.32,11.32Z"
-              fill="#5a534a"
-            ></path>
+            <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
+          Back
         </button>
       </div>
       <div class="ff-highlight-row">

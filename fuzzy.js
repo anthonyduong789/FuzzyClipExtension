@@ -91,11 +91,13 @@ const hotkeyOverlayContainer = document.getElementById("hotkey-overlay");
 // settings elements
 const settingOverlayContainer = document.getElementById("setting-overlay");
 const showSettingsButton = document.getElementById("showSettings");
+const showKeyMapsButton = document.getElementById("showKeymaps");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const actionBtnsSettings = document.getElementById("actionBtnsSettings");
 const confirmSettingsButton = document.getElementById("confirmSettingsButton");
 const cancelSettingsButton = document.getElementById("cancelSettingsButton");
 const returnFromSettingsButton = document.getElementById("returnFromSettings");
+const returnFromKeymapsButton = document.getElementById("returnFromKeymaps");
 
 // reset
 const resetButton = document.getElementById("resetData");
@@ -1240,6 +1242,10 @@ function initDeleteMode() {
 // Keyboard shortcuts
 // =============================================================
 
+showKeyMapsButton.addEventListener("click", () => {
+  showHotKeys();
+});
+
 function intializeKeyMaps() {
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key === "/") {
@@ -1423,8 +1429,9 @@ function initColorPicker() {
   });
 }
 
-returnFromSettingsButton.addEventListener("click", closeSettings);
-function closeSettings() {
+returnFromSettingsButton.addEventListener("click", returnToDefaultOverlay);
+returnFromKeymapsButton.addEventListener("click", returnToDefaultOverlay);
+function returnToDefaultOverlay() {
   defaultOverlayContainer.classList.remove("hidden");
   hotkeyOverlayContainer.classList.add("hidden");
   settingOverlayContainer.classList.add("hidden");
