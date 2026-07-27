@@ -812,6 +812,10 @@
   border-radius: 25%;
 }
 
+.itemContainer.edit .add-tag-btn-container {
+  display: none;
+}
+
 /* edit Mode */
 .itemContainer.edit .edit-btns {
   display: flex;
