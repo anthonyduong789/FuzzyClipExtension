@@ -27,6 +27,7 @@
   transition: all 0.15s;
   white-space: nowrap;
 }
+
 #toggleProjectTags:hover {
   background: #f0f0f0;
 }
@@ -36,7 +37,7 @@
   position: absolute;
   top: 110%;
   left: 0;
-  width: 240px;
+  width: fit-content;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -44,6 +45,7 @@
   padding: 8px;
   z-index: 100;
 }
+
 .popover.open {
   display: block;
 }
@@ -52,6 +54,8 @@
   display: none;
   font-size: 13px;
   padding: 0px 5px;
+  min-width: 120px;
+  field-sizing: content;
 }
 
 .item-row.edit .tag-edit {
@@ -73,6 +77,8 @@
 
 .tagButtons {
   display: block;
+  white-space: nowrap;
+  gap: 4px;
 }
 
 .item-list {
@@ -86,17 +92,20 @@
   align-items: center;
   border-bottom: 1px solid #f0f0f0;
 }
+
 .item-row:last-child {
   border-bottom: none;
 }
 
 .item-row span.item-label {
   flex: 1;
+  display: block;
   font-size: 13px;
-  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: black;
+  min-width: 120px;
+  padding: 0px 5px;
 }
 
 .item-row input.item-edit-input {
@@ -117,13 +126,16 @@
   border-radius: 4px;
   color: #666;
 }
+
 .icon-btn:hover {
   background: #eee;
 }
+
 .icon-btn.delete-btn:hover {
   color: #c0392b;
   background: #fbeaea;
 }
+
 .icon-btn.edit-btn:hover {
   color: #2563eb;
   background: #eaf1fb;
@@ -135,6 +147,7 @@
   border-top: 1px solid #eee;
   padding-top: 6px;
 }
+
 /* .add-row input {
   flex: 1;
   font-size: 13px;
@@ -150,6 +163,7 @@
   background: #fafafa;
   cursor: pointer;
 }
+
 .add-row button:hover {
   background: #eee;
 }
@@ -163,7 +177,8 @@
 
 .inputInvalid {
   border: 1px solid #dc2626;
-  background-color: #fef2f2; /* very light red tint */
+  background-color: #fef2f2;
+  /* very light red tint */
 }
 
 .error-message {

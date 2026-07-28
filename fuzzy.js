@@ -145,8 +145,8 @@ toggleProjectTags.addEventListener("click", () => {
 function handleAddTagBox() {
   function handleConfirmTag(e) {
     const newTag = addTagInput.value;
-    if (newTag.includes(" ") || newTag.includes("/")) {
-      addInputTagError.innerText = "No spaces or / allowed";
+    if (newTag.includes(" ") || newTag.includes("/") || newTag.length == 0) {
+      addInputTagError.innerText = "Invalid Input";
       addTagInput.classList.add("invalid");
       addInputTagError.classList.add("visible");
       setTimeout(() => {
@@ -255,13 +255,13 @@ function displayProjectTags(tags) {
         break;
 
       case "cancel":
+        actionBtns.classList.remove("open");
         if (row.dataset.mode === "edit") {
           row.classList.remove("edit");
         } else if (row.dataset.mode === "delete") {
           row.classList.remove("delete");
         }
 
-        actionBtns.classList.remove("open");
         row.dataset.mode = "";
         break;
     }
@@ -839,7 +839,7 @@ function attachItemListeners() {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard
         .writeText(contentText.dataset.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -882,9 +882,9 @@ function showTagPopover(triggerEl, currentIndex) {
 
   let availableTags = tags.length
     ? tags
-        .map((tag) => {
-          if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
-            return `
+      .map((tag) => {
+        if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
+          return `
 <div class="add-tag-row" data-tag="${escHtml(tag)}">
   <span class="add-tag-label">${escHtml(tag)}</span>
   <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -892,11 +892,11 @@ function showTagPopover(triggerEl, currentIndex) {
   </button>
 </div>
 `;
-          } else {
-            return "";
-          }
-        })
-        .join("")
+        } else {
+          return "";
+        }
+      })
+      .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -1323,7 +1323,7 @@ function intializeKeyMaps() {
       if (!item) return;
       navigator.clipboard
         .writeText(item.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
