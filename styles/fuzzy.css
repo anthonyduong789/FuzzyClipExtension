@@ -577,7 +577,8 @@
 }
 
 .itemContainer.selected .resultText {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .itemContent {
@@ -614,7 +615,7 @@
   width: 100%;
   margin: auto;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 200;
 }
 
 /* .resultText mark {

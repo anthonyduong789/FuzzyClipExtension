@@ -121,6 +121,17 @@ const confirmTagInput = document.getElementById("confirmAddTagButton");
 // might be better to have a datatset that i will remove the index for tags
 
 const listProjectTags = document.getElementById("itemList");
+const switchUI = document.getElementById("toggleUIButton");
+
+switchUI.addEventListener('change', (e) => {
+  if (e.target.checked) {
+    console.log("checked")
+  } else {
+    console.log("unChecked")
+  }
+});
+
+
 
 function handleTagDelete() {
   function handleTagRemoveClick(e) {
@@ -1208,6 +1219,7 @@ function initDeleteMode() {
   deleteEl.addEventListener("click", () => {
     deleteMode = !deleteMode;
     deleteEl.classList.toggle("active", deleteMode);
+    tagPopup.classList.remove("open");
     addEl.style.display = deleteMode ? "none" : "flex";
     deleteGroupEl.classList.toggle("active", deleteMode);
     checkboxes.clear();
@@ -1248,7 +1260,19 @@ showKeyMapsButton.addEventListener("click", () => {
 
 function intializeKeyMaps() {
   document.addEventListener("keydown", (e) => {
+    if (e.key === '?') {
+      e.preventDefault();
+    }
     if (e.ctrlKey && e.key === "/") {
+      if (activeTags.length > 0) {
+        activeTags = []
+        currentTagsBox.innerHTML = ''
+        render(search(input.value));
+      }
+
+    }
+    if (e.key === "?") {
+
       showHotKeys();
     }
 
@@ -1350,7 +1374,8 @@ function intializeKeyMaps() {
 function initSearch() {
   input.addEventListener(
     "input",
-    debounce(() => {
+    debounce((e) => {
+      if (e.data === "?") return;
       if (input.value[0] === "/") {
         selectedTagIndex = 0;
         tagSelecteOn = true;
