@@ -125,9 +125,11 @@ const switchUI = document.getElementById("toggleUIButton");
 
 switchUI.addEventListener('change', (e) => {
   if (e.target.checked) {
-    console.log("checked")
+    document.body.classList.toggle("minmal");
+    window.parent.postMessage({ action: "minmal-ui" }, "*");
   } else {
-    console.log("unChecked")
+    document.body.classList.toggle("minmal");
+    window.parent.postMessage({ action: "minmal-ui" }, "*");
   }
 });
 

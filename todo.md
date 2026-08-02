@@ -204,3 +204,36 @@ OnMouseMoveUp
 3. on enter will add tags to the search
 
 
+
+colors
+background: #f4f1eb
+
+
+during hide ui will change 
+
+ff-container 
+background: none
+
+results
+background: none
+
+ff-footer 
+display: none
+
+ff-header
+display: none
+
+ff-buttons
+display: none
+
+top-bar
+display: none
+
+input Container have border
+
+itemContainer
+will not have removed opacity
+
+
+
+
