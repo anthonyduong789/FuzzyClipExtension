@@ -13,6 +13,7 @@ let personal_settings = {
   width: 500,
   top: 5,
   left: 5,
+  hide_ui: false
 };
 let new_personal_settings = {};
 let visibleResults = [];
@@ -121,7 +122,9 @@ const confirmTagInput = document.getElementById("confirmAddTagButton");
 // might be better to have a datatset that i will remove the index for tags
 
 const listProjectTags = document.getElementById("itemList");
+/**@type {HTMLButtonElement} */
 const switchUI = document.getElementById("toggleUIButton");
+const switchUISettings = document.getElementById("toggle_hide_ui_settings");
 
 switchUI.addEventListener('change', (e) => {
   if (e.target.checked) {
@@ -133,6 +136,15 @@ switchUI.addEventListener('change', (e) => {
   }
 });
 
+switchUISettings.addEventListener('change', (e) => {
+  if (e.target.checked) {
+    new_personal_settings["hide_ui"] = true
+  }
+  else {
+    new_personal_settings["hide_ui"] = false
+  }
+  saveSettingsButton.style.display = "block";
+});
 
 
 function handleTagDelete() {
@@ -1524,6 +1536,15 @@ function intializeApp() {
       displayProjectTags(tags);
       intializeKeyMaps();
       initSearch();
+
+      if (personal_settings.hide_ui) {
+        document.body.classList.add('minmal');
+        switchUI.checked = personal_settings.hide_ui
+        if (switchUI.checked) {
+          document.body.classList.add('minmal');
+        }
+        switchUISettings.checked = personal_settings.hide_ui
+      }
     }
   });
 

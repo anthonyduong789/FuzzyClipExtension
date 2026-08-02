@@ -55,13 +55,6 @@
 }
 
 .ff-container {
-  /* height: calc(100vh - 20px);
-  width: calc(100% - 20px);
-  position: fixed;
-  top: 0px;
-  left: 8px;
-  border-radius: 4px;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8); */
   display: flex;
   height: calc(100vh - 4px);
   flex-direction: column;
@@ -75,7 +68,6 @@
   width: calc(100% - 20px);
   border-radius: 4px;
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
-  /* border: 1.5px solid #e2ddd6; */
   overflow: hidden;
   /* no scroll, no scrollbar */
 }
@@ -326,6 +318,8 @@
   background: #fff;
   flex-shrink: 0;
   height: 35.5px;
+  border-radius: 3px;
+  border: 1px solid #e8e8e8;
 }
 
 .ff-search-row:has(#search-input:focus-within) {
@@ -1197,6 +1191,14 @@
 }
 
 
+/* overlay backgrounds */
+#setting-overlay {
+  background: #f4f1eb;
+}
+
+#hotkey-overlay {
+  background: #f4f1eb;
+}
 
 
 /* HIDE UI MODE*/
@@ -1209,18 +1211,28 @@
 }
 
 .ff-container.minmal {
-  display: block;
-  height: auto;
+  /* display: block; */
   background: none;
-
-  top: 8px;
+  /* height: auto; */
+  /* top: 8px; */
+  box-shadow: none;
   /* box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
   border: 1px solid #aaa; */
 }
 
+.ff-container.minmal .ff-overlay {
+  /* height: auto; */
+  height: min-content;
+  max-height: calc(100% - 4px);
+  max-height: calc(100% - 46.5px);
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+
+
 .ff-container.minmal #results {
   background: none;
-  height: 100%;
+  height: calc(100% - 57.5px);
 }
 
 .ff-container.minmal .ff-footer {
@@ -1244,6 +1256,7 @@
 }
 
 .ff-container.minmal .ff-search-row-wrapper {
+  padding: 10px;
   border-radius: 4px 4px 0 0;
   border-top: 1px solid #aaa;
   border-left: 1px solid #aaa;
