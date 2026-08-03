@@ -34,6 +34,7 @@
       </button>
     </div>
   </div>
+  <!-- displays default items -->
   <div class="ff-overlay" id="default-overlay">
     <div class="ff-buttons">
       <button class="ff-pill-btn" id="addNotesButton">
@@ -131,28 +132,31 @@
         </button>
       </div>
     </div>
-    <div class="ff-search-row">
-      <div class="ff-search-icon">
-        <svg viewBox="0 0 24 24">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="22" y2="22" />
-        </svg>
-      </div>
+    <div class="ff-search-row-wrapper">
+      <div class="ff-search-row">
+        <div class="ff-search-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="16.5" y1="16.5" x2="22" y2="22" />
+          </svg>
+        </div>
 
-      <div class="inputContainer">
-        <div id="tagDropdown" class="tag-dropdown"></div>
-        <input class="ff-input" type="text" id="search-input" placeholder="Search notes, docs, tags…" />
-      </div>
+        <div class="inputContainer">
+          <div id="tagDropdown" class="tag-dropdown"></div>
+          <input class="ff-input" type="text" id="search-input" placeholder="Search notes, docs, tags…" />
+        </div>
 
-      <div id="tagsAdded"></div>
-      <span class="ff-kbd" id="ff-count"></span>
-      <label class="switch">
-        <input type="checkbox" id="toggleUIButton">
-        <span class="slider"></span>
-      </label>
+        <div id="tagsAdded"></div>
+        <span class="ff-kbd" id="ff-count"></span>
+        <label class="switch">
+          <input type="checkbox" id="toggleUIButton">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
     <div id="results"></div>
   </div>
+  <!-- displays hotkey display -->
   <div class="ff-overlay hidden" id="hotkey-overlay">
     <div style="
           display: flex;
@@ -191,6 +195,7 @@
       <span class="ff-hint"><kbd>ctrl + q</kbd> close and open window</span>
     </div>
   </div>
+  <!-- displays settings screen -->
   <div class="ff-overlay hidden" id="setting-overlay">
     <div class="ff-buttons">
       <button id="resetData">Reset Data</button>
@@ -238,6 +243,16 @@
       <span class="ff-hl-swatch pink" data-color="pink">match</span>
       <span class="ff-hl-swatch coral" data-color="coral">match</span>
     </div>
+
+
+    <div>
+      <span style="padding: 7px 16px; color: #a09880;">hide ui on startup</span>
+      <label class="switch">
+        <input type="checkbox" id="toggle_hide_ui_settings">
+        <span class="slider"></span>
+      </label>
+    </div>
+
   </div>
   <div class="ff-footer">
     <div class="ff-hints">

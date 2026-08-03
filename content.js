@@ -7,6 +7,7 @@ let personal_settings = {
   width: 500,
   top: 5,
   left: 5,
+  hide_ui: false
 };
 
 // Top Bar
@@ -26,13 +27,17 @@ wrapper.classList.add("wrapper");
 
 const topBar = document.createElement("div");
 topBar.style.cssText = `
+  margin-top: 5px;
   display: flex;
+  width: calc(100% - 20px);
+  margin-left: 8px;
   height: 20px;
   background-color: rgb(244, 241, 235);
   border-radius: 10px 10px 0px 0px;
   cursor: grab;
   justify-content: center;
   align-items: center;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.8);
 `;
 topBar.innerHTML = `
   <div style="
@@ -51,7 +56,7 @@ async function initializeIframe() {
   iframe.style.cssText = `
     all: unset;
     flex-grow: 1;
-    background: #f4f1eb;
+    background: none;
     border-radius: 0px 0px 10px 10px;
   `;
   iframe.src = chrome.runtime.getURL("fuzzy.html");
@@ -69,6 +74,15 @@ async function initializeIframe() {
   }
 
   if (results.personal_settings) personal_settings = results.personal_settings;
+  if (personal_settings.hide_ui !== undefined) {
+    if (personal_settings.hide_ui == false) {
+      topBar.style.opacity = 1
+    }
+    else {
+      topBar.style.opacity = 0
+    }
+  }
+
   if (
     personal_settings.height !== undefined &&
     personal_settings.width !== undefined
@@ -179,8 +193,22 @@ function handlMessages() {
         break;
       case "update-data":
         storeData(event.data.key, event.data.data);
-        loadAllData();
+        // loadAllData();
+        break;
+      case "minmal-ui":
+        if (topBar.style.opacity == 0) {
+          topBar.style.opacity = 1;
+        } else {
+          topBar.style.opacity = 0;
+        }
 
+        // if (topBar.style.display == "none") {
+        //   topBar.style.display = "flex";
+        // }
+        // else {
+        //   topBar.style.display = "none";
+        // }
+        break;
       default:
         break;
     }
