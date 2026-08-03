@@ -1657,7 +1657,9 @@ function resetData() {
       width: 500,
       top: 5,
       left: 5,
+      hide_ui: false
     };
+    tags = ["work", "javascript"];
     storageManager("update-data", "notes", RAW_DATA2);
     storageManager("update-data", "personal_settings", personal_settings);
     storageManager("update-data", "tags", tags);
