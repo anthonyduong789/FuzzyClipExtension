@@ -352,9 +352,19 @@ function confirmEditTag(row, id) {
 function displayTags(tags) {
   let results = tags
     .map((item, i) => {
-      return `<div class="tag-option ${selectedTagIndex == i ? "selected" : ""}">${item.tag}</div>`;
+      if (activeTags.includes(item.tag)) {
+        return ''
+      }
+      else {
+        return `<div class="tag-option ${selectedTagIndex == i ? "selected" : ""}">${item.tag}</div>`;
+
+      }
+
     })
     .join("");
+  if (results === '') {
+    results = '<div class="tag-option">No Available Tags</div>'
+  }
   console.log("display Tags", results);
   tagDropDown.innerHTML = results;
 }
@@ -744,14 +754,24 @@ function render(results) {
   injectMatchStyle(personal_settings.highlightColor);
   resultsEl.innerHTML = results
     .map((item, index) => {
-      if (
-        activeTags.length === 0 ||
-        RAW_DATA2[item.rawIndex].tags.some((t) => activeTags.includes(t))
-      ) {
-        return resultItemHTML(item, index);
-      } else {
-        return "";
+      let hasActiveTags = true
+      for (let i = 0; i < activeTags.length; i++) {
+        if (!RAW_DATA2[item.rawIndex].tags.includes(activeTags[i])) {
+          return ""
+        }
       }
+      if (hasActiveTags) {
+        return resultItemHTML(item, index);
+      }
+
+      // if (
+      //   activeTags.length === 0 ||
+      //   RAW_DATA2[item.rawIndex].tags.some((t) => activeTags.includes(t))
+      // ) {
+      //   return resultItemHTML(item, index);
+      // } else {
+      //   return "";
+      // }
     })
     .join("");
   visibleResults = resultsEl.children.length
@@ -1423,10 +1443,12 @@ function intializeKeyMaps() {
     }
 
     if (e.ctrlKey && e.key === "c") {
-      const item = visibleResults[selectedIndex];
-      if (!item) return;
+      const item = resultsEl.children[selectedIndex];
+      console.log(item)
+      const content = item.querySelector(".contentText").dataset.content
+      if (!content) return;
       navigator.clipboard
-        .writeText(item.content)
+        .writeText(content)
         .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
