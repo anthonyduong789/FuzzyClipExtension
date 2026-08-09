@@ -334,6 +334,7 @@ function makeDraggable(e) {
 }
 
 function onTopBarMouseMove(e) {
+  if (e.buttons !== 1) onTopBarMouseUp; // primary button/touch no longer down
   setWrapperPosition(e.clientX - offsetX, e.clientY - offsetY);
 }
 
