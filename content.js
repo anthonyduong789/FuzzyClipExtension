@@ -220,7 +220,7 @@ function toggleIframe() {
     wrapper.style.display = "flex";
     iframe.focus();
     iframe.contentWindow.postMessage(
-      { type: "FROM_CONTENT", data: "world" },
+      { type: "TOGGLE_IFRAME", data: "world" },
       "*",
     );
   } else {

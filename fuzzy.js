@@ -124,9 +124,20 @@ const confirmTagInput = document.getElementById("confirmAddTagButton");
 const listProjectTags = document.getElementById("itemList");
 /**@type {HTMLButtonElement} */
 const switchUI = document.getElementById("toggleUIButton");
+/**
+ * Checkbox input that toggles the hide-UI setting.
+ * @type {HTMLInputElement}
+ */
 const switchUISettings = document.getElementById("toggle_hide_ui_settings");
 
-switchUI.addEventListener('change', (e) => {
+// will only display if in default mode
+switchUI.addEventListener('click', (e) => {
+  if (defaultOverlayContainer.classList.contains("hidden") || deleteMode) {
+    console.log("skip")
+    e.preventDefault()
+    return;
+  }
+
   if (e.target.checked) {
     document.body.classList.toggle("minmal");
     window.parent.postMessage({ action: "minmal-ui" }, "*");
@@ -693,7 +704,9 @@ function resultItemHTML(r, i) {
         data-raw-index="${r.rawIndex}"
         data-id="${escHtml(r.id)}"
         data-title="${escHtml(r.title)}"
-        >${highlight(r.title, r.positions)}</span>
+        >${highlight(r.title, r.positions)} 
+          ${tagsOnNoteHtml(r.tags, r.rawIndex)}  
+        </span>
         ${copyIconHTML()}
         <div class="edit-group">
         <button class="edit-btn btn">
@@ -710,7 +723,6 @@ function resultItemHTML(r, i) {
         </div>
         ${dropDownIconHTML()}
         </div>
-        ${tagsOnNoteHtml(r.tags, r.rawIndex)} 
       </div>
       <div class="itemContent">
         <textarea class="input-content"></textarea>
@@ -732,7 +744,6 @@ function render(results) {
   visibleResults = results;
   selectedIndex = 0;
   injectMatchStyle(personal_settings.highlightColor);
-  console.log(results);
   resultsEl.innerHTML = results
     .map((item, index) => {
       if (
@@ -1040,10 +1051,10 @@ function closeDeleteConfirm() {
 }
 
 // Attach once — remove+add prevents duplicates on re-render
-function bindSelectAllListener() {
-  selectToDelete.removeEventListener("click", toggleSelectAll);
-  selectToDelete.addEventListener("click", toggleSelectAll);
-}
+// function bindSelectAllListener() {
+//   selectToDelete.removeEventListener("click", toggleSelectAll);
+//   selectToDelete.addEventListener("click", toggleSelectAll);
+// }
 
 // =============================================================
 // Drag and drop
@@ -1230,39 +1241,78 @@ function closeAddBox() {
 // =============================================================
 
 function initDeleteMode() {
-  deleteEl.addEventListener("click", () => {
-    deleteMode = !deleteMode;
-    deleteEl.classList.toggle("active", deleteMode);
-    tagPopup.classList.remove("open");
-    addEl.style.display = deleteMode ? "none" : "flex";
-    deleteGroupEl.classList.toggle("active", deleteMode);
-    checkboxes.clear();
-    selectAll = false;
-    render(search(input.value));
-    bindSelectAllListener();
-  });
-
-  deleteConfirmBtn.addEventListener("click", () => {
-    deleteConfirmBtn.style.borderColor = "var(--color-border-danger)";
-    actionBtnsSelectDelete.classList.add("open");
-  });
-
-  confirmDeleteSelectedBtn.addEventListener("click", () => {
-    closeDeleteConfirm();
-    if (checkboxes.size === 0) return;
-    const deleted = checkboxes.size;
-    // Filter out checked items (checkboxes stores RAW_DATA2 indexes)
-    RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(i));
-    checkboxes.clear();
-    selectAll = false;
-    storageManager("update-data", "notes", RAW_DATA2);
-    render(search(input.value));
-    closeDeleteConfirm();
-    numberOfResults.textContent = `${deleted} notes deleted`;
-  });
-
-  cancelDeleteSelectBtn.addEventListener("click", closeDeleteConfirm);
+  console.log("hi")
 }
+
+
+
+// deleteEl.addEventListener("click", () => {
+//   if (deleteMode) {
+//     deleteMode = false
+//   } else {
+//     deleteMode = true
+//   }
+
+//   console.log("deleteMode", deleteMode)
+//   deleteEl.classList.toggle("active", deleteMode);
+//   tagPopup.classList.remove("open");
+//   addEl.style.display = deleteMode ? "none" : "flex";
+//   deleteGroupEl.classList.toggle("active", deleteMode);
+//   checkboxes.clear();
+//   selectAll = false;
+//   render(search(input.value));
+//   // bindSelectAllListener();
+// });
+
+
+function handleDeleteClick() {
+  console.log("handleDeleteClick Triggered")
+  console.log("before: ", deleteMode);
+  deleteMode = !deleteMode;
+  console.log("after: ", deleteMode);
+  deleteEl.classList.toggle("active", deleteMode);
+  tagPopup.classList.remove("open");
+  addEl.style.display = deleteMode ? "none" : "flex";
+  deleteGroupEl.classList.toggle("active", deleteMode);
+  checkboxes.clear();
+  selectAll = false;
+  render(search(input.value));
+}
+
+
+
+function toggleDeleteMode() {
+  deleteEl.removeEventListener("click", handleDeleteClick);
+  deleteEl.addEventListener("click", handleDeleteClick);
+}
+
+toggleDeleteMode()
+
+
+selectToDelete.removeEventListener("click", toggleSelectAll);
+selectToDelete.addEventListener("click", toggleSelectAll);
+
+deleteConfirmBtn.addEventListener("click", () => {
+  deleteConfirmBtn.style.borderColor = "var(--color-border-danger)";
+  actionBtnsSelectDelete.classList.add("open");
+});
+
+confirmDeleteSelectedBtn.addEventListener("click", () => {
+  closeDeleteConfirm();
+  if (checkboxes.size === 0) return;
+  const deleted = checkboxes.size;
+  // Filter out checked items (checkboxes stores RAW_DATA2 indexes)
+  RAW_DATA2 = RAW_DATA2.filter((_, i) => !checkboxes.has(i));
+  checkboxes.clear();
+  selectAll = false;
+  storageManager("update-data", "notes", RAW_DATA2);
+  render(search(input.value));
+  closeDeleteConfirm();
+  numberOfResults.textContent = `${deleted} notes deleted`;
+});
+
+cancelDeleteSelectBtn.addEventListener("click", closeDeleteConfirm);
+
 
 // =============================================================
 // Keyboard shortcuts
@@ -1273,10 +1323,30 @@ showKeyMapsButton.addEventListener("click", () => {
 });
 
 function intializeKeyMaps() {
-  document.addEventListener("keydown", (e) => {
+  console.log("intializeKeyMaps")
+
+  function handleKeyPresses(e) {
     if (e.key === '?') {
       e.preventDefault();
     }
+    if (e.ctrlKey && e.key === "i") {
+      input.focus();
+    }
+    if (e.ctrlKey && e.key === "m") {
+      if (defaultOverlayContainer.classList.contains("hidden") || deleteMode) {
+        console.log("skip")
+        e.preventDefault()
+        return;
+      }
+
+      console.log("current delte mode", deleteMode);
+
+      document.body.classList.toggle("minmal");
+      window.parent.postMessage({ action: "minmal-ui" }, "*");
+      switchUI.checked = !switchUI.checked
+      return;
+    }
+
     if (e.ctrlKey && e.key === "/") {
       if (activeTags.length > 0) {
         activeTags = []
@@ -1374,7 +1444,13 @@ function intializeKeyMaps() {
         copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
       }
     }
-  });
+
+  }
+
+
+
+  document.removeEventListener("keydown", handleKeyPresses);
+  document.addEventListener("keydown", handleKeyPresses);
 
   closeButton?.addEventListener("click", () => {
     window.parent.postMessage({ action: "hide-iframe" }, "*");
@@ -1402,7 +1478,7 @@ function initSearch() {
         render(search(input.value));
       }
       requestAnimationFrame(() => {
-        bindSelectAllListener();
+        // bindSelectAllListener();
 
         // Re-check boxes if selectAll is active
         if (selectAll) {
@@ -1524,7 +1600,7 @@ function postMessageToParent(action, data) {
 
 function intializeApp() {
   window.addEventListener("message", (event) => {
-    if (event.data.type === "FROM_CONTENT") {
+    if (event.data.type === "TOGGLE_IFRAME") {
       input.focus();
     }
     if (event.data.action === "initializeIframe") {
@@ -1557,8 +1633,8 @@ function intializeApp() {
 // Boot
 // =============================================================
 initAddButton();
-initDeleteMode();
 intializeApp();
+initDeleteMode();
 initColorPicker();
 
 function resetData() {
