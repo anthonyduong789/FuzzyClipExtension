@@ -740,7 +740,6 @@ function renderTags(query) {
 }
 
 function render(results) {
-  visibleResults = results;
   selectedIndex = 0;
   injectMatchStyle(personal_settings.highlightColor);
   resultsEl.innerHTML = results
@@ -755,6 +754,8 @@ function render(results) {
       }
     })
     .join("");
+  visibleResults = resultsEl.children.length
+  console.log("visibleResults", visibleResults)
   updateResultCount();
   attachItemListeners();
   syncSelectAllButton();
@@ -764,7 +765,7 @@ function render(results) {
 function updateResultCount() {
   numberOfResults.innerText = deleteMode
     ? `${checkboxes.size} selected`
-    : `${visibleResults.length} results`;
+    : `${visibleResults} results`;
 }
 
 function syncSelectAllButton() {
@@ -875,7 +876,7 @@ function attachItemListeners() {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard
         .writeText(contentText.dataset.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -920,9 +921,9 @@ function showTagPopover(triggerEl, currentIndex) {
 
   let availableTags = tags.length
     ? tags
-        .map((tag) => {
-          if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
-            return `
+      .map((tag) => {
+        if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
+          return `
 <div class="add-tag-row" data-tag="${escHtml(tag)}">
   <span class="add-tag-label">${escHtml(tag)}</span>
   <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -930,11 +931,11 @@ function showTagPopover(triggerEl, currentIndex) {
   </button>
 </div>
 `;
-          } else {
-            return "";
-          }
-        })
-        .join("")
+        } else {
+          return "";
+        }
+      })
+      .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -1108,7 +1109,7 @@ function onMouseMove(e) {
   const relY = e.clientY - resultsEl.getBoundingClientRect().top;
   const newHover = Math.max(
     0,
-    Math.min(visibleResults.length - 1, Math.floor(relY / itemHeight)),
+    Math.min(visibleResults - 1, Math.floor(relY / itemHeight)),
   );
   if (newHover !== hoverIdx) {
     hoverIdx = newHover;
@@ -1376,7 +1377,8 @@ function intializeKeyMaps() {
         tagDropDown.children[newIndex].classList.add("selected");
         selectedTagIndex = newIndex;
       } else {
-        let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
+        let newIndex = Math.min(selectedIndex + 1, visibleResults - 1);
+        console.log("visibleResults", visibleResults - 1);
         updateSelected(newIndex);
       }
     }
@@ -1414,6 +1416,7 @@ function intializeKeyMaps() {
 
         currentTagsBox.innerHTML = tagsBoxes;
         render(search(input.value));
+        tagSelecteOn = false
       } else {
         resultsEl.children[selectedIndex]?.classList.toggle("open");
       }
@@ -1424,7 +1427,7 @@ function intializeKeyMaps() {
       if (!item) return;
       navigator.clipboard
         .writeText(item.content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
