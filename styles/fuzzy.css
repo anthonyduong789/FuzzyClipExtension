@@ -589,7 +589,7 @@
 
 .itemContainer.selected .resultText {
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 550;
 }
 
 .itemContent {
@@ -720,6 +720,7 @@
   background-color: #e5efff;
   flex-shrink: 0;
   white-space: nowrap;
+  height: min-content;
 }
 
 .ff-badge-x button {

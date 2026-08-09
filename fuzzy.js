@@ -13,7 +13,7 @@ let personal_settings = {
   width: 500,
   top: 5,
   left: 5,
-  hide_ui: false
+  hide_ui: false,
 };
 let new_personal_settings = {};
 let visibleResults = [];
@@ -131,10 +131,10 @@ const switchUI = document.getElementById("toggleUIButton");
 const switchUISettings = document.getElementById("toggle_hide_ui_settings");
 
 // will only display if in default mode
-switchUI.addEventListener('click', (e) => {
+switchUI.addEventListener("click", (e) => {
   if (defaultOverlayContainer.classList.contains("hidden") || deleteMode) {
-    console.log("skip")
-    e.preventDefault()
+    console.log("skip");
+    e.preventDefault();
     return;
   }
 
@@ -147,16 +147,14 @@ switchUI.addEventListener('click', (e) => {
   }
 });
 
-switchUISettings.addEventListener('change', (e) => {
+switchUISettings.addEventListener("change", (e) => {
   if (e.target.checked) {
-    new_personal_settings["hide_ui"] = true
-  }
-  else {
-    new_personal_settings["hide_ui"] = false
+    new_personal_settings["hide_ui"] = true;
+  } else {
+    new_personal_settings["hide_ui"] = false;
   }
   saveSettingsButton.style.display = "block";
 });
-
 
 function handleTagDelete() {
   function handleTagRemoveClick(e) {
@@ -705,7 +703,6 @@ function resultItemHTML(r, i) {
         data-id="${escHtml(r.id)}"
         data-title="${escHtml(r.title)}"
         >${highlight(r.title, r.positions)} 
-          ${tagsOnNoteHtml(r.tags, r.rawIndex)}  
         </span>
         ${copyIconHTML()}
         <div class="edit-group">
@@ -723,6 +720,8 @@ function resultItemHTML(r, i) {
         </div>
         ${dropDownIconHTML()}
         </div>
+          ${tagsOnNoteHtml(r.tags, r.rawIndex)}  
+
       </div>
       <div class="itemContent">
         <textarea class="input-content"></textarea>
@@ -787,6 +786,7 @@ function updateSelected(newIndex) {
 function attachItemListeners() {
   resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
     // toggle show tags
+    const itemAndTagBox = el.querySelector(".itemAndTagBox");
     const tagBtn = el.querySelector(".add-tag-btn");
     const rawIndex = Number(el.dataset.rawIndex);
     tagBtn.addEventListener("click", (el) => {
@@ -875,7 +875,7 @@ function attachItemListeners() {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard
         .writeText(contentText.dataset.content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -887,14 +887,16 @@ function attachItemListeners() {
 
     // ---- Dropdown ----
     dropDown.addEventListener("click", () => el.classList.toggle("open"));
-    resultText.addEventListener("dblclick", () => el.classList.toggle("open"));
+    itemAndTagBox.addEventListener("dblclick", () =>
+      el.classList.toggle("open"),
+    );
 
     // ---- Drag ----
-    resultText.addEventListener("mousedown", (e) => {
+    itemAndTagBox.addEventListener("mousedown", (e) => {
       e.preventDefault();
       holdTimer = setTimeout(() => startDrag(e, i, el), HOLD_DURATION);
     });
-    resultText.addEventListener("mouseup", () => {
+    itemAndTagBox.addEventListener("mouseup", () => {
       clearTimeout(holdTimer);
       holdTimer = null;
     });
@@ -918,9 +920,9 @@ function showTagPopover(triggerEl, currentIndex) {
 
   let availableTags = tags.length
     ? tags
-      .map((tag) => {
-        if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
-          return `
+        .map((tag) => {
+          if (!RAW_DATA2[currentIndex].tags.includes(tag)) {
+            return `
 <div class="add-tag-row" data-tag="${escHtml(tag)}">
   <span class="add-tag-label">${escHtml(tag)}</span>
   <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -928,11 +930,11 @@ function showTagPopover(triggerEl, currentIndex) {
   </button>
 </div>
 `;
-        } else {
-          return "";
-        }
-      })
-      .join("")
+          } else {
+            return "";
+          }
+        })
+        .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -1241,10 +1243,8 @@ function closeAddBox() {
 // =============================================================
 
 function initDeleteMode() {
-  console.log("hi")
+  console.log("hi");
 }
-
-
 
 // deleteEl.addEventListener("click", () => {
 //   if (deleteMode) {
@@ -1264,9 +1264,8 @@ function initDeleteMode() {
 //   // bindSelectAllListener();
 // });
 
-
 function handleDeleteClick() {
-  console.log("handleDeleteClick Triggered")
+  console.log("handleDeleteClick Triggered");
   console.log("before: ", deleteMode);
   deleteMode = !deleteMode;
   console.log("after: ", deleteMode);
@@ -1279,15 +1278,12 @@ function handleDeleteClick() {
   render(search(input.value));
 }
 
-
-
 function toggleDeleteMode() {
   deleteEl.removeEventListener("click", handleDeleteClick);
   deleteEl.addEventListener("click", handleDeleteClick);
 }
 
-toggleDeleteMode()
-
+toggleDeleteMode();
 
 selectToDelete.removeEventListener("click", toggleSelectAll);
 selectToDelete.addEventListener("click", toggleSelectAll);
@@ -1313,7 +1309,6 @@ confirmDeleteSelectedBtn.addEventListener("click", () => {
 
 cancelDeleteSelectBtn.addEventListener("click", closeDeleteConfirm);
 
-
 // =============================================================
 // Keyboard shortcuts
 // =============================================================
@@ -1323,10 +1318,10 @@ showKeyMapsButton.addEventListener("click", () => {
 });
 
 function intializeKeyMaps() {
-  console.log("intializeKeyMaps")
+  console.log("intializeKeyMaps");
 
   function handleKeyPresses(e) {
-    if (e.key === '?') {
+    if (e.key === "?") {
       e.preventDefault();
     }
     if (e.ctrlKey && e.key === "i") {
@@ -1334,8 +1329,8 @@ function intializeKeyMaps() {
     }
     if (e.ctrlKey && e.key === "m") {
       if (defaultOverlayContainer.classList.contains("hidden") || deleteMode) {
-        console.log("skip")
-        e.preventDefault()
+        console.log("skip");
+        e.preventDefault();
         return;
       }
 
@@ -1343,20 +1338,18 @@ function intializeKeyMaps() {
 
       document.body.classList.toggle("minmal");
       window.parent.postMessage({ action: "minmal-ui" }, "*");
-      switchUI.checked = !switchUI.checked
+      switchUI.checked = !switchUI.checked;
       return;
     }
 
     if (e.ctrlKey && e.key === "/") {
       if (activeTags.length > 0) {
-        activeTags = []
-        currentTagsBox.innerHTML = ''
+        activeTags = [];
+        currentTagsBox.innerHTML = "";
         render(search(input.value));
       }
-
     }
     if (e.key === "?") {
-
       showHotKeys();
     }
 
@@ -1373,6 +1366,7 @@ function intializeKeyMaps() {
     }
 
     if (e.key === "ArrowDown" || (e.ctrlKey && e.key === "j")) {
+      e.preventDefault();
       if (tagSelecteOn) {
         let newIndex = Math.min(
           selectedTagIndex + 1,
@@ -1382,20 +1376,19 @@ function intializeKeyMaps() {
         tagDropDown.children[newIndex].classList.add("selected");
         selectedTagIndex = newIndex;
       } else {
-        e.preventDefault();
         let newIndex = Math.min(selectedIndex + 1, visibleResults.length - 1);
         updateSelected(newIndex);
       }
     }
 
     if (e.key === "ArrowUp" || (e.ctrlKey && e.key === "k")) {
+      e.preventDefault();
       if (tagSelecteOn) {
         let newIndex = Math.max(selectedTagIndex - 1, 0);
         tagDropDown.children[selectedTagIndex].classList.remove("selected");
         tagDropDown.children[newIndex].classList.add("selected");
         selectedTagIndex = newIndex;
       } else {
-        e.preventDefault();
         let newIndex = Math.max(selectedIndex - 1, 0);
         updateSelected(newIndex);
       }
@@ -1431,7 +1424,7 @@ function intializeKeyMaps() {
       if (!item) return;
       navigator.clipboard
         .writeText(item.content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -1444,10 +1437,7 @@ function intializeKeyMaps() {
         copyTimer = setTimeout(() => copyBtn.classList.remove("copied"), 500);
       }
     }
-
   }
-
-
 
   document.removeEventListener("keydown", handleKeyPresses);
   document.addEventListener("keydown", handleKeyPresses);
@@ -1614,12 +1604,12 @@ function intializeApp() {
       initSearch();
 
       if (personal_settings.hide_ui) {
-        document.body.classList.add('minmal');
-        switchUI.checked = personal_settings.hide_ui
+        document.body.classList.add("minmal");
+        switchUI.checked = personal_settings.hide_ui;
         if (switchUI.checked) {
-          document.body.classList.add('minmal');
+          document.body.classList.add("minmal");
         }
-        switchUISettings.checked = personal_settings.hide_ui
+        switchUISettings.checked = personal_settings.hide_ui;
       }
     }
   });
@@ -1733,7 +1723,7 @@ function resetData() {
       width: 500,
       top: 5,
       left: 5,
-      hide_ui: false
+      hide_ui: false,
     };
     tags = ["work", "javascript"];
     storageManager("update-data", "notes", RAW_DATA2);

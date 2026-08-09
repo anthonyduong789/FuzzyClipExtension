@@ -7,7 +7,7 @@ let personal_settings = {
   width: 500,
   top: 5,
   left: 5,
-  hide_ui: false
+  hide_ui: false,
 };
 
 // Top Bar
@@ -76,10 +76,9 @@ async function initializeIframe() {
   if (results.personal_settings) personal_settings = results.personal_settings;
   if (personal_settings.hide_ui !== undefined) {
     if (personal_settings.hide_ui == false) {
-      topBar.style.opacity = 1
-    }
-    else {
-      topBar.style.opacity = 0
+      topBar.style.opacity = 1;
+    } else {
+      topBar.style.opacity = 0;
     }
   }
 
@@ -196,6 +195,7 @@ function handlMessages() {
         // loadAllData();
         break;
       case "minmal-ui":
+        console.log("minmal-ui");
         if (topBar.style.opacity == 0) {
           topBar.style.opacity = 1;
         } else {
