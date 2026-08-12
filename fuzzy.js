@@ -620,7 +620,7 @@ function copyIconHTML() {
   </div>`;
 }
 
-function editBtnsHTML() {
+function confirmEditBtnsHtml() {
   return `<div class="edit-btns">
     <button class="btn confirm-btn" aria-label="Save edit">
       <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
@@ -638,6 +638,18 @@ function editBtnsHTML() {
     </button>
   </div>`;
 }
+
+
+function editIconHtml() {
+  return `<div class="edit-group">
+    <button class="edit-btn btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81 3.23 11.33a.25.25 0 0 0-.064.108l-.618 2.162 2.162-.618a.25.25 0 0 0 .108-.064L11.19 6.25z" fill="#ffffff"/>
+      </svg>
+    </button>
+  </div>`;
+}
+
 
 function deleteBtnsHTML() {
   return `<div class="delete-group">
@@ -669,6 +681,15 @@ function deleteBtnsHTML() {
     </div>
   </div>`;
 }
+
+function addTagsBtnHtml() {
+  return `<div class="add-tag-btn-container">
+            <button class="add-tag-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#000000" viewBox="0 0 256 256"><path d="M246.66,123.56,201,55.13A15.94,15.94,0,0,0,187.72,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H187.72A16,16,0,0,0,201,200.88l45.63-68.44A8,8,0,0,0,246.66,123.56ZM187.72,192H40V64H187.72l42.66,64Z"></path></svg>
+            </button>
+          </div>`
+}
+
 
 function tagsOnNoteHtml(tags, rawIndex) {
   if (!tags || tags.length === 0) return "";
@@ -702,6 +723,7 @@ function resultItemHTML(r, i) {
   const isChecked = checkboxes.has(r.rawIndex) ? "checked" : "";
   return `
     <div class="itemContainer" data-raw-index="${r.rawIndex}">
+      <!-- Top Row Container -->
       <div class="itemAndTagBox">
         <div class="item">
         <div class="checkbox-group ${deleteMode ? "active" : ""}">
@@ -714,30 +736,28 @@ function resultItemHTML(r, i) {
         data-title="${escHtml(r.title)}"
         >${highlight(r.title, r.positions)} 
         </span>
+
+
+        <div class="showOnSelectBtns">
+          ${editIconHtml()}
+          ${deleteBtnsHTML()}
+          ${addTagsBtnHtml()}
+        </div>
         ${copyIconHTML()}
-        <div class="edit-group">
-        <button class="edit-btn btn">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086zM11.189 6.25 9.75 4.81 3.23 11.33a.25.25 0 0 0-.064.108l-.618 2.162 2.162-.618a.25.25 0 0 0 .108-.064L11.19 6.25z" fill="#ffffff"/>
-        </svg>
-        </button>
-        </div>
-        ${deleteBtnsHTML()}
-        <div class="add-tag-btn-container">
-        <button class="add-tag-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#000000" viewBox="0 0 256 256"><path d="M246.66,123.56,201,55.13A15.94,15.94,0,0,0,187.72,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H187.72A16,16,0,0,0,201,200.88l45.63-68.44A8,8,0,0,0,246.66,123.56ZM187.72,192H40V64H187.72l42.66,64Z"></path></svg>
-        </button>
-        </div>
+
+
+
         ${dropDownIconHTML()}
         </div>
           ${tagsOnNoteHtml(r.tags, r.rawIndex)}  
-
       </div>
+      <!-- Top Row Container -->
+
       <div class="itemContent">
         <textarea class="input-content"></textarea>
         <p class="contentText" data-content="${escHtml(r.content)}">${escHtml(r.content)}</p>
       </div>
-      ${editBtnsHTML()}
+      ${confirmEditBtnsHtml()}
     </div>`;
 }
 
@@ -1221,6 +1241,10 @@ function createAddBox() {
       <textarea class="input-content" placeholder="Content"></textarea>
     </div>
     <div class="edit-btns">
+
+      <span class="ff-hint"><kbd> ctrl+ y</kbd>Add Item</span>
+
+
       <button class="btn confirm-btn" aria-label="Save">
         <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
         stroke="var(--color-text-success)" stroke-width="2"
@@ -1228,6 +1252,10 @@ function createAddBox() {
         <polyline points="2.5,8 6.5,12 13.5,4"/>
         </svg>
       </button>
+
+
+      <span class="ff-hint"><kbd> ctrl+ n</kbd>Cancel Item</span>
+
       <button class="btn cancel-btn" aria-label="Cancel">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
         stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
@@ -1375,7 +1403,12 @@ function intializeKeyMaps() {
     }
 
     if (e.ctrlKey && e.key === "a") {
-      if (!addEl || addBox) return;
+      if (!addEl) return;
+      if (addBox) {
+        addBox.remove()
+        addBox = null
+      }
+
       addBox = createAddBox();
       resultsEl.prepend(addBox);
     }
@@ -1518,7 +1551,12 @@ function initSearch() {
 
 function initAddButton() {
   addEl.addEventListener("click", () => {
-    if (addBox) return;
+    if (!addEl) return;
+    if (addBox) {
+      addBox.remove()
+      addBox = null
+    }
+
     addBox = createAddBox();
     resultsEl.prepend(addBox);
   });

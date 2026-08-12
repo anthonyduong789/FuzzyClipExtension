@@ -577,6 +577,14 @@
   border-left: 4px solid var(--accent);
 }
 
+.showOnSelectBtns {
+  display: none;
+}
+
+.itemContainer.selected .showOnSelectBtns {
+  display: flex;
+}
+
 .item.selected {
   /* border-left: 2px solid var(--accent); */
   /* background: rgba(255, 255, 255, 0.06); */
