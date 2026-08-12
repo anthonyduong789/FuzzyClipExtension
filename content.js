@@ -1,3 +1,8 @@
+// loads the Iframe
+// manages size and location of where the iframe is stored
+// manages storage to and from chrome storage
+// listener from Iframe for actions
+
 let height = 700,
   width = 500;
 let position = { left: 0, top: 0 };
@@ -324,13 +329,25 @@ function makeDraggable(e) {
   window.addEventListener("pointermove", onTopBarMouseMove);
   window.addEventListener("pointerup", onTopBarMouseUp);
   window.addEventListener("blur", onTopBarMouseUp);
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) onTopBarMouseUp();
-  });
+  document.addEventListener("visibilitychange", documentNoLongerVisble);
 
-  window.addEventListener("mouseleave", (e) => {
-    if (e.relatedTarget === null) onTopBarMouseUp();
-  });
+  window.addEventListener("mouseleave", mouseLeftWindow);
+}
+
+/**
+ * Handles the mouse down event to initiate dragging or interaction.
+ *
+ * @param {MouseEvent} e - The native mouse event object.
+ * @returns {void}
+ */
+function mouseLeftWindow(e) {
+  if (e.relatedTarget === null) {
+    onTopBarMouseMove();
+  }
+}
+
+function documentNoLongerVisble() {
+  if (document.hidden) onTopBarMouseUp();
 }
 
 function onTopBarMouseMove(e) {
@@ -354,8 +371,8 @@ function onTopBarMouseUp(e) {
   window.removeEventListener("pointermove", onTopBarMouseMove);
   window.removeEventListener("pointerup", onTopBarMouseUp);
   window.removeEventListener("blur", onTopBarMouseUp);
-  document.removeEventListener("visibilitychange", onTopBarMouseUp);
-  window.addEventListener("mouseleave", onTopBarMouseUp);
+  document.removeEventListener("visibilitychange", documentNoLongerVisble);
+  window.removeEventListener("mouseleave", mouseLeftWindow);
 }
 const MIN_W = 160,
   MIN_H = 90;
