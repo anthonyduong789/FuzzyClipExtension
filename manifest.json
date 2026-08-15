@@ -9,18 +9,41 @@
     "default_title": "Toggle FuzzyClip"
   },
   "description": "browser note that allows your to easily copy and past things ans also search with a quick keymaps",
-  "permissions": [ "scripting", "storage", "clipboardWrite"],
+  "permissions": [
+    "scripting",
+    "storage",
+    "clipboardWrite"
+  ],
   "web_accessible_resources": [
     {
-      "resources": ["fuzzy.html", "fuzzy.css", "styles/styles.css"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "fuzzy.html",
+        "fuzzy.css",
+        "styles/styles.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["styles/content.css"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content_scripts/state.js",
+        "content_scripts/storage.js",
+        "content_scripts/dom.js",
+        "content_scripts/setting.js",
+        "content_scripts/drag.js",
+        "content_scripts/resize.js",
+        "content_scripts/event.js",
+        "content_scripts/init.js"
+      ],
+      "css": [
+        "styles/content.css"
+      ],
       "run_at": "document_end"
     }
   ],
