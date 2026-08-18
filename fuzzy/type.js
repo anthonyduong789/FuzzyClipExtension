@@ -4,6 +4,7 @@
  * @typedef {Object} DomRefs
  * @property {HTMLInputElement} input - The search input element ("search-input")
  * @property {HTMLElement} resultsEl - The results container ("results")
+ * @property {AbortController | null} _itemlistenerController
  * @property {HTMLButtonElement} addEl - The add notes button ("addNotesButton")
  * @property {HTMLElement} numberOfResults - The results count display ("ff-count")
  * @property {HTMLButtonElement} deleteEl - The delete notes button ("deleteNotesButton")
@@ -101,4 +102,4 @@
  * @property {AppDrag} drag
  */
 
-export {}; // Converts file to a module
+export { }; // Converts file to a module

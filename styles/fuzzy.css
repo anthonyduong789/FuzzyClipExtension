@@ -662,6 +662,8 @@
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: auto;
   cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .DropDownIcon svg {

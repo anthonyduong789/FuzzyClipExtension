@@ -14,6 +14,7 @@ function getDomRefs() {
   return {
     input: document.getElementById("search-input"),
     resultsEl: document.getElementById("results"),
+    _itemlistenerController: null,
     addEl: document.getElementById("addNotesButton"),
     numberOfResults: document.getElementById("ff-count"),
     deleteEl: document.getElementById("deleteNotesButton"),

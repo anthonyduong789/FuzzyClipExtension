@@ -24,7 +24,7 @@ function triggerRender(state, domRefs) {
     searchNotes(domRefs.input.value, state.notes, state.ui.currentAlgo),
     state,
     domRefs,
-    attachItemListeners,
+    attachItemListeners(state, domRefs),
   );
 }
 
@@ -117,9 +117,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-        .map((tag) => {
-          if (!state.notes[currentIndex].tags.includes(tag)) {
-            return `
+      .map((tag) => {
+        if (!state.notes[currentIndex].tags.includes(tag)) {
+          return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -127,11 +127,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-          } else {
-            return "";
-          }
-        })
-        .join("")
+        } else {
+          return "";
+        }
+      })
+      .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -194,51 +194,175 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
  * @returns {void} The new offset X
  */
 export function attachItemListeners(state, domRefs) {
-  domRefs.resultsEl.addEventListener("click", (e) => {
-    const itemContainer = e.target.closest(".itemContainer");
-    console.log(itemContainer);
-  });
-  domRefs.resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
-    const rawIndex = Number(el.dataset.rawIndex);
-    const tagBtn = el.querySelector(".add-tag-btn");
 
-    el.querySelector(".item-checkbox")?.addEventListener("click", (e) => {
-      e.target.checked
-        ? state.ui.checkboxes.add(rawIndex)
-        : state.ui.checkboxes.delete(rawIndex);
-      domRefs.numberOfResults.innerText = `${state.ui.checkboxes.size} selected`;
-    });
+  domRefs._itemlistenerController?.abort();
+  const controller = new AbortController();
+  domRefs._itemlistenerController = controller;
 
-    el.querySelector(".item").addEventListener("click", () =>
-      updateSelected(i, domRefs, state),
-    );
+  domRefs.resultsEl.addEventListener('click', (e) => {
+    console.log(e.target)
+    /** @type {HTMLElement}*/
+    const itemContainer = e.target.closest('.itemContainer')
+    if (!itemContainer) return;
 
-    el.querySelector(".confirmDeleteBtn")?.addEventListener("click", () => {
-      state.notes.splice(rawIndex, 1);
-      storageManager("update-data", "notes", state.notes);
-      triggerRender(state, domRefs);
-    });
+    const actionBtns = itemContainer.querySelector(".action-btns");
+    const button = e.target.closest('[data-action]');
+    const trashBtn = itemContainer.querySelector('.trash-btn')
+    const resultText = itemContainer.querySelector('.resultText');
+    const contentText = itemContainer.querySelector('.contentText')
+    const rawIndex = Number(itemContainer.dataset.rawIndex)
+    const index = [...domRefs.resultsEl.children].indexOf(itemContainer)
 
-    el.querySelector(".copy-btn")?.addEventListener("click", () => {
-      const content = el.querySelector(".contentText").dataset.content;
-      navigator.clipboard.writeText(content).catch(console.error);
-    });
+    // edit mode input
+    const inputKey = itemContainer.querySelector(".input-key");
+    const inputContent = itemContainer.querySelector(".input-content");
 
-    // Tag Removal from Note
-    el.querySelector(".tags-group")?.addEventListener("click", (e) => {
-      const btn = e.target.closest(".tags-group-button");
-      if (!btn) return;
-      state.notes[rawIndex].tags = state.notes[rawIndex].tags.filter(
-        (t) => t !== btn.dataset.tag,
-      );
-      storageManager("update-data", "notes", state.notes);
-      e.target.closest(".ff-badge-x").remove();
-    });
-    tagBtn.addEventListener("click", (el) => {
-      showTagPopover(tagBtn, rawIndex, state, domRefs);
-    });
-  });
+    console.log(index)
+    // Read the action directly from the attribute!
+    if (!itemContainer.classList.contains("selected")) {
+      console.log("update Selected")
+      updateSelected(index, domRefs, state)
+    }
+
+
+    console.log(button, "new button")
+    if (!button) return;
+    const action = button.dataset.action;
+    switch (action) {
+      case 'copyContent':
+        navigator.clipboard
+          .writeText(contentText.dataset.content)
+          .then(() => { })
+          .catch((err) => {
+            console.error("Error copying to clipboard: ", err);
+          });
+
+        button.classList.add("copied");
+        clearTimeout(state.timers.copy);
+        state.timers.copy = setTimeout(() => button.classList.remove("copied"), 500);
+        break
+      case 'showTagPopover':
+        showTagPopover(button, rawIndex, state, domRefs);
+        break
+      case 'trashBtn':
+        actionBtns.classList.add("open");
+        button.style.borderColor = "var(--color-border-danger)";
+        break
+      case 'confirmDeleteNote':
+        console.log('confirmDeleteNote')
+        state.notes.splice(rawIndex, 1);
+        storageManager("update-data", "notes", state.notes);
+        triggerRender(state, domRefs)
+        break
+      case 'cancelDeleteNote':
+        actionBtns.classList.remove('open');
+        trashBtn.style.borderColor = "";
+        break
+      case 'dropDown':
+        itemContainer.classList.toggle('open');
+        console.log("dropDown", itemContainer)
+        break
+      case 'startEditModeItem':
+        inputKey.value = resultText.dataset.title;
+        inputContent.value = contentText.dataset.content;
+        itemContainer.classList.add("edit")
+        break
+      case 'confirmEditBtn':
+        const newTitle = inputKey.value.trim();
+        const newContent = inputContent.value;
+        if (!newTitle) return;
+        const existing = state.notes[rawIndex];
+        state.notes[rawIndex] = {
+          id: existing.id,
+          title: newTitle,
+          content: newContent,
+          tags: existing.tags || [],
+        };
+        storageManager("update-data", "notes", state.notes);
+        triggerRender(state, domRefs)
+        break
+      case 'cancelEditBtn':
+        itemContainer.classList.remove("edit");
+        break
+      case 'deleteTagFromNote':
+        const row = button.closest(".ff-badge-x");
+        const tag = button.dataset.tag;
+        state.notes[rawIndex].tags = state.notes[rawIndex].tags.filter((t) => t !== tag);
+        storageManager("update-data", "notes", state.notes);
+        row.remove();
+        break
+
+    }
+
+  }, { signal: controller.signal });
 }
+
+function closeDeleteConfirm(el) {
+  const actionBtns = el.querySelector(".action-btns");
+  const trashBtn = el.querySelector(".trash-btn");
+  actionBtns?.classList.remove("open");
+  if (trashBtn) trashBtn.style.borderColor = "";
+}
+
+
+
+// export function attachItemListeners(state, domRefs) {
+//   domRefs.resultsEl.addEventListener("click", (e) => {
+//     const itemContainer = e.target.closest(".itemContainer");
+//     const rawIndex = Number(itemContainer.dataset.rawIndex)
+//     const tagBtn = itemContainer.querySelector(".add-tag-btn");
+//     item
+//     if (e.target.classList.contains('.item')) {
+//       up
+//     }
+
+
+
+//     console.log(itemContainer);
+
+//   });
+
+//   domRefs.resultsEl.querySelectorAll(".itemContainer").forEach((el, i) => {
+//     const rawIndex = Number(el.dataset.rawIndex);
+//     const tagBtn = el.querySelector(".add-tag-btn");
+
+//     el.querySelector(".item-checkbox")?.addEventListener("click", (e) => {
+//       e.target.checked
+//         ? state.ui.checkboxes.add(rawIndex)
+//         : state.ui.checkboxes.delete(rawIndex);
+//       domRefs.numberOfResults.innerText = `${state.ui.checkboxes.size} selected`;
+//     });
+
+//     el.querySelector(".item").addEventListener("click", () =>
+//       updateSelected(i, domRefs, state),
+//     );
+
+//     el.querySelector(".confirmDeleteBtn")?.addEventListener("click", () => {
+//       state.notes.splice(rawIndex, 1);
+//       storageManager("update-data", "notes", state.notes);
+//       triggerRender(state, domRefs);
+//     });
+
+//     el.querySelector(".copy-btn")?.addEventListener("click", () => {
+//       const content = el.querySelector(".contentText").dataset.content;
+//       navigator.clipboard.writeText(content).catch(console.error);
+//     });
+
+//     // Tag Removal from Note
+//     el.querySelector(".tags-group")?.addEventListener("click", (e) => {
+//       const btn = e.target.closest(".tags-group-button");
+//       if (!btn) return;
+//       state.notes[rawIndex].tags = state.notes[rawIndex].tags.filter(
+//         (t) => t !== btn.dataset.tag,
+//       );
+//       storageManager("update-data", "notes", state.notes);
+//       e.target.closest(".ff-badge-x").remove();
+//     });
+//     tagBtn.addEventListener("click", (el) => {
+//       showTagPopover(tagBtn, rawIndex, state, domRefs);
+//     });
+//   });
+// }
 
 // =============================================================
 // applies intial settings of project
@@ -431,7 +555,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
