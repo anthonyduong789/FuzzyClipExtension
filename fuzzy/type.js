@@ -78,6 +78,7 @@
  * @property {number|null} debounce
  * @property {number|null} copy
  * @property {number|null} hold
+ * @property {number|null} selectOpen
  */
 
 /**

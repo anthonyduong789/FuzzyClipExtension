@@ -603,10 +603,16 @@
 .itemContent {
   height: 0;
   overflow: hidden;
-  transition:
+
+  /* transition:
     height 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    padding 0.15s cubic-bezier(0.4, 0, 0.2, 1); */
   padding: 0 22px;
+
+
+  transition: height 0.15s ease, opacity 0.15s ease, padding 0.15s ease;
+
+
   color: #1a1a1a;
   interpolate-size: allow-keywords;
   /* Enables 'auto' animation */

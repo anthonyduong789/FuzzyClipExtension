@@ -20,13 +20,24 @@ export function updateResultCount(state, domRefs) {
 }
 
 export function updateSelected(newIndex, domRefs, state) {
+
   domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.remove(
     "selected",
   );
   domRefs.resultsEl.children[newIndex]?.classList.add("selected");
+  domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.remove("open");
+
+  clearTimeout(state.timers.selectOpen);
+  state.timers.selectOpen = setTimeout(() => {
+    // domRefs.resultsEl.children[oldIndex]?.classList.remove("open");
+    domRefs.resultsEl.children[newIndex]?.classList.add("open");
+  }, 200); // only opens if this item stays selected for 2s+
+
   state.ui.selectedIndex = newIndex;
   const sel = domRefs.resultsEl.querySelector(".selected");
   if (sel) sel.scrollIntoView({ block: "nearest" });
+
+
 }
 
 export function syncSelectAllButton(state, domRefs) {

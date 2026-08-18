@@ -71,6 +71,7 @@ export function createInitialState(
       debounce: null,
       copy: null,
       hold: null,
+      selectOpen: null
     },
     drag: {
       dragIdx: null,

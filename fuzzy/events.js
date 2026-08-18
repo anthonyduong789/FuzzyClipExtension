@@ -220,8 +220,9 @@ export function attachItemListeners(state, domRefs) {
     console.log(index)
     // Read the action directly from the attribute!
     if (!itemContainer.classList.contains("selected")) {
-      console.log("update Selected")
-      updateSelected(index, domRefs, state)
+      if (button?.dataset?.action != "dropDown") {
+        updateSelected(index, domRefs, state)
+      }
     }
 
 
