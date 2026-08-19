@@ -3,6 +3,7 @@
 /**
  * @typedef {Object} DomRefs
  * @property {HTMLInputElement} input - The search input element ("search-input")
+ * @property {HTMLButtonElement} closeIframe - will close the Iframe
  * @property {HTMLElement} resultsEl - The results container ("results")
  * @property {AbortController | null} _itemlistenerController
  * @property {HTMLButtonElement} addEl - The add notes button ("addNotesButton")
@@ -103,4 +104,4 @@
  * @property {AppDrag} drag
  */
 
-export { }; // Converts file to a module
+export {}; // Converts file to a module

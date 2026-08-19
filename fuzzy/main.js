@@ -6,6 +6,7 @@ import {
   attachItemListeners,
   initSettings,
   initEventListeners,
+  closeIframe,
 } from "./events.js";
 import { searchNotes } from "./search.js";
 import { render, displayProjectTags } from "./view.js";
@@ -13,6 +14,7 @@ import { render, displayProjectTags } from "./view.js";
 function getDomRefs() {
   return {
     input: document.getElementById("search-input"),
+    closeIframe: document.getElementById("closeInjected"),
     resultsEl: document.getElementById("results"),
     _itemlistenerController: null,
     addEl: document.getElementById("addNotesButton"),

@@ -117,9 +117,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-      .map((tag) => {
-        if (!state.notes[currentIndex].tags.includes(tag)) {
-          return `
+        .map((tag) => {
+          if (!state.notes[currentIndex].tags.includes(tag)) {
+            return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -127,11 +127,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-        } else {
-          return "";
-        }
-      })
-      .join("")
+          } else {
+            return "";
+          }
+        })
+        .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -194,108 +194,113 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
  * @returns {void} The new offset X
  */
 export function attachItemListeners(state, domRefs) {
-
   domRefs._itemlistenerController?.abort();
   const controller = new AbortController();
   domRefs._itemlistenerController = controller;
 
-  domRefs.resultsEl.addEventListener('click', (e) => {
-    console.log(e.target)
-    /** @type {HTMLElement}*/
-    const itemContainer = e.target.closest('.itemContainer')
-    if (!itemContainer) return;
+  domRefs.resultsEl.addEventListener(
+    "click",
+    (e) => {
+      console.log(e.target);
+      /** @type {HTMLElement}*/
+      const itemContainer = e.target.closest(".itemContainer");
+      if (!itemContainer) return;
 
-    const actionBtns = itemContainer.querySelector(".action-btns");
-    const button = e.target.closest('[data-action]');
-    const trashBtn = itemContainer.querySelector('.trash-btn')
-    const resultText = itemContainer.querySelector('.resultText');
-    const contentText = itemContainer.querySelector('.contentText')
-    const rawIndex = Number(itemContainer.dataset.rawIndex)
-    const index = [...domRefs.resultsEl.children].indexOf(itemContainer)
+      const actionBtns = itemContainer.querySelector(".action-btns");
+      const button = e.target.closest("[data-action]");
+      const trashBtn = itemContainer.querySelector(".trash-btn");
+      const resultText = itemContainer.querySelector(".resultText");
+      const contentText = itemContainer.querySelector(".contentText");
+      const rawIndex = Number(itemContainer.dataset.rawIndex);
+      const index = [...domRefs.resultsEl.children].indexOf(itemContainer);
 
-    // edit mode input
-    const inputKey = itemContainer.querySelector(".input-key");
-    const inputContent = itemContainer.querySelector(".input-content");
+      // edit mode input
+      const inputKey = itemContainer.querySelector(".input-key");
+      const inputContent = itemContainer.querySelector(".input-content");
 
-    console.log(index)
-    // Read the action directly from the attribute!
-    if (!itemContainer.classList.contains("selected")) {
-      if (button?.dataset?.action != "dropDown") {
-        updateSelected(index, domRefs, state)
+      console.log(index);
+      // Read the action directly from the attribute!
+      if (!itemContainer.classList.contains("selected")) {
+        if (button?.dataset?.action != "dropDown") {
+          updateSelected(index, domRefs, state);
+        }
       }
-    }
 
+      console.log(button, "new button");
+      if (!button) return;
+      const action = button.dataset.action;
+      switch (action) {
+        case "copyContent":
+          navigator.clipboard
+            .writeText(contentText.dataset.content)
+            .then(() => {})
+            .catch((err) => {
+              console.error("Error copying to clipboard: ", err);
+            });
 
-    console.log(button, "new button")
-    if (!button) return;
-    const action = button.dataset.action;
-    switch (action) {
-      case 'copyContent':
-        navigator.clipboard
-          .writeText(contentText.dataset.content)
-          .then(() => { })
-          .catch((err) => {
-            console.error("Error copying to clipboard: ", err);
-          });
-
-        button.classList.add("copied");
-        clearTimeout(state.timers.copy);
-        state.timers.copy = setTimeout(() => button.classList.remove("copied"), 500);
-        break
-      case 'showTagPopover':
-        showTagPopover(button, rawIndex, state, domRefs);
-        break
-      case 'trashBtn':
-        actionBtns.classList.add("open");
-        button.style.borderColor = "var(--color-border-danger)";
-        break
-      case 'confirmDeleteNote':
-        console.log('confirmDeleteNote')
-        state.notes.splice(rawIndex, 1);
-        storageManager("update-data", "notes", state.notes);
-        triggerRender(state, domRefs)
-        break
-      case 'cancelDeleteNote':
-        actionBtns.classList.remove('open');
-        trashBtn.style.borderColor = "";
-        break
-      case 'dropDown':
-        itemContainer.classList.toggle('open');
-        console.log("dropDown", itemContainer)
-        break
-      case 'startEditModeItem':
-        inputKey.value = resultText.dataset.title;
-        inputContent.value = contentText.dataset.content;
-        itemContainer.classList.add("edit")
-        break
-      case 'confirmEditBtn':
-        const newTitle = inputKey.value.trim();
-        const newContent = inputContent.value;
-        if (!newTitle) return;
-        const existing = state.notes[rawIndex];
-        state.notes[rawIndex] = {
-          id: existing.id,
-          title: newTitle,
-          content: newContent,
-          tags: existing.tags || [],
-        };
-        storageManager("update-data", "notes", state.notes);
-        triggerRender(state, domRefs)
-        break
-      case 'cancelEditBtn':
-        itemContainer.classList.remove("edit");
-        break
-      case 'deleteTagFromNote':
-        const row = button.closest(".ff-badge-x");
-        const tag = button.dataset.tag;
-        state.notes[rawIndex].tags = state.notes[rawIndex].tags.filter((t) => t !== tag);
-        storageManager("update-data", "notes", state.notes);
-        row.remove();
-        break
-
-    }
-
-  }, { signal: controller.signal });
+          button.classList.add("copied");
+          clearTimeout(state.timers.copy);
+          state.timers.copy = setTimeout(
+            () => button.classList.remove("copied"),
+            500,
+          );
+          break;
+        case "showTagPopover":
+          showTagPopover(button, rawIndex, state, domRefs);
+          break;
+        case "trashBtn":
+          actionBtns.classList.add("open");
+          button.style.borderColor = "var(--color-border-danger)";
+          break;
+        case "confirmDeleteNote":
+          console.log("confirmDeleteNote");
+          state.notes.splice(rawIndex, 1);
+          storageManager("update-data", "notes", state.notes);
+          triggerRender(state, domRefs);
+          break;
+        case "cancelDeleteNote":
+          actionBtns.classList.remove("open");
+          trashBtn.style.borderColor = "";
+          break;
+        case "dropDown":
+          itemContainer.classList.toggle("open");
+          console.log("dropDown", itemContainer);
+          break;
+        case "startEditModeItem":
+          inputKey.value = resultText.dataset.title;
+          inputContent.value = contentText.dataset.content;
+          itemContainer.classList.add("edit");
+          break;
+        case "confirmEditBtn":
+          const newTitle = inputKey.value.trim();
+          const newContent = inputContent.value;
+          if (!newTitle) return;
+          const existing = state.notes[rawIndex];
+          state.notes[rawIndex] = {
+            id: existing.id,
+            title: newTitle,
+            content: newContent,
+            tags: existing.tags || [],
+          };
+          storageManager("update-data", "notes", state.notes);
+          triggerRender(state, domRefs);
+          break;
+        case "cancelEditBtn":
+          itemContainer.classList.remove("edit");
+          break;
+        case "deleteTagFromNote":
+          const row = button.closest(".ff-badge-x");
+          const tag = button.dataset.tag;
+          state.notes[rawIndex].tags = state.notes[rawIndex].tags.filter(
+            (t) => t !== tag,
+          );
+          storageManager("update-data", "notes", state.notes);
+          row.remove();
+          break;
+      }
+    },
+    { signal: controller.signal },
+  );
 }
 
 function closeDeleteConfirm(el) {
@@ -304,8 +309,6 @@ function closeDeleteConfirm(el) {
   actionBtns?.classList.remove("open");
   if (trashBtn) trashBtn.style.borderColor = "";
 }
-
-
 
 // export function attachItemListeners(state, domRefs) {
 //   domRefs.resultsEl.addEventListener("click", (e) => {
@@ -316,8 +319,6 @@ function closeDeleteConfirm(el) {
 //     if (e.target.classList.contains('.item')) {
 //       up
 //     }
-
-
 
 //     console.log(itemContainer);
 
@@ -556,7 +557,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -758,4 +759,17 @@ export function initEventListeners(state, domRefs) {
   initSettingsEvents(state, domRefs);
   handleTagManagement(state, domRefs);
   initKeyMaps(state, domRefs);
+  closeIframe(state, domRefs);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function closeIframe(state, domRefs) {
+  domRefs.closeIframe.addEventListener("click", () => {
+    window.parent.postMessage({ action: "hide-iframe" }, "*");
+  });
 }
