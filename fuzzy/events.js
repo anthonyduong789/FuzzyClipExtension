@@ -14,6 +14,7 @@ import {
   displayTags,
   displayProjectTags,
   updateSelected,
+  updateResultCount,
   showHotKeys,
   returnToDefaultOverlay,
 } from "./view.js";
@@ -60,7 +61,20 @@ export function initSearch(state, domRefs) {
   );
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {HTMLElement} triggerEl
+ * @param {number} currentIndex
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
 export function initDeleteMode(state, domRefs) {
+  domRefs.deleteConfirmBtn.addEventListener("click", () => {
+    domRefs.deleteConfirmBtn.style.borderColor = "var(--color-border-danger)";
+    domRefs.actionBtnsSelectDelete.classList.add("open");
+  });
+
   domRefs.deleteEl.addEventListener("click", () => {
     state.ui.deleteMode = !state.ui.deleteMode;
     domRefs.deleteEl.classList.toggle("active", state.ui.deleteMode);
@@ -73,8 +87,9 @@ export function initDeleteMode(state, domRefs) {
   });
 
   domRefs.selectToDelete.addEventListener("click", () => {
+    resetDeleteSelectedElementsBtn(domRefs);
     state.ui.selectAll = !state.ui.selectAll;
-    const allCbs = document.querySelectorAll(".item-checkbox");
+    const allCbs = domRefs.resultsEl.querySelectorAll(".item-checkbox");
     state.ui.checkboxes.clear();
     allCbs.forEach((cb) => {
       cb.checked = state.ui.selectAll;
@@ -86,12 +101,18 @@ export function initDeleteMode(state, domRefs) {
 
   domRefs.confirmDeleteSelectedBtn.addEventListener("click", () => {
     if (state.ui.checkboxes.size === 0) return;
+    const deleted = state.ui.checkboxes.size;
     state.notes = state.notes.filter((_, i) => !state.ui.checkboxes.has(i));
     state.ui.checkboxes.clear();
     state.ui.selectAll = false;
     storageManager("update-data", "notes", state.notes);
-    domRefs.actionBtnsSelectDelete.classList.remove("open");
+    resetDeleteSelectedElementsBtn(domRefs);
     triggerRender(state, domRefs);
+    domRefs.numberOfResults.textContent = `${deleted} notes deleted`;
+  });
+
+  domRefs.cancelDeleteSelectBtn.addEventListener("click", () => {
+    resetDeleteSelectedElementsBtn(domRefs);
   });
 }
 
@@ -207,6 +228,7 @@ export function attachItemListeners(state, domRefs) {
       if (!itemContainer) return;
 
       const actionBtns = itemContainer.querySelector(".action-btns");
+      /**@type {HTMLButtonElement | null | HTMLElement} */
       const button = e.target.closest("[data-action]");
       const trashBtn = itemContainer.querySelector(".trash-btn");
       const resultText = itemContainer.querySelector(".resultText");
@@ -297,17 +319,31 @@ export function attachItemListeners(state, domRefs) {
           storageManager("update-data", "notes", state.notes);
           row.remove();
           break;
+        case "toggleCheckboxDeleteMode":
+          if (button.checked) {
+            state.ui.checkboxes.add(rawIndex);
+            close;
+          } else {
+            state.ui.checkboxes.delete(rawIndex);
+          }
+          resetDeleteSelectedElementsBtn(domRefs);
+          updateResultCount(state, domRefs);
+          break;
       }
     },
     { signal: controller.signal },
   );
 }
 
-function closeDeleteConfirm(el) {
-  const actionBtns = el.querySelector(".action-btns");
-  const trashBtn = el.querySelector(".trash-btn");
-  actionBtns?.classList.remove("open");
-  if (trashBtn) trashBtn.style.borderColor = "";
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+function resetDeleteSelectedElementsBtn(domRefs) {
+  domRefs.actionBtnsSelectDelete.classList.remove("open");
+  domRefs.deleteConfirmBtn.style.borderColor = "";
 }
 
 // export function attachItemListeners(state, domRefs) {
@@ -755,11 +791,16 @@ export function handleTagManagement(state, domRefs) {
  * @param {DomRefs} domRefs
  * @returns {void} The new offset X
  */
-export function initEventListeners(state, domRefs) {
-  initSettingsEvents(state, domRefs);
-  handleTagManagement(state, domRefs);
-  initKeyMaps(state, domRefs);
-  closeIframe(state, domRefs);
+
+/**
+ * Handles drag and drop calculations.
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function closeIframe(domRefs) {
+  domRefs.closeIframe.addEventListener("click", () => {
+    window.parent.postMessage({ action: "hide-iframe" }, "*");
+  });
 }
 
 /**
@@ -768,8 +809,165 @@ export function initEventListeners(state, domRefs) {
  * @param {DomRefs} domRefs
  * @returns {void} The new offset X
  */
-export function closeIframe(state, domRefs) {
-  domRefs.closeIframe.addEventListener("click", () => {
-    window.parent.postMessage({ action: "hide-iframe" }, "*");
+export function switchUIBtn(state, domRefs) {
+  domRefs.switchUI.addEventListener("click", (e) => {
+    if (
+      domRefs.defaultOverlayContainer.classList.contains("hidden") ||
+      state.ui.deleteMode
+    ) {
+      console.log("skip");
+      e.preventDefault();
+      return;
+    }
+
+    if (e.target.checked) {
+      document.body.classList.toggle("minmal");
+      window.parent.postMessage({ action: "minmal-ui" }, "*");
+    } else {
+      document.body.classList.toggle("minmal");
+      window.parent.postMessage({ action: "minmal-ui" }, "*");
+    }
+  });
+}
+
+export function initEventListeners(state, domRefs) {
+  initSettingsEvents(state, domRefs);
+  handleTagManagement(state, domRefs);
+  initKeyMaps(state, domRefs);
+  closeIframe(domRefs);
+  switchUIBtn(state, domRefs);
+  resetData(state, domRefs);
+  handleTagDelete(state, domRefs);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+function resetData(state, domRefs) {
+  domRefs.resetButton.addEventListener("click", () => {
+    state.notes = [
+      { id: generateId(), title: "example", content: "example", tags: [] },
+      { id: generateId(), title: "example1", content: "example1", tags: [] },
+      {
+        id: generateId(),
+        title: "example2",
+        content: "a second example variant",
+        tags: [],
+      },
+      { id: generateId(), title: "Hello", content: "Hello world", tags: [] },
+      { id: generateId(), title: "hello", content: "hello there", tags: [] },
+      {
+        id: generateId(),
+        title: "helllo",
+        content: "typo test - extra l",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "Hallo",
+        content: "German greeting",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "javascript snippet",
+        content: 'const x = () => console.log("test")',
+        tags: ["javascript"],
+      },
+      {
+        id: generateId(),
+        title: "js snippet",
+        content: "short alias for the above",
+        tags: ["javascript"],
+      },
+      {
+        id: generateId(),
+        title: "meeting notes",
+        content: "Discussed Q3 roadmap and budget",
+        tags: ["work"],
+      },
+      {
+        id: generateId(),
+        title: "grocery list",
+        content: "milk, eggs, bread, coffee",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "todo",
+        content: "finish fuzzy search implementation",
+        tags: ["work"],
+      },
+      {
+        id: generateId(),
+        title: "password reset",
+        content: "security question flow notes",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "quick brown fox",
+        content: "jumps over the lazy dog",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title: "api key",
+        content: "sk-test-1234567890abcdef",
+        tags: [],
+      },
+      { id: generateId(), title: "", content: "empty key edge case", tags: [] },
+      {
+        id: generateId(),
+        title: "a",
+        content: "single character key",
+        tags: [],
+      },
+      {
+        id: generateId(),
+        title:
+          "very long key name that goes on for a while to test truncation behavior",
+        content:
+          "long value too, this one also has a lot of text to see how it wraps or truncates in the UI when rendered",
+        tags: [],
+      },
+    ];
+    state.settings = {
+      highlightColor: "amber",
+      height: 700,
+      width: 500,
+      top: 5,
+      left: 5,
+      hide_ui: false,
+    };
+    state.tags = ["work", "javascript"];
+    storageManager("update-data", "notes", state.notes);
+    storageManager("update-data", "personal_settings", state.settings);
+    storageManager("update-data", "tags", state.tags);
+    triggerRender(state, domRefs);
+  });
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function handleTagDelete(state, domRefs) {
+  domRefs.currentTagsBox.addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter-remove");
+    if (!btn) return;
+    const pill = btn.closest(".filter-pill");
+    const index = state.activeTags.indexOf(btn.dataset.tag);
+
+    if (index !== -1) {
+      state.activeTags.splice(index, 1);
+    }
+    pill.remove();
+    triggerRender(state, domRefs);
   });
 }

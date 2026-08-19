@@ -34,6 +34,7 @@
  * @property {HTMLInputElement} switchUI - button
  * @property {HTMLInputElement} switchUISettings - button
  * @property {HTMLElement|null} addNotesTag - button
+ * @property {HTMLButtonElement} resetButton
  */
 
 /**

@@ -45,6 +45,7 @@ function getDomRefs() {
     switchUI: document.getElementById("toggleUIButton"),
     switchUISettings: document.getElementById("toggle_hide_ui_settings"),
     addNotesTag: null,
+    resetButton: document.getElementById("resetData"),
   };
 }
 

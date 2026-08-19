@@ -1,5 +1,5 @@
 // templates.js
-// containers the data action 
+// containers the data action
 // assigns actions to buttons that is used in attachItemListeners
 
 import { escHtml, highlight } from "./utils.js";
@@ -56,6 +56,14 @@ export function tagsOnNoteHtml(tags, rawIndex, action) {
     .join("")}</div>`;
 }
 
+export function checkBoxHtml(activeClass, rawIndex, action, isChecked) {
+  return `
+      <div class="checkbox-group ${activeClass}">
+        <input type="checkbox" class="item-checkbox" data-raw-index="${rawIndex}" data-action="${action}" ${isChecked}/>
+      </div>
+  `;
+}
+
 export function resultItemHTML(r, i, state) {
   const isChecked = state.ui.checkboxes.has(r.rawIndex) ? "checked" : "";
   const activeClass = state.ui.deleteMode ? "active" : "";
@@ -63,23 +71,21 @@ export function resultItemHTML(r, i, state) {
     <div class="itemContainer" data-raw-index="${r.rawIndex}">
       <div class="itemAndTagBox">
         <div class="item">
-        <div class="checkbox-group ${activeClass}">
-          <input type="checkbox" class="item-checkbox" data-raw-index="${r.rawIndex}" ${isChecked}/>
-        </div>
+        ${checkBoxHtml(activeClass, r.rawIndex, "toggleCheckboxDeleteMode", isChecked)}
         <input class="input-key"/>
         <span class="resultText" data-raw-index="${r.rawIndex}" data-id="${escHtml(r.id)}" data-title="${escHtml(r.title)}">
           ${highlight(r.title, r.positions)} 
         </span>
-        <div class="showOnSelectBtns">${editIconHtml('startEditModeItem')}${deleteBtnsHTML('trashBtn', 'confirmDeleteNote', 'cancelDeleteNote')}${addTagsBtnHtml('showTagPopover')}</div>
-        ${copyIconHTML('copyContent')}${dropDownIconHTML('dropDown')}
+        <div class="showOnSelectBtns">${editIconHtml("startEditModeItem")}${deleteBtnsHTML("trashBtn", "confirmDeleteNote", "cancelDeleteNote")}${addTagsBtnHtml("showTagPopover")}</div>
+        ${copyIconHTML("copyContent")}${dropDownIconHTML("dropDown")}
         </div>
-        ${tagsOnNoteHtml(r.tags, r.rawIndex, 'deleteTagFromNote')}  
+        ${tagsOnNoteHtml(r.tags, r.rawIndex, "deleteTagFromNote")}  
       </div>
       <div class="itemContent">
         <textarea class="input-content"></textarea>
         <p class="contentText" data-content="${escHtml(r.content)}">${escHtml(r.content)}</p>
       </div>
-      ${confirmEditBtnsHtml('confirmEditBtn', 'cancelEditBtn')}
+      ${confirmEditBtnsHtml("confirmEditBtn", "cancelEditBtn")}
     </div>`;
 }
 
