@@ -1,6 +1,8 @@
 // templates.js
 // containers the data action
 // assigns actions to buttons that is used in attachItemListeners
+// contains the ui elements that are being added to the dom dynamically based on use / or dom manipulation
+/** @import { AppState, DomRefs } from "./type.js" */
 
 import { escHtml, highlight } from "./utils.js";
 
@@ -108,3 +110,54 @@ export function projectTagItemHtml(tag) {
       </div>
     </div>`;
 }
+
+/**
+ * creates newAddbox
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function createAddBox(state, domRefs) {
+  const newAddBox = document.createElement("div");
+  newAddBox.className = "itemContainer edit";
+  newAddBox.innerHTML = `
+    <div class="item">
+      <input class="input-key" placeholder="Title"/>
+    </div>
+    <div class="itemContent">
+      <textarea class="input-content" placeholder="Content"></textarea>
+    </div>
+    <div class="edit-btns">
+      <span class="ff-hint"><kbd> ctrl+ y</kbd></span>
+      <button class="btn confirm-btn" aria-label="Save">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none"
+        stroke="var(--color-text-success)" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="2.5,8 6.5,12 13.5,4"/>
+        </svg>
+      </button>
+      <span class="ff-hint"><kbd> ctrl+ x</kbd></span>
+      <button class="btn cancel-btn" aria-label="Cancel">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+        stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round">
+        <line x1="1" y1="1" x2="11" y2="11"/>
+        <line x1="11" y1="1" x2="1" y2="11"/>
+        </svg>
+      </button>
+    </div>
+    `;
+  return newAddBox;
+}
+
+// newAddBox.querySelector(".confirm-btn").addEventListener("click", () => {
+//   const title = newAddBox.querySelector(".input-key").value.trim();
+//   const content = newAddBox.querySelector(".input-content").value;
+//   if (!title) return;
+//   state.notes.push({ id: generateId(), title, content, tags: [] });
+//   storageManager("update-data", "notes", state.notes);
+//   if (state.ui.addBox) {
+//     state.ui.addBox.remove();
+//     state.ui.addBox = null;
+
+//   }
+// });

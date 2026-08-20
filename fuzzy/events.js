@@ -18,6 +18,9 @@ import {
   showHotKeys,
   returnToDefaultOverlay,
 } from "./view.js";
+
+import { createAddBox } from "./templates.js";
+
 import { HOLD_DURATION, GHOST_SNAPBACK_MS } from "./state.js";
 
 function triggerRender(state, domRefs) {
@@ -29,6 +32,12 @@ function triggerRender(state, domRefs) {
   );
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
 export function initSearch(state, domRefs) {
   domRefs.input.addEventListener(
     "input",
@@ -79,7 +88,9 @@ export function initDeleteMode(state, domRefs) {
     state.ui.deleteMode = !state.ui.deleteMode;
     domRefs.deleteEl.classList.toggle("active", state.ui.deleteMode);
     domRefs.tagPopup.classList.remove("open");
-    domRefs.addEl.style.display = state.ui.deleteMode ? "none" : "flex";
+    domRefs.addNotesButton.style.display = state.ui.deleteMode
+      ? "none"
+      : "flex";
     domRefs.deleteGroupEl.classList.toggle("active", state.ui.deleteMode);
     state.ui.checkboxes.clear();
     state.ui.selectAll = false;
@@ -644,6 +655,33 @@ export function initKeyMaps(state, domRefs) {
     if (e.key === "Escape" || (e.ctrlKey && e.key === "q")) {
       window.parent.postMessage({ action: "hide-iframe" }, "*");
     }
+
+    // IF addBox is still open keyboard shortcut to add the element
+    if (e.ctrlKey && e.key === "y" && state.ui.addBox) {
+      const title = state.ui.addBox.querySelector(".input-key").value.trim();
+      const content = state.ui.addBox.querySelector(".input-content").value;
+      if (!title) return;
+      state.notes.push({ id: generateId(), title, content, tags: [] });
+      storageManager("update-data", "notes", state.notes);
+      if (state.ui.addBox) {
+        state.ui.addBox.remove();
+        state.ui.addBox = null;
+      }
+      triggerRender(state, domRefs);
+    }
+
+    if (e.ctrlKey && e.key === "x" && state.ui.addBox) {
+      console.log("prevent default");
+      e.preventDefault();
+      if (state.ui.addBox) {
+        state.ui.addBox.remove();
+        state.ui.addBox = null;
+      }
+    }
+
+    if (e.ctrlKey && e.key === "a") {
+      createNewNote(state, domRefs);
+    }
   });
 }
 
@@ -838,6 +876,7 @@ export function initEventListeners(state, domRefs) {
   switchUIBtn(state, domRefs);
   resetData(state, domRefs);
   handleTagDelete(state, domRefs);
+  addNotesButton(state, domRefs);
 }
 
 /**
@@ -970,4 +1009,54 @@ export function handleTagDelete(state, domRefs) {
     pill.remove();
     triggerRender(state, domRefs);
   });
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function addNotesButton(state, domRefs) {
+  domRefs.addNotesButton.addEventListener(
+    "click",
+    createNewNote(state, domRefs),
+  );
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function createNewNote(state, domRefs) {
+  // will get rid of current addbox and reset
+  if (state.ui.addBox) {
+    state.ui.addBox.remove();
+    state.ui.addBox = null;
+  }
+  state.ui.addBox = createAddBox();
+  state.ui.addBox
+    .querySelector(".confirm-btn")
+    .addEventListener("click", () => {
+      const title = state.ui.addBox.querySelector(".input-key").value.trim();
+      const content = state.ui.addBox.querySelector(".input-content").value;
+      if (!title) return;
+      state.notes.push({ id: generateId(), title, content, tags: [] });
+      storageManager("update-data", "notes", state.notes);
+      if (state.ui.addBox) {
+        state.ui.addBox.remove();
+        state.ui.addBox = null;
+      }
+      triggerRender(state, domRefs);
+    });
+  state.ui.addBox.querySelector(".cancel-btn").addEventListener("click", () => {
+    if (state.ui.addBox) {
+      state.ui.addBox.remove();
+      state.ui.addBox = null;
+    }
+  });
+  domRefs.resultsEl.prepend(state.ui.addBox);
+  state.ui.addBox.querySelector(".input-key").focus();
 }

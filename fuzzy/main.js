@@ -17,7 +17,7 @@ function getDomRefs() {
     closeIframe: document.getElementById("closeInjected"),
     resultsEl: document.getElementById("results"),
     _itemlistenerController: null,
-    addEl: document.getElementById("addNotesButton"),
+    addNotesButton: document.getElementById("addNotesButton"),
     numberOfResults: document.getElementById("ff-count"),
     deleteEl: document.getElementById("deleteNotesButton"),
     deleteGroupEl: document.getElementById("deleteGroup"),
