@@ -85,8 +85,10 @@
 
 /**
  * @typedef {Object} AppDrag
- * @property {number|null} dragIdx
+ * @property {HTMLElement|null} indicator
+ * @property {number|null} dragId
  * @property {number|null} hoverIdx
+ * @property {HTMLElement|null} dragEl
  * @property {HTMLElement|null} ghostEl
  * @property {number} offsetX
  * @property {number} offsetY

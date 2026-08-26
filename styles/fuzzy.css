@@ -41,6 +41,12 @@
   --fc-hover: #f6f6f8;
   --fc-accent: #6e56cf;
   --fc-accent-soft: #e8dfff;
+
+  /* ghost styles */
+  --surface-2: #ffffff;
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --border-accent: #378add;
 }
 
 .container {
@@ -540,6 +546,7 @@
   cursor: grab;
   display: flex;
   color: #1a1a1a;
+  align-items: center;
   /* border-left: 4px solid #f4f1eb; */
 }
 

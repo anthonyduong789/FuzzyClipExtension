@@ -877,6 +877,7 @@ export function initEventListeners(state, domRefs) {
   resetData(state, domRefs);
   handleTagDelete(state, domRefs);
   addNotesButton(state, domRefs);
+  drag(state, domRefs);
 }
 
 /**
@@ -1018,10 +1019,9 @@ export function handleTagDelete(state, domRefs) {
  * @returns {void} The new offset X
  */
 export function addNotesButton(state, domRefs) {
-  domRefs.addNotesButton.addEventListener(
-    "click",
-    createNewNote(state, domRefs),
-  );
+  domRefs.addNotesButton.addEventListener("click", () => {
+    createNewNote(state, domRefs);
+  });
 }
 
 /**
@@ -1059,4 +1059,183 @@ export function createNewNote(state, domRefs) {
   });
   domRefs.resultsEl.prepend(state.ui.addBox);
   state.ui.addBox.querySelector(".input-key").focus();
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function drag(state, domRefs) {
+  domRefs.resultsEl.addEventListener("pointerdown", (e) => {
+    const handle = e.target.closest(".handleItemContainer");
+    if (!handle) return;
+    console.log(handle);
+    e.preventDefault();
+    const itemContainer = e.target.closest(".itemContainer");
+    const itemAndTagBox = e.target.closest(".itemAndTagBox");
+    const rect = itemAndTagBox.getBoundingClientRect();
+
+    state.drag.dragEl = itemContainer;
+    state.drag.dragId = itemContainer.dataset.rawIndex;
+
+    console.log(itemContainer.dataset.rawIndex);
+    console.log(state.drag.dragId);
+    state.drag.offsetX = e.clientX - rect.left;
+    state.drag.offsetY = e.clientY - rect.top;
+
+    state.drag.ghostEl = makeGhost(itemAndTagBox, rect);
+    state.drag.ghostEl.style.transform =
+      "translate(" + rect.left + "px, " + rect.top + "px)";
+    itemContainer.style.visibility = "hidden";
+
+    document.addEventListener("pointermove", (e) => {
+      handlePointerMove(e, state, domRefs);
+    });
+    document.addEventListener("pointerup", (e) => {
+      handlePointerUp(e, state, domRefs);
+    });
+  });
+}
+
+export function makeGhost(item, rect) {
+  const g = document.createElement("div");
+  g.style.cssText =
+    "position: fixed; top: 0; left: 0; width: " +
+    rect.width * 0.95 +
+    "px; border: 0.5px solid var(--border-strong); pointer-events: none; z-index: 100; background: #f4f1eb;";
+  g.innerHTML = item.cloneNode(true).innerHTML;
+  document.body.appendChild(g);
+  return g;
+}
+
+function handlePointerMove(e, state, domRefs) {
+  if (!state.drag.dragEl) return;
+  e.preventDefault();
+  moveGhost(state, e.clientX, e.clientY);
+  updateDropLine(e.clientY, state, domRefs);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {MouseEvent} e
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function handlePointerUp(e, state, domRefs) {
+  if (!state.drag.dragEl) return;
+  const cards = [
+    ...domRefs.resultsEl.querySelectorAll(".itemContainer"),
+  ].filter((c) => c !== state.drag.dragEl);
+  let targetIndex = state.notes.length;
+  let placed = false;
+
+  for (const card of cards) {
+    const rect = card.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    if (e.clientY < mid) {
+      const rawIndex = Number(card.dataset.rawIndex);
+      targetIndex = rawIndex;
+      placed = true;
+      break;
+    }
+  }
+  const fromIndex = state.drag.dragId;
+  const [moved] = state.notes.splice(fromIndex, 1);
+  const insertAT = placed
+    ? targetIndex > fromIndex
+      ? targetIndex - 1
+      : targetIndex
+    : state.notes.length;
+
+  console.log("from", fromIndex, "insertAT", insertAT);
+  state.notes.splice(insertAT, 0, moved);
+  state.drag.dragEl = null;
+  state.drag.dragId = null;
+
+  if (state.drag.ghostEl) {
+    state.drag.ghostEl.remove();
+    state.drag.ghostEl = null;
+  }
+
+  triggerRender(state, domRefs);
+  updateSelected(insertAT, domRefs, state);
+  document.removeEventListener("pointermove", handlePointerMove);
+  document.removeEventListener("pointerup", handlePointerUp);
+
+  storageManager("update-data", "notes", state.notes);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {number} x
+ * @param {number} y
+ */
+function moveGhost(state, x, y) {
+  // console.log(x, y);
+  if (!state.drag.ghostEl) return;
+  state.drag.ghostEl.style.transform =
+    "translate(" +
+    (x - state.drag.offsetX) +
+    "px, " +
+    (y - state.drag.offsetY) +
+    "px)";
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {number} clientY
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function updateDropLine(clientY, state, domRefs) {
+  const cards = [
+    ...domRefs.resultsEl.querySelectorAll(".itemContainer"),
+  ].filter((c) => c !== state.drag);
+  const listRect = domRefs.resultsEl.getBoundingClientRect();
+  let lineTop = null;
+
+  if (cards.length === 0) {
+    getIndicator(state, domRefs).style.display = "none";
+    console.log("card Length is 0");
+    return;
+  }
+
+  // TODO: have updateDropLine skip if same position orginal element is alreay in
+  const firstRect = cards[0].getBoundingClientRect();
+  if (clientY < firstRect.top + firstRect.height / 2) {
+    lineTop = Math.max(0, firstRect.top);
+  } else {
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (clientY < mid) {
+        lineTop = rect.top;
+        // lineTop = rect.top - listRect.top;
+        break;
+      }
+      lineTop = rect.bottom;
+      // lineTop = rect.bottom - listRect.top;
+    }
+  }
+  const line = getIndicator(state, domRefs);
+  line.style.top = lineTop + "px";
+  line.style.display = "block";
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function getIndicator(state, domRefs) {
+  if (!state.drag.indicator || !state.drag.indicator.isConnected) {
+    state.drag.indicator = document.createElement("div");
+    state.drag.indicator.style.cssText =
+      "position: absolute; left: 0; right: 0; height: 2px; background: var(--border-accent); pointer-events: none; display: none; z-index: 5;";
+    domRefs.resultsEl.append(state.drag.indicator);
+  }
+  return state.drag.indicator;
 }

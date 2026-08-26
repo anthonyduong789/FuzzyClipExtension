@@ -71,11 +71,13 @@ export function createInitialState(
       debounce: null,
       copy: null,
       hold: null,
-      selectOpen: null
+      selectOpen: null,
     },
     drag: {
-      dragIdx: null,
+      indicator: null,
+      dragId: null,
       hoverIdx: null,
+      dragEl: null,
       ghostEl: null,
       offsetX: 0,
       offsetY: 0,
