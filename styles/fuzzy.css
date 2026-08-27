@@ -41,6 +41,12 @@
   --fc-hover: #f6f6f8;
   --fc-accent: #6e56cf;
   --fc-accent-soft: #e8dfff;
+
+  /* ghost styles */
+  --surface-2: #ffffff;
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --border-accent: #378add;
 }
 
 .container {
@@ -540,6 +546,7 @@
   cursor: grab;
   display: flex;
   color: #1a1a1a;
+  align-items: center;
   /* border-left: 4px solid #f4f1eb; */
 }
 
@@ -603,10 +610,16 @@
 .itemContent {
   height: 0;
   overflow: hidden;
-  transition:
+
+  /* transition:
     height 0.15s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    padding 0.15s cubic-bezier(0.4, 0, 0.2, 1); */
   padding: 0 22px;
+
+
+  transition: height 0.15s ease, opacity 0.15s ease, padding 0.15s ease;
+
+
   color: #1a1a1a;
   interpolate-size: allow-keywords;
   /* Enables 'auto' animation */
@@ -662,6 +675,8 @@
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   margin-left: auto;
   cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .DropDownIcon svg {
