@@ -797,7 +797,20 @@ export function handleTagManagement(state, domRefs) {
           storageManager("update-data", "tags", state.tags);
           row.dataset.id = newTagValue;
           const label = row.querySelector(".item-label");
-          if (label) label.textContent = newTagValue;
+          if (label) {
+            // replace all old tag with new tag notes
+            for (const note of state.notes) {
+              let index = note.tags.indexOf(label.textContent);
+
+              if (index !== -1) {
+                note.tags[index] = newTagValue;
+              }
+            }
+            label.textContent = newTagValue;
+          }
+          storageManager("update-data", "notes", state.notes);
+          triggerRender(state, domRefs);
+
           actionBtns.classList.remove("open");
         }
         row.dataset.mode = "";
