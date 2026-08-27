@@ -66,7 +66,11 @@ export function syncSelectAllButton(state, domRefs) {
 export function render(results, state, domRefs, attachListenersCallback) {
   state.ui.selectedIndex = 0;
   injectMatchStyle(state.settings.highlightColor);
-
+  let renderHandle = true;
+  if (domRefs.input.value || state.ui.deleteMode) {
+    renderHandle = false;
+  }
+  console.log(renderHandle);
   domRefs.resultsEl.innerHTML = results
     .map((item, index) => {
       const hasActiveTags =
@@ -74,7 +78,9 @@ export function render(results, state, domRefs, attachListenersCallback) {
         state.activeTags.every((t) =>
           state.notes[item.rawIndex].tags.includes(t),
         );
-      return hasActiveTags ? resultItemHTML(item, index, state) : "";
+      return hasActiveTags
+        ? resultItemHTML(item, index, state, renderHandle)
+        : "";
     })
     .join("");
 

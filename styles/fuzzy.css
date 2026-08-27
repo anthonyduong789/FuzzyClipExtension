@@ -539,11 +539,13 @@
 
 /* add note section END */
 
+
+
 .item {
   flex: 2;
   border-radius: 3px;
   padding: 0px 0px 0px 5px;
-  cursor: grab;
+  cursor: pointer;
   display: flex;
   color: #1a1a1a;
   align-items: center;
@@ -590,6 +592,10 @@
 
 .itemContainer.selected .showOnSelectBtns {
   display: flex;
+}
+
+.itemContainer.selected .item {
+  cursor: default;
 }
 
 .item.selected {

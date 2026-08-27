@@ -72,7 +72,7 @@ export function gripSvg() {
     <circle cx="15" cy="6" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="18" r="1"></circle>' 
     </svg>`;
 }
-export function resultItemHTML(r, i, state) {
+export function resultItemHTML(r, i, state, renderHandle) {
   const isChecked = state.ui.checkboxes.has(r.rawIndex) ? "checked" : "";
   const activeClass = state.ui.deleteMode ? "active" : "";
   return `
@@ -81,7 +81,7 @@ export function resultItemHTML(r, i, state) {
         <div class="item">
         ${checkBoxHtml(activeClass, r.rawIndex, "toggleCheckboxDeleteMode", isChecked)}
         <input class="input-key"/>
-        ${gripSvg()}
+        ${renderHandle ? gripSvg() : ""}
         <span class="resultText" data-raw-index="${r.rawIndex}" data-id="${escHtml(r.id)}" data-title="${escHtml(r.title)}">
           ${highlight(r.title, r.positions)} 
         </span>
