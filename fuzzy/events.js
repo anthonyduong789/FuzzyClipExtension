@@ -61,6 +61,7 @@ export function initSearch(state, domRefs) {
           domRefs.tagDropDown.classList.remove("active");
           state.ui.tagSelectOn = false;
           displayTags([], state, domRefs);
+          state.ui.selectedIndex = 0;
           triggerRender(state, domRefs);
         }
       },
@@ -211,14 +212,20 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
     state.notes[domRefs.addNotesTag._rawIndex].tags.push(tag);
     storageManager("update-data", "notes", state.notes);
     row.remove();
+    let oldSelectedIndex = state.ui.selectedIndex;
     triggerRender(state, domRefs);
+  });
+
+  closeOnClickOutside(domRefs.addNotesTag, () => {
+    domRefs.addNotesTag.remove();
+    domRefs.addNotesTag = null;
   });
 
   return popover;
 }
 
 /**
- * Handles drag and drop calculations.
+ * Handles buttons of item Container.
  * @param {HTMLElement} triggerEl
  * @param {number} currentIndex
  * @param {AppState} state
@@ -329,6 +336,8 @@ export function attachItemListeners(state, domRefs) {
           );
           storageManager("update-data", "notes", state.notes);
           row.remove();
+
+          triggerRender(state, domRefs);
           break;
         case "toggleCheckboxDeleteMode":
           if (button.checked) {
@@ -739,6 +748,12 @@ export function handleTagManagement(state, domRefs) {
   //
   domRefs.toggleProjectTags.addEventListener("click", () => {
     domRefs.tagPopup.classList.toggle("open");
+
+    if (domRefs.tagPopup.classList.contains("open")) {
+      closeOnClickOutside(domRefs.tagPopup, () => {
+        domRefs.tagPopup.classList.remove("open");
+      });
+    }
   });
 
   domRefs.listProjectTags.addEventListener("click", (e) => {
@@ -1173,7 +1188,6 @@ function handlePointerUp(e, state, domRefs) {
   }
 
   triggerRender(state, domRefs);
-  updateSelected(insertAT, domRefs, state);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
 
@@ -1251,4 +1265,19 @@ function getIndicator(state, domRefs) {
     domRefs.resultsEl.append(state.drag.indicator);
   }
   return state.drag.indicator;
+}
+
+// Utility Function
+
+function closeOnClickOutside(el, onClose) {
+  function handleClick(e) {
+    if (!el.contains(e.target)) {
+      onClose();
+      document.removeEventListener("click", handleClick);
+    }
+  }
+  // defer adding the listener so the click that OPENED it doesn't immediately close it
+  setTimeout(() => document.addEventListener("click", handleClick), 0);
+
+  return () => document.removeEventListener("click", handleClick);
 }

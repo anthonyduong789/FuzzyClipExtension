@@ -64,7 +64,6 @@ export function syncSelectAllButton(state, domRefs) {
 }
 
 export function render(results, state, domRefs, attachListenersCallback) {
-  state.ui.selectedIndex = 0;
   injectMatchStyle(state.settings.highlightColor);
   let renderHandle = true;
   if (domRefs.input.value || state.ui.deleteMode) {
