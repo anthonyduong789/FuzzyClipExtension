@@ -1187,7 +1187,9 @@ function handlePointerUp(e, state, domRefs) {
     state.drag.ghostEl = null;
   }
 
+  state.ui.selectedIndex = insertAT;
   triggerRender(state, domRefs);
+
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
 
