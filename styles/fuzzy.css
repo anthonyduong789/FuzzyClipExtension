@@ -724,6 +724,10 @@
   flex-shrink: 0;
 } */
 
+.itemContainer.edit .tags-group {
+  display: none;
+}
+
 .tags-group {
   display: flex;
   padding: 0px 0px 5px 5px;
