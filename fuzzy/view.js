@@ -1,4 +1,5 @@
 // view.js
+/** @import { AppState, DomRefs } from "./type.js" */
 import { resultItemHTML, projectTagItemHtml } from "./templates.js";
 import { colors } from "./state.js";
 
@@ -91,11 +92,18 @@ export function render(results, state, domRefs, attachListenersCallback) {
   if (attachListenersCallback) attachListenersCallback(state, domRefs);
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {Array} foundTags
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
 export function displayTags(foundTags, state, domRefs) {
   let results = foundTags
     .map((item, i) => {
       if (state.activeTags.includes(item.tag)) return "";
-      return `<div class="tag-option ${state.ui.selectedTagIndex === i ? "selected" : ""}">${item.tag}</div>`;
+      return `<div data-tag="${item.tag}" class="tag-option ${state.ui.selectedTagIndex === i ? "selected" : ""}">${item.tag}</div>`;
     })
     .join("");
   if (results === "")

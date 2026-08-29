@@ -904,6 +904,7 @@ export function initEventListeners(state, domRefs) {
   switchUIBtn(state, domRefs);
   resetData(state, domRefs);
   handleTagDelete(state, domRefs);
+  handleTagDropDown(state, domRefs);
   addNotesButton(state, domRefs);
   drag(state, domRefs);
 }
@@ -1037,6 +1038,37 @@ export function handleTagDelete(state, domRefs) {
     }
     pill.remove();
     triggerRender(state, domRefs);
+  });
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function handleTagDropDown(state, domRefs) {
+  domRefs.tagDropDown.addEventListener("click", (e) => {
+    const tagBox = e.target.closest("[data-tag]");
+    if (!tagBox) return;
+    const tag = tagBox.dataset.tag;
+    state.activeTags.push(tag);
+    domRefs.tagDropDown.classList.remove("active");
+    domRefs.input.value = "";
+    const tagsBoxes = state.activeTags
+      .map((value, i) => {
+        return `
+          <div class="filter-pill">
+              <button data-tag="${value}" class="filter-remove" aria-label="Remove filter">×</button>
+              <span class="filter-text">${value}</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    domRefs.currentTagsBox.innerHTML = tagsBoxes;
+    triggerRender(state, domRefs);
+    state.ui.tagSelectOn = false;
   });
 }
 
@@ -1222,7 +1254,7 @@ function moveGhost(state, x, y) {
 function updateDropLine(clientY, state, domRefs) {
   const cards = [
     ...domRefs.resultsEl.querySelectorAll(".itemContainer"),
-  ].filter((c) => c !== state.drag);
+  ].filter((c) => c !== state.drag.dragEl);
   const listRect = domRefs.resultsEl.getBoundingClientRect();
   let lineTop = null;
 
