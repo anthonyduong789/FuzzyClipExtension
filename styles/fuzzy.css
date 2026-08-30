@@ -230,10 +230,14 @@
 
 /* Header */
 
+
+
+
 #results {
   /* display: flex;
   flex-direction: column; */
   /* margin-top: 2px; */
+  position: relative;
   scrollbar-width: none;
   scrollbar-color: var(--border) transparent;
   background: #f4f1eb;

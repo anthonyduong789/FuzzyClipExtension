@@ -76,12 +76,15 @@ export function createInitialState(
     drag: {
       indicator: null,
       dragId: null,
-      hoverIdx: null,
       dragEl: null,
       ghostEl: null,
       offsetX: 0,
       offsetY: 0,
-      itemHeight: 0,
+      // scroll logic
+      SCROLL_ZONE: 50,
+      MAX_SPEED: 15,
+      autoScrollRaf: null,
+      lastClientY: 0,
     },
   };
 }

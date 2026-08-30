@@ -87,12 +87,14 @@
  * @typedef {Object} AppDrag
  * @property {HTMLElement|null} indicator
  * @property {number|null} dragId
- * @property {number|null} hoverIdx
  * @property {HTMLElement|null} dragEl
  * @property {HTMLElement|null} ghostEl
  * @property {number} offsetX
  * @property {number} offsetY
- * @property {number} itemHeight
+ * @property {number} SCROLL_ZONE
+ * @property {number} MAX_SPEED
+ * @property {FrameRequestCallback} autoScrollRaf
+ * @property {number} lastClientY
  */
 
 /**

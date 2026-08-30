@@ -1121,6 +1121,11 @@ export function createNewNote(state, domRefs) {
   state.ui.addBox.querySelector(".input-key").focus();
 }
 
+/* 
+  Drag and Reorder & auto scroll drag when pointer is near the top/ bottom edge
+
+*/
+
 /**
  * Handles drag and drop calculations.
  * @param {AppState} state
@@ -1151,6 +1156,7 @@ export function drag(state, domRefs) {
     itemContainer.style.visibility = "hidden";
 
     document.addEventListener("pointermove", (e) => {
+      state.drag.lastClientY = 0;
       handlePointerMove(e, state, domRefs);
     });
     document.addEventListener("pointerup", (e) => {
@@ -1170,9 +1176,17 @@ export function makeGhost(item, rect) {
   return g;
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {MouseEvent} e
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
 function handlePointerMove(e, state, domRefs) {
   if (!state.drag.dragEl) return;
   e.preventDefault();
+  state.drag.lastClientY = e.clientY;
+  startAutoScroll(state, domRefs);
   moveGhost(state, e.clientX, e.clientY);
   updateDropLine(e.clientY, state, domRefs);
 }
@@ -1226,6 +1240,7 @@ function handlePointerUp(e, state, domRefs) {
   document.removeEventListener("pointerup", handlePointerUp);
 
   storageManager("update-data", "notes", state.notes);
+  stopAutoScroll(state, domRefs);
 }
 
 /**
@@ -1265,20 +1280,21 @@ function updateDropLine(clientY, state, domRefs) {
   }
 
   // TODO: have updateDropLine skip if same position orginal element is alreay in
+
+  const scrollTop = domRefs.resultsEl.scrollTop;
+
   const firstRect = cards[0].getBoundingClientRect();
   if (clientY < firstRect.top + firstRect.height / 2) {
-    lineTop = Math.max(0, firstRect.top);
+    lineTop = Math.max(0, firstRect.top - listRect.top);
   } else {
     for (let i = 0; i < cards.length; i++) {
       const rect = cards[i].getBoundingClientRect();
       const mid = rect.top + rect.height / 2;
       if (clientY < mid) {
-        lineTop = rect.top;
-        // lineTop = rect.top - listRect.top;
+        lineTop = rect.top - listRect.top + scrollTop;
         break;
       }
-      lineTop = rect.bottom;
-      // lineTop = rect.bottom - listRect.top;
+      lineTop = rect.bottom - listRect.top + scrollTop;
     }
   }
   const line = getIndicator(state, domRefs);
@@ -1301,8 +1317,60 @@ function getIndicator(state, domRefs) {
   return state.drag.indicator;
 }
 
-// Utility Function
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function autoScrollTick(state, domRefs) {
+  const rect = domRefs.resultsEl.getBoundingClientRect();
+  let speed = 0;
 
+  if (state.drag.lastClientY < rect.top + state.drag.SCROLL_ZONE) {
+    const dist = state.drag.lastClientY - rect.top;
+    speed =
+      -state.drag.MAX_SPEED * (1 - Math.max(dist, 0) / state.drag.SCROLL_ZONE);
+  } else if (state.drag.lastClientY > rect.bottom - state.drag.SCROLL_ZONE) {
+    const dist = rect.bottom - state.drag.lastClientY;
+    speed =
+      state.drag.MAX_SPEED * (1 - Math.max(dist, 0) / state.drag.SCROLL_ZONE);
+  }
+
+  if (speed !== 0) {
+    domRefs.resultsEl.scrollTop += speed;
+  }
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function startAutoScroll(state, domRefs) {
+  if (!state.drag.autoScrollRaf) return;
+
+  function loop() {
+    autoScrollTick(state, domRefs);
+    state.drag.autoScrollRaf = requestAnimationFrame(loop);
+  }
+
+  state.drag.autoScrollRaf = requestAnimationFrame(loop);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function stopAutoScroll(state, domRefs) {
+  cancelAnimationFrame(state.drag.autoScrollRaf);
+  state.drag.autoScrollRaf = null;
+}
+
+/*
+Utility functions
+
+*/
 function closeOnClickOutside(el, onClose) {
   function handleClick(e) {
     if (!el.contains(e.target)) {
