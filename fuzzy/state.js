@@ -81,8 +81,8 @@ export function createInitialState(
       offsetX: 0,
       offsetY: 0,
       // scroll logic
-      SCROLL_ZONE: 50,
-      MAX_SPEED: 15,
+      SCROLL_ZONE: 80,
+      MAX_SPEED: 5,
       autoScrollRaf: null,
       lastClientY: 0,
     },
