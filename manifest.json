@@ -10,6 +10,7 @@
   },
   "description": "browser note that allows your to easily copy and past things ans also search with a quick keymaps",
   "permissions": [
+    "bookmarks",
     "scripting",
     "storage",
     "clipboardWrite"
@@ -32,8 +33,8 @@
         "<all_urls>"
       ],
       "js": [
-        "content_scripts/state.js",
         "content_scripts/storage.js",
+        "content_scripts/state.js",
         "content_scripts/dom.js",
         "content_scripts/setting.js",
         "content_scripts/drag.js",

@@ -1,5 +1,5 @@
 // events.js
-/** @import { AppState, DomRefs } from "./type.js" */
+/** @import { AppState, DomRefs } from "../type.js" */
 
 import {
   debounce,

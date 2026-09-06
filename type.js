@@ -109,4 +109,16 @@
  * @property {AppDrag} drag
  */
 
-export {}; // Converts file to a module
+/**
+ * @typedef {Object} Bookmark
+ * @property {number} dateAdded
+ * @property {string} id
+ * @property {number} index
+ * @property {string} parentId
+ * @property {string} pathAndTitle
+ * @property {boolean} syncing
+ * @property {string} title
+ * @property {string} url
+ */
+
+export { }; // Converts file to a module

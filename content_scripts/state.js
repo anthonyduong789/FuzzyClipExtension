@@ -20,8 +20,10 @@ let personal_settings = {
     hide_ui: false,
 };
 
+
 let notes = [];
 let tags = [];
+let bookmarks = [];
 
 let offsetX;
 let offsetY;

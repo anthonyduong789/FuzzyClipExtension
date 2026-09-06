@@ -1,5 +1,5 @@
 // view.js
-/** @import { AppState, DomRefs } from "./type.js" */
+/** @import { AppState, DomRefs } from "../type.js" */
 import { resultItemHTML, projectTagItemHtml } from "./templates.js";
 import { colors } from "./state.js";
 

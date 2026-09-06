@@ -97,6 +97,7 @@ function handleWindowMessage(event) {
         // --------------------------------------------------------
 
         case "iframeReady":
+            console.log("iframe ready sending data")
             iframe.contentWindow.postMessage(
                 {
                     action: "initializeIframe",

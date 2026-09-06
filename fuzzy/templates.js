@@ -2,8 +2,8 @@
 // containers the data action
 // assigns actions to buttons that is used in attachItemListeners
 // contains the ui elements that are being added to the dom dynamically based on use / or dom manipulation
-/** @import { AppState, DomRefs } from "./type.js" */
 
+/** @import { AppState, DomRefs } from "../type.js" */
 import { escHtml, highlight } from "./utils.js";
 
 export const dropDownIconHTML = (action) =>

@@ -1,5 +1,10 @@
+/** @import { Bookmark, Note, Tag} from "../type" */
+
+
+
 // ============================================================
-// STORAGE
+// STORAGE 
+// responsible for loading in data 
 // ============================================================
 
 function storeData(key, value) {
@@ -32,4 +37,27 @@ async function loadAllData() {
 
     return {};
   }
+}
+
+
+
+/**
+ * Requests the user's bookmarks from the background scipt
+ * 
+ * @returns {Promise<Bookmark[]>}
+ * A promise that resolves to an array of bookmark nodes
+ * @throws {Error} If the background scipt request fails
+ */
+async function requestBookmarks() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action: "getBookMarks" }, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+        return;
+      }
+      console.log("resolve", response.bookmarks)
+      resolve(response.bookmarks);
+      return true;
+    });
+  });
 }

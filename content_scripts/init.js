@@ -39,6 +39,23 @@ async function initialize() {
 // ============================================================
 
 async function initializeIframe() {
+
+  // Load stored data before registering the iframeReady
+  // listener so the iframe receives the latest data.
+  // retrieves data first before intializes iframe as to avoid delay with retrieveing bookmarks when dom ready for iframe sending message back to conten scipt
+  const results = await loadAllData();
+  const userBookmarks = await requestBookmarks()
+  notes = results.notes ?? [];
+  tags = results.tags ?? [];
+  bookmarks = userBookmarks ?? [];
+  console.log("assigned Bookamrks", bookmarks)
+  console.log("assigned notes", notes)
+
+  if (results.personal_settings) {
+    personal_settings = results.personal_settings;
+  }
+
+
   iframe.style.cssText = `
     all: unset;
     flex-grow: 1;
@@ -52,17 +69,6 @@ async function initializeIframe() {
   wrapper.appendChild(iframe);
 
   document.body.appendChild(wrapper);
-
-  // Load stored data before registering the iframeReady
-  // listener so the iframe receives the latest data.
-  const results = await loadAllData();
-
-  notes = results.notes ?? [];
-  tags = results.tags ?? [];
-
-  if (results.personal_settings) {
-    personal_settings = results.personal_settings;
-  }
 
   applyPersonalSettings();
 }
