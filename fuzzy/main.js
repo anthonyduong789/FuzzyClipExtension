@@ -50,10 +50,10 @@ function getDomRefs() {
 }
 
 function initializeApp() {
-  console.log("initializeApp")
+  console.log("initializeApp");
   const domRefs = getDomRefs();
   let state = createInitialState(); // fallback initialization
-  console.log(state)
+  console.log(state);
 
   window.addEventListener("message", (event) => {
     if (event.data.type === "TOGGLE_IFRAME") {
@@ -61,14 +61,15 @@ function initializeApp() {
     }
 
     if (event.data.action === "initializeIframe") {
-      console.log(event.data)
+      console.log("initializeIframe data", event.data);
 
       state = createInitialState(
         event.data.notes,
         event.data.personal_settings,
         event.data.tags,
+        event.data.bookmarks,
       );
-      console.log("createInitialState", state)
+      console.log("createInitialState", state);
 
       // Initialize App Events & Features
       initSearch(state, domRefs);
@@ -88,7 +89,7 @@ function initializeApp() {
   });
 
   window.addEventListener("DOMContentLoaded", () => {
-    console.log("DOMContentLoaded")
+    console.log("DOMContentLoaded");
     window.parent.postMessage({ action: "iframeReady" }, "*");
   });
 }

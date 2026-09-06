@@ -1,5 +1,4 @@
-// events.js
-/** @import { AppState, DomRefs } from "../type.js" */
+/** @import { AppState, DomRefs} from "../type.js" */
 
 import {
   debounce,
@@ -8,7 +7,9 @@ import {
   escHtml,
   postMessageToParent,
 } from "./utils.js";
+
 import { searchNotes, searchTags } from "./search.js";
+
 import {
   render,
   displayTags,
@@ -20,8 +21,6 @@ import {
 } from "./view.js";
 
 import { createAddBox } from "./templates.js";
-
-import { HOLD_DURATION, GHOST_SNAPBACK_MS } from "./state.js";
 
 function triggerRender(state, domRefs) {
   render(
@@ -72,12 +71,9 @@ export function initSearch(state, domRefs) {
 }
 
 /**
- * Handles drag and drop calculations.
- * @param {HTMLElement} triggerEl
- * @param {number} currentIndex
+ *
  * @param {AppState} state
- * @param {DomRefs} domRefs
- * @returns {void} The new offset X
+ * @param {*} domRefs
  */
 export function initDeleteMode(state, domRefs) {
   domRefs.deleteConfirmBtn.addEventListener("click", () => {
@@ -86,13 +82,21 @@ export function initDeleteMode(state, domRefs) {
   });
 
   domRefs.deleteEl.addEventListener("click", () => {
-    state.ui.deleteMode = !state.ui.deleteMode;
-    domRefs.deleteEl.classList.toggle("active", state.ui.deleteMode);
+    if (state.mode == "deleteNotes") {
+      state.mode = "default";
+    } else {
+      state.mode = "deleteNotes";
+    }
+
+    domRefs.deleteEl.classList.toggle("active", state.mode === "deleteNotes");
+    domRefs.deleteEl.classList.toggle("active", state.mode === "deleteNotes");
     domRefs.tagPopup.classList.remove("open");
-    domRefs.addNotesButton.style.display = state.ui.deleteMode
-      ? "none"
-      : "flex";
-    domRefs.deleteGroupEl.classList.toggle("active", state.ui.deleteMode);
+    domRefs.addNotesButton.style.display =
+      state.mode === "deleteNotes" ? "none" : "flex";
+    domRefs.deleteGroupEl.classList.toggle(
+      "active",
+      state.mode === "deleteNotes",
+    );
     state.ui.checkboxes.clear();
     state.ui.selectAll = false;
     triggerRender(state, domRefs);
@@ -543,10 +547,7 @@ export function initKeyMaps(state, domRefs) {
     }
 
     if (e.ctrlKey && e.key === "m") {
-      if (
-        domRefs.defaultOverlayContainer.classList.contains("hidden") ||
-        state.ui.deleteMode
-      ) {
+      if (domRefs.defaultOverlayContainer.classList.contains("hidden")) {
         console.log("skip toggling ctrl + m");
         e.preventDefault();
         return;
@@ -879,7 +880,7 @@ export function switchUIBtn(state, domRefs) {
   domRefs.switchUI.addEventListener("click", (e) => {
     if (
       domRefs.defaultOverlayContainer.classList.contains("hidden") ||
-      state.ui.deleteMode
+      state.mode == "deleteNotes"
     ) {
       console.log("skip");
       e.preventDefault();

@@ -3,7 +3,7 @@
 // assigns actions to buttons that is used in attachItemListeners
 // contains the ui elements that are being added to the dom dynamically based on use / or dom manipulation
 
-/** @import { AppState, DomRefs } from "../type.js" */
+/** @import { AppState, DomRefs, Bookmark } from "../type.js" */
 import { escHtml, highlight } from "./utils.js";
 
 export const dropDownIconHTML = (action) =>
@@ -74,9 +74,9 @@ export function gripSvg() {
 }
 export function resultItemHTML(r, i, state, renderHandle) {
   const isChecked = state.ui.checkboxes.has(r.rawIndex) ? "checked" : "";
-  const activeClass = state.ui.deleteMode ? "active" : "";
+  const activeClass = state.mode == "deleteNotes" ? "active" : "";
   return `
-    <div class="itemContainer" data-raw-index="${r.rawIndex}">
+    <li class="itemContainer" data-raw-index="${r.rawIndex}">
       <div class="itemAndTagBox">
         <div class="item">
         ${checkBoxHtml(activeClass, r.rawIndex, "toggleCheckboxDeleteMode", isChecked)}
@@ -95,7 +95,24 @@ export function resultItemHTML(r, i, state, renderHandle) {
         <p class="contentText" data-content="${escHtml(r.content)}">${escHtml(r.content)}</p>
       </div>
       ${confirmEditBtnsHtml("confirmEditBtn", "cancelEditBtn")}
-    </div>`;
+    </li>`;
+}
+
+/**
+ *
+ * @returns @param {Bookmark} bookmark
+ */
+export function resultBookmarkHtml(bookmark) {
+  return `
+  <li class="bookmarkContainer">
+    <div class="top-half">
+    ${bookmark.title}
+    </div>
+    <div class="bot-half">
+    ${bookmark.url}
+    </div>
+  </li>
+  `;
 }
 
 export function projectTagItemHtml(tag) {

@@ -1,4 +1,3 @@
-
 // ============================================================
 // FUZZY CONTENT SCRIPT
 // ============================================================
@@ -18,43 +17,38 @@
 //   twice on the same page
 // ============================================================
 
-
-
 // ============================================================
 // INITIALIZATION
 // ============================================================
 
 async function initialize() {
-  await initializeIframe();
-
+  await intializeData();
+  initializeIframe();
   setupResizeHandles();
-
   setupEventListeners();
 }
 
+async function intializeData() {
+  const results = await loadAllData();
+  const userBookmarks = await requestBookmarks();
+  notes = results.notes ?? [];
+  tags = results.tags ?? [];
+  bookmarks = userBookmarks ?? [];
+  if (results.personal_settings) {
+    personal_settings = results.personal_settings;
+  }
+  applyPersonalSettings();
+}
 
 // ============================================================
 // IFRAME INITIALIZATION
 // loads necessary data from iframe and intializes the data
 // ============================================================
 
-async function initializeIframe() {
-
+function initializeIframe() {
   // Load stored data before registering the iframeReady
   // listener so the iframe receives the latest data.
   // retrieves data first before intializes iframe as to avoid delay with retrieveing bookmarks when dom ready for iframe sending message back to conten scipt
-  const results = await loadAllData();
-  const userBookmarks = await requestBookmarks()
-  notes = results.notes ?? [];
-  tags = results.tags ?? [];
-  bookmarks = userBookmarks ?? [];
-  console.log("assigned Bookamrks", bookmarks)
-  console.log("assigned notes", notes)
-
-  if (results.personal_settings) {
-    personal_settings = results.personal_settings;
-  }
-
 
   iframe.style.cssText = `
     all: unset;
@@ -69,8 +63,6 @@ async function initializeIframe() {
   wrapper.appendChild(iframe);
 
   document.body.appendChild(wrapper);
-
-  applyPersonalSettings();
 }
 
 // ============================================================

@@ -65,7 +65,6 @@
  * @property {string} currentAlgo
  * @property {number} selectedIndex
  * @property {number} visibleResults
- * @property {boolean} deleteMode
  * @property {boolean} selectAll
  * @property {Set<string|number>} checkboxes
  * @property {string} selectedColor
@@ -99,7 +98,9 @@
 
 /**
  * @typedef {Object} AppState
+ * @property {"deleteNotes" | "default" | "bookmark"} mode
  * @property {Note[]} notes
+ * @property {Bookmark[]} bookmarks
  * @property {AppSettings} settings
  * @property {Partial<AppSettings>|Object} newSettings
  * @property {Tag[]} tags
@@ -121,4 +122,4 @@
  * @property {string} url
  */
 
-export { }; // Converts file to a module
+export {}; // Converts file to a module

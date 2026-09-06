@@ -39,9 +39,12 @@ export function createInitialState(
   initialNotes = [],
   initialSettings = {},
   initialTags = [],
+  intialBookmarks = [],
 ) {
   return {
+    mode: "default",
     notes: initialNotes,
+    bookmarks: intialBookmarks,
     settings: {
       highlightColor: "amber",
       height: 700,
@@ -58,7 +61,6 @@ export function createInitialState(
       currentAlgo: "fzf",
       selectedIndex: 0,
       visibleResults: 0,
-      deleteMode: false,
       selectAll: false,
       checkboxes: new Set(),
       selectedColor: "amber",

@@ -1,6 +1,10 @@
 // view.js
 /** @import { AppState, DomRefs } from "../type.js" */
-import { resultItemHTML, projectTagItemHtml } from "./templates.js";
+import {
+  resultItemHTML,
+  projectTagItemHtml,
+  resultBookmarkHtml,
+} from "./templates.js";
 import { colors } from "./state.js";
 
 export function injectMatchStyle(color) {
@@ -15,9 +19,10 @@ export function injectMatchStyle(color) {
 }
 
 export function updateResultCount(state, domRefs) {
-  domRefs.numberOfResults.innerText = state.ui.deleteMode
-    ? `${state.ui.checkboxes.size} selected`
-    : `${state.ui.visibleResults} results`;
+  domRefs.numberOfResults.innerText =
+    state.mode == "deleteNotes"
+      ? `${state.ui.checkboxes.size} selected`
+      : `${state.ui.visibleResults} results`;
 }
 
 export function updateSelected(newIndex, domRefs, state) {
@@ -64,10 +69,18 @@ export function syncSelectAllButton(state, domRefs) {
     : "Select All";
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {Array} results
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @param {void} attachListenersCallback
+ * @returns {void}
+ */
 export function render(results, state, domRefs, attachListenersCallback) {
   injectMatchStyle(state.settings.highlightColor);
   let renderHandle = true;
-  if (domRefs.input.value || state.ui.deleteMode) {
+  if (domRefs.input.value || state.mode == "deleteNotes") {
     renderHandle = false;
   }
   console.log(renderHandle);
@@ -84,6 +97,11 @@ export function render(results, state, domRefs, attachListenersCallback) {
     })
     .join("");
 
+  // domRefs.resultsEl.innerHTML = state.bookmarks
+  //   .map((bookmark) => {
+  //     return resultBookmarkHtml(bookmark);
+  //   })
+  //   .join("");
   state.ui.visibleResults = domRefs.resultsEl.children.length;
   updateResultCount(state, domRefs);
   syncSelectAllButton(state, domRefs);

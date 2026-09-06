@@ -1289,3 +1289,28 @@
   border-left: 1px solid #aaa;
   border-right: 1px solid #aaa;
 }
+
+
+/* bookmark container*/
+
+.bookmarkContainer {
+
+  list-style: none;
+  padding: 6px 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.bookmarkContainer .top-half {
+  /* font-size: 16px; */
+  line-height: 1.1em;
+  color: black;
+  font-size: 12px
+}
+
+.bookmarkContainer .bot-half {
+  /* font-size: 15px; */
+  font-size: 14px;
+  margin-top: 3px;
+  padding: 2px 0;
+  color: #224684;
+}

@@ -15,65 +15,42 @@
 // ============================================================
 
 function setupEventListeners() {
-    // ----------------------------------------------------------
-    // Window / iframe messages
-    // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // Window / iframe messages
+  // ----------------------------------------------------------
 
-    window.addEventListener(
-        "message",
-        handleWindowMessage,
-    );
+  window.addEventListener("message", handleWindowMessage);
 
+  // ----------------------------------------------------------
+  // Keyboard shortcuts
+  // ----------------------------------------------------------
 
-    // ----------------------------------------------------------
-    // Keyboard shortcuts
-    // ----------------------------------------------------------
+  document.addEventListener("keydown", handleKeydown);
 
-    document.addEventListener(
-        "keydown",
-        handleKeydown,
-    );
+  // ----------------------------------------------------------
+  // Dragging
+  // ----------------------------------------------------------
 
+  topBar.addEventListener("mousedown", handleTopBarMouseDown);
 
-    // ----------------------------------------------------------
-    // Dragging
-    // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // Window resize
+  // ----------------------------------------------------------
 
-    topBar.addEventListener(
-        "mousedown",
-        handleTopBarMouseDown,
-    );
+  window.addEventListener("resize", handleWindowResize);
 
+  // ----------------------------------------------------------
+  // Outside click
+  // ----------------------------------------------------------
 
-    // ----------------------------------------------------------
-    // Window resize
-    // ----------------------------------------------------------
+  document.addEventListener("click", handleDocumentClick);
 
-    window.addEventListener(
-        "resize",
-        handleWindowResize,
-    );
+  // ----------------------------------------------------------
+  // Chrome extension messages
+  // ----------------------------------------------------------
 
-
-    // ----------------------------------------------------------
-    // Outside click
-    // ----------------------------------------------------------
-
-    document.addEventListener(
-        "click",
-        handleDocumentClick,
-    );
-
-
-    // ----------------------------------------------------------
-    // Chrome extension messages
-    // ----------------------------------------------------------
-
-    chrome.runtime.onMessage.addListener(
-        handleRuntimeMessage,
-    );
+  chrome.runtime.onMessage.addListener(handleRuntimeMessage);
 }
-
 
 // ============================================================
 // WINDOW MESSAGE HANDLER
@@ -86,172 +63,146 @@ function setupEventListeners() {
 // ============================================================
 
 function handleWindowMessage(event) {
-    // Ignore messages that aren't from the extension.
-    if (!event.origin.startsWith("chrome-extension://")) {
-        return;
-    }
+  // Ignore messages that aren't from the extension.
+  if (!event.origin.startsWith("chrome-extension://")) {
+    return;
+  }
 
-    switch (event.data?.action) {
-        // --------------------------------------------------------
-        // Iframe is ready
-        // --------------------------------------------------------
+  switch (event.data?.action) {
+    // --------------------------------------------------------
+    // Iframe is ready
+    // --------------------------------------------------------
 
-        case "iframeReady":
-            console.log("iframe ready sending data")
-            iframe.contentWindow.postMessage(
-                {
-                    action: "initializeIframe",
-                    notes,
-                    personal_settings,
-                    tags,
-                },
-                "*",
-            );
+    case "iframeReady":
+      console.log("iframe ready sending data");
+      iframe.contentWindow.postMessage(
+        {
+          action: "initializeIframe",
+          notes,
+          personal_settings,
+          tags,
+          bookmarks,
+        },
+        "*",
+      );
 
-            break;
+      break;
 
+    // --------------------------------------------------------
+    // Hide iframe
+    // --------------------------------------------------------
 
-        // --------------------------------------------------------
-        // Hide iframe
-        // --------------------------------------------------------
+    case "hide-iframe":
+      wrapper.style.display = "none";
+      break;
 
-        case "hide-iframe":
-            wrapper.style.display = "none";
-            break;
+    // --------------------------------------------------------
+    // Update stored data
+    // --------------------------------------------------------
 
+    case "update-data":
+      storeData(event.data.key, event.data.data);
 
-        // --------------------------------------------------------
-        // Update stored data
-        // --------------------------------------------------------
+      break;
 
-        case "update-data":
-            storeData(
-                event.data.key,
-                event.data.data,
-            );
+    // --------------------------------------------------------
+    // Toggle minimal UI
+    // --------------------------------------------------------
 
-            break;
+    case "minmal-ui":
+      console.log("minmal-ui");
 
+      if (topBar.style.opacity == 0) {
+        topBar.style.opacity = 1;
+      } else {
+        topBar.style.opacity = 0;
+      }
 
-        // --------------------------------------------------------
-        // Toggle minimal UI
-        // --------------------------------------------------------
+      break;
 
-        case "minmal-ui":
-            console.log("minmal-ui");
-
-            if (topBar.style.opacity == 0) {
-                topBar.style.opacity = 1;
-            } else {
-                topBar.style.opacity = 0;
-            }
-
-            break;
-
-
-        default:
-            break;
-    }
+    default:
+      break;
+  }
 }
-
 
 // ============================================================
 // KEYBOARD HANDLER
 // ============================================================
 
 function handleKeydown(event) {
-    if (!wrapper) {
-        return;
-    }
+  if (!wrapper) {
+    return;
+  }
 
-    if (event.ctrlKey && event.key === "q") {
-        toggleIframe();
-    }
+  if (event.ctrlKey && event.key === "q") {
+    toggleIframe();
+  }
 }
-
 
 // ============================================================
 // TOP BAR MOUSE DOWN
 // ============================================================
 
 function handleTopBarMouseDown(event) {
-    makeDraggable(event);
+  makeDraggable(event);
 }
-
 
 // ============================================================
 // TOGGLE IFRAME
 // ============================================================
 
 function toggleIframe() {
-    if (wrapper.style.display == "none") {
-        wrapper.style.display = "flex";
+  if (wrapper.style.display == "none") {
+    wrapper.style.display = "flex";
 
-        iframe.focus();
+    iframe.focus();
 
-        iframe.contentWindow.postMessage(
-            {
-                type: "TOGGLE_IFRAME",
-                data: "world",
-            },
-            "*",
-        );
-    } else {
-        wrapper.style.display = "none";
-    }
+    iframe.contentWindow.postMessage(
+      {
+        type: "TOGGLE_IFRAME",
+        data: "world",
+      },
+      "*",
+    );
+  } else {
+    wrapper.style.display = "none";
+  }
 }
-
 
 // ============================================================
 // WINDOW RESIZE
 // ============================================================
 
 function handleWindowResize() {
-    setWrapperPosition(
-        personal_settings.left,
-        personal_settings.top,
-    );
+  setWrapperPosition(personal_settings.left, personal_settings.top);
 
-    const newH = clampHeight(
-        personal_settings.height,
-    );
+  const newH = clampHeight(personal_settings.height);
 
-    const newW = clampWidth(
-        personal_settings.width,
-    );
+  const newW = clampWidth(personal_settings.width);
 
-    wrapper.style.height = `${newH}px`;
-    wrapper.style.width = `${newW}px`;
+  wrapper.style.height = `${newH}px`;
+  wrapper.style.width = `${newW}px`;
 }
-
 
 // ============================================================
 // OUTSIDE CLICK
 // ============================================================
 
 function handleDocumentClick(event) {
-    // Check if popup is open AND the click is outside the popup.
-    if (
-        wrapper.style.display === "flex" &&
-        !wrapper.contains(event.target)
-    ) {
-        wrapper.style.display = "none";
-    }
+  // Check if popup is open AND the click is outside the popup.
+  if (wrapper.style.display === "flex" && !wrapper.contains(event.target)) {
+    wrapper.style.display = "none";
+  }
 }
-
 
 // ============================================================
 // CHROME RUNTIME MESSAGE
 // ============================================================
 
-function handleRuntimeMessage(
-    message,
-    sender,
-    sendResponse,
-) {
-    if (message.type === "TOGGLE_PANEL") {
-        if (wrapper) {
-            toggleIframe();
-        }
+function handleRuntimeMessage(message, sender, sendResponse) {
+  if (message.type === "TOGGLE_PANEL") {
+    if (wrapper) {
+      toggleIframe();
     }
+  }
 }
