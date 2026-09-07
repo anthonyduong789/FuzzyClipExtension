@@ -8,7 +8,7 @@ import {
   postMessageToParent,
 } from "./utils.js";
 
-import { searchNotes, searchTags } from "./search.js";
+import { searchNotes, searchTags, searchBookmarks } from "./search.js";
 
 import {
   render,
@@ -22,13 +22,45 @@ import {
 
 import { createAddBox } from "./templates.js";
 
+export function initEventListeners(state, domRefs) {
+  initSettingsEvents(state, domRefs);
+  handleTagManagement(state, domRefs);
+  initKeyMaps(state, domRefs);
+  closeIframe(domRefs);
+  switchUIBtn(state, domRefs);
+  resetData(state, domRefs);
+  handleTagDelete(state, domRefs);
+  handleTagDropDown(state, domRefs);
+  addNotesButton(state, domRefs);
+  toggleBookmarkEventListener(state, domRefs);
+  drag(state, domRefs);
+}
+
+
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
 function triggerRender(state, domRefs) {
-  render(
-    searchNotes(domRefs.input.value, state.notes, state.ui.currentAlgo),
-    state,
-    domRefs,
-    attachItemListeners(state, domRefs),
-  );
+  if (state.mode == 'default' || state.mode == 'deleteNotes') {
+    render(
+      searchNotes(domRefs.input.value, state.notes, state.ui.currentAlgo),
+      state,
+      domRefs,
+      attachItemListeners(state, domRefs),
+    );
+  }
+  else if (state.mode == 'bookmark') {
+    render(
+      searchBookmarks(domRefs.input.value, state.bookmarks, state.ui.currentAlgo),
+      state,
+      domRefs,
+      attachBookmarkItemListeners(state, domRefs)
+    )
+  }
 }
 
 /**
@@ -42,27 +74,33 @@ export function initSearch(state, domRefs) {
     "input",
     debounce(
       (e) => {
-        if (e.target.value === "?") return;
-        if (e.target.value[0] === "/") {
-          state.ui.selectedTagIndex = 0;
-          state.ui.tagSelectOn = true;
-          domRefs.tagDropDown.classList.add("active");
-          displayTags(
-            searchTags(
-              e.target.value.slice(1),
-              state.tags,
-              state.ui.currentAlgo,
-            ),
-            state,
-            domRefs,
-          );
-        } else {
-          domRefs.tagDropDown.classList.remove("active");
-          state.ui.tagSelectOn = false;
-          displayTags([], state, domRefs);
-          state.ui.selectedIndex = 0;
-          triggerRender(state, domRefs);
+        if (state.mode == 'default' || state.mode == 'deleteNotes') {
+          if (e.target.value === "?") return;
+          if (e.target.value[0] === "/") {
+            state.ui.selectedTagIndex = 0;
+            state.ui.tagSelectOn = true;
+            domRefs.tagDropDown.classList.add("active");
+            displayTags(
+              searchTags(
+                e.target.value.slice(1),
+                state.tags,
+                state.ui.currentAlgo,
+              ),
+              state,
+              domRefs,
+            );
+          } else {
+            domRefs.tagDropDown.classList.remove("active");
+            state.ui.tagSelectOn = false;
+            displayTags([], state, domRefs);
+            state.ui.selectedIndex = 0;
+            triggerRender(state, domRefs);
+          }
         }
+        else if (state.mode == 'bookmark') {
+          triggerRender(state, domRefs)
+        }
+
       },
       10,
       state,
@@ -154,9 +192,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-        .map((tag) => {
-          if (!state.notes[currentIndex].tags.includes(tag)) {
-            return `
+      .map((tag) => {
+        if (!state.notes[currentIndex].tags.includes(tag)) {
+          return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -164,11 +202,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-          } else {
-            return "";
-          }
-        })
-        .join("")
+        } else {
+          return "";
+        }
+      })
+      .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -229,7 +267,7 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 }
 
 /**
- * Handles buttons of item Container.
+ * Handles buttons of item Container for default and delteMode
  * @param {HTMLElement} triggerEl
  * @param {number} currentIndex
  * @param {AppState} state
@@ -277,7 +315,7 @@ export function attachItemListeners(state, domRefs) {
         case "copyContent":
           navigator.clipboard
             .writeText(contentText.dataset.content)
-            .then(() => {})
+            .then(() => { })
             .catch((err) => {
               console.error("Error copying to clipboard: ", err);
             });
@@ -358,6 +396,17 @@ export function attachItemListeners(state, domRefs) {
     { signal: controller.signal },
   );
 }
+
+/**
+ * 
+ * @param {AppState} state 
+ * @param {DomRefs} domRefs 
+ * @returns {void}
+ */
+export function attachBookmarkItemListeners(state, domRefs) {
+  return;
+}
+
 
 /**
  * Handles drag and drop calculations.
@@ -614,7 +663,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -897,18 +946,6 @@ export function switchUIBtn(state, domRefs) {
   });
 }
 
-export function initEventListeners(state, domRefs) {
-  initSettingsEvents(state, domRefs);
-  handleTagManagement(state, domRefs);
-  initKeyMaps(state, domRefs);
-  closeIframe(domRefs);
-  switchUIBtn(state, domRefs);
-  resetData(state, domRefs);
-  handleTagDelete(state, domRefs);
-  handleTagDropDown(state, domRefs);
-  addNotesButton(state, domRefs);
-  drag(state, domRefs);
-}
 
 /**
  * Handles drag and drop calculations.
@@ -1397,4 +1434,32 @@ function closeOnClickOutside(el, onClose) {
   setTimeout(() => document.addEventListener("click", handleClick), 0);
 
   return () => document.removeEventListener("click", handleClick);
+}
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function toggleBookmarkEventListener(state, domRefs) {
+  domRefs.bookmarksBtn.removeEventListener('click', handleBookmarkButton);
+  domRefs.bookmarksBtn.addEventListener('click', (e) => {
+    handleBookmarkButton(state, domRefs)
+  });
+}
+
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function handleBookmarkButton(state, domRefs) {
+  if (state.mode == "bookmark") {
+    state.mode = "default"
+  } else {
+    state.mode = 'bookmark'
+  }
+  console.log('toggling into bookmark mode')
+  triggerRender(state, domRefs);
 }

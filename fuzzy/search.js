@@ -1,4 +1,6 @@
 // search.js
+/** @import { AppState, DomRefs, Bookmark, Note} from "../type.js" */
+
 export function fzfMatch(pattern, str) {
   if (!pattern) return { matched: true, score: 0, positions: [] };
   const p = pattern.toLowerCase();
@@ -121,6 +123,15 @@ export const algos = {
   trigram: { fn: trigramMatch, label: "trigram similarity" },
 };
 
+
+
+/**
+ * 
+ * @param {string} query 
+ * @param {Note[]} notes 
+ * @param {string} algoName 
+ * @returns 
+ */
 export function searchNotes(query, notes, algoName) {
   const algo = algos[algoName].fn;
   const results = [];
@@ -151,4 +162,26 @@ export function searchTags(query, tags, algoName) {
   }
   if (trimmed) results.sort((a, b) => b.score - a.score);
   return results;
+}
+
+
+/**
+ * 
+ * @param {string} query 
+ * @param {Bookmark[]} bookmarks 
+ * @param {string} algoName 
+ * @returns 
+ */
+export function searchBookmarks(query, bookmarks, algoName) {
+  const algo = algos[algoName].fn;
+  const results = [];
+  const trimmed = query.trim();
+  for (let i = 0; i < bookmarks.length; i++) {
+    const res = algo(trimmed, bookmarks[i].title);
+    if (res.matched) {
+      results.push({ ...bookmarks[i], score: res.score, positions: res.positions })
+    }
+  }
+  if (trimmed) results.sort((a, b) => b.score - a.score)
+  return results
 }

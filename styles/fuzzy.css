@@ -175,15 +175,14 @@
   white-space: nowrap;
 }
 
-.ff-pill-btn svg {
+/* .ff-pill-btn svg {
   width: 11px;
   height: 11px;
   stroke: currentColor;
-  fill: none;
   stroke-width: 2;
   stroke-linecap: round;
   opacity: 0.6;
-}
+} */
 
 .ff-pill-btn:hover {
   background: #1a1a1a;
@@ -1107,6 +1106,8 @@
 
 .select-to-delete-before {
   display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .select-to-delete-after {
@@ -1314,3 +1315,6 @@
   padding: 2px 0;
   color: #224684;
 }
+
+
+/*  */

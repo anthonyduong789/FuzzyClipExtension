@@ -23,6 +23,7 @@ function getDomRefs() {
     deleteGroupEl: document.getElementById("deleteGroup"),
     selectToDelete: document.getElementById("selectAllDeleteMode"),
     deleteConfirmBtn: document.getElementById("deleteSelectedElements"),
+    bookmarksBtn: document.getElementById("toggleBookmarkModeBtn"),
     actionBtnsSelectDelete: document.getElementById("actionBtnsSelectDelete"),
     cancelDeleteSelectBtn: document.getElementById("cancelDeleteSelectBtn"),
     confirmDeleteSelectedBtn: document.getElementById("confirmDeleteSelected"),

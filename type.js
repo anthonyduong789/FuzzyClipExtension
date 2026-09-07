@@ -12,6 +12,7 @@
  * @property {HTMLElement} deleteGroupEl - The delete group container ("deleteGroup")
  * @property {HTMLInputElement} selectToDelete - Select all for delete mode ("selectAllDeleteMode")
  * @property {HTMLButtonElement} deleteConfirmBtn - Confirm selected deletion ("deleteSelectedElements")
+ * @property {HTMLButtonElement} bookmarksBtn - Confirm selected deletion ("deleteSelectedElements")
  * @property {HTMLElement} actionBtnsSelectDelete - Container for delete action buttons ("actionBtnsSelectDelete")
  * @property {HTMLButtonElement} cancelDeleteSelectBtn - Cancel select delete mode ("cancelDeleteSelectBtn")
  * @property {HTMLButtonElement} confirmDeleteSelectedBtn - Confirm delete selection ("confirmDeleteSelected")
@@ -122,4 +123,4 @@
  * @property {string} url
  */
 
-export {}; // Converts file to a module
+export { }; // Converts file to a module

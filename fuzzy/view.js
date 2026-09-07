@@ -71,7 +71,7 @@ export function syncSelectAllButton(state, domRefs) {
 
 /**
  * Handles drag and drop calculations.
- * @param {Array} results
+ * @param {Array} results // elements that where filtered by search
  * @param {AppState} state
  * @param {DomRefs} domRefs
  * @param {void} attachListenersCallback
@@ -83,31 +83,36 @@ export function render(results, state, domRefs, attachListenersCallback) {
   if (domRefs.input.value || state.mode == "deleteNotes") {
     renderHandle = false;
   }
-  console.log(renderHandle);
-  domRefs.resultsEl.innerHTML = results
-    .map((item, index) => {
-      const hasActiveTags =
-        state.activeTags.length === 0 ||
-        state.activeTags.every((t) =>
-          state.notes[item.rawIndex].tags.includes(t),
-        );
-      return hasActiveTags
-        ? resultItemHTML(item, index, state, renderHandle)
-        : "";
-    })
-    .join("");
 
-  // domRefs.resultsEl.innerHTML = state.bookmarks
-  //   .map((bookmark) => {
-  //     return resultBookmarkHtml(bookmark);
-  //   })
-  //   .join("");
+  if (state.mode == 'default' || state.mode == 'deleteNotes') {
+    domRefs.resultsEl.innerHTML = results
+      .map((item, index) => {
+        const hasActiveTags =
+          state.activeTags.length === 0 ||
+          state.activeTags.every((t) =>
+            state.notes[item.rawIndex].tags.includes(t),
+          );
+        return hasActiveTags
+          ? resultItemHTML(item, index, state, renderHandle)
+          : "";
+      })
+      .join("");
+    if (attachListenersCallback) attachListenersCallback(state, domRefs);
+
+  } else if (state.mode == 'bookmark') {
+    domRefs.resultsEl.innerHTML = results.map((bookmark, index) => {
+      return resultBookmarkHtml(bookmark);
+    }).join("");
+
+  }
   state.ui.visibleResults = domRefs.resultsEl.children.length;
+
+
+
   updateResultCount(state, domRefs);
   syncSelectAllButton(state, domRefs);
   updateSelected(state.ui.selectedIndex, domRefs, state);
 
-  if (attachListenersCallback) attachListenersCallback(state, domRefs);
 }
 
 /**

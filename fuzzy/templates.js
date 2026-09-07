@@ -106,7 +106,7 @@ export function resultBookmarkHtml(bookmark) {
   return `
   <li class="bookmarkContainer">
     <div class="top-half">
-    ${bookmark.title}
+    ${highlight(bookmark.title, bookmark.positions)}
     </div>
     <div class="bot-half">
     ${bookmark.url}
