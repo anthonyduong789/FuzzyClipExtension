@@ -690,18 +690,17 @@ export function initKeyMaps(state, domRefs) {
       toggleBookmarkMode(state, domRefs);
     }
 
-    if (e.shiftKey && e.key === "Enter") {
-      if (state.mode === "bookmark") {
-        const url =
-          domRefs.resultsEl.children[state.ui.selectedIndex].dataset
-            .bookmarkurl;
-        console.log("bookmark url", url);
-        window.parent.postMessage(
-          { action: "new-tab-bookmark", bookmarkUrl: url },
-          "*",
-        );
-      }
-    } else if (e.key === "Enter") {
+    if (state.mode === "bookmark" && e.shiftKey && e.key === "Enter") {
+      const url =
+        domRefs.resultsEl.children[state.ui.selectedIndex].dataset.bookmarkurl;
+      console.log("bookmark url", url);
+      window.parent.postMessage(
+        { action: "new-tab-bookmark", bookmarkUrl: url },
+        "*",
+      );
+    }
+
+    if (e.key === "Enter" && !e.shiftKey) {
       if (state.ui.tagSelectOn) {
         state.activeTags.push(
           domRefs.tagDropDown.children[state.ui.selectedTagIndex]?.textContent,
@@ -721,7 +720,6 @@ export function initKeyMaps(state, domRefs) {
         const url =
           domRefs.resultsEl.children[state.ui.selectedIndex].dataset
             .bookmarkurl;
-        console.log("bookmark url", url);
         window.parent.postMessage(
           { action: "go-to-bookmark", bookmarkUrl: url },
           "*",

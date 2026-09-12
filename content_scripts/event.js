@@ -124,9 +124,11 @@ function handleWindowMessage(event) {
     // go to bookmark url
     // --------------------------------------------------------
     case "go-to-bookmark":
-      window.location.href = event.data.bookmarkUrl;
+      window.location.assign(event.data.bookmarkUrl);
+      break;
     case "new-tab-bookmark":
       window.open(event.data.bookmarkUrl, "_blank").focus();
+      break;
     default:
       break;
   }
