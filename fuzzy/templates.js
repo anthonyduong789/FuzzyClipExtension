@@ -104,7 +104,7 @@ export function resultItemHTML(r, i, state, renderHandle) {
  */
 export function resultBookmarkHtml(bookmark) {
   return `
-  <li class="bookmarkContainer">
+  <li class="bookmarkContainer" data-bookmarkurl="${bookmark.url}">
     <div class="top-half">
     ${highlight(bookmark.title, bookmark.positions)}
     </div>

@@ -14,8 +14,9 @@ import {
   render,
   displayTags,
   displayProjectTags,
-  updateSelected,
+  updateSelectedNote,
   updateResultCount,
+  updatedActiveTags,
   showHotKeys,
   returnToDefaultOverlay,
 } from "./view.js";
@@ -36,8 +37,6 @@ export function initEventListeners(state, domRefs) {
   drag(state, domRefs);
 }
 
-
-
 /**
  * Handles drag and drop calculations.
  * @param {AppState} state
@@ -45,21 +44,24 @@ export function initEventListeners(state, domRefs) {
  * @returns {void} The new offset X
  */
 function triggerRender(state, domRefs) {
-  if (state.mode == 'default' || state.mode == 'deleteNotes') {
+  if (state.mode == "default" || state.mode == "deleteNotes") {
     render(
       searchNotes(domRefs.input.value, state.notes, state.ui.currentAlgo),
       state,
       domRefs,
       attachItemListeners(state, domRefs),
     );
-  }
-  else if (state.mode == 'bookmark') {
+  } else if (state.mode == "bookmark") {
     render(
-      searchBookmarks(domRefs.input.value, state.bookmarks, state.ui.currentAlgo),
+      searchBookmarks(
+        domRefs.input.value,
+        state.bookmarks,
+        state.ui.currentAlgo,
+      ),
       state,
       domRefs,
-      attachBookmarkItemListeners(state, domRefs)
-    )
+      attachBookmarkItemListeners(state, domRefs),
+    );
   }
 }
 
@@ -74,7 +76,7 @@ export function initSearch(state, domRefs) {
     "input",
     debounce(
       (e) => {
-        if (state.mode == 'default' || state.mode == 'deleteNotes') {
+        if (state.mode == "default" || state.mode == "deleteNotes") {
           if (e.target.value === "?") return;
           if (e.target.value[0] === "/") {
             state.ui.selectedTagIndex = 0;
@@ -96,11 +98,9 @@ export function initSearch(state, domRefs) {
             state.ui.selectedIndex = 0;
             triggerRender(state, domRefs);
           }
+        } else if (state.mode == "bookmark") {
+          triggerRender(state, domRefs);
         }
-        else if (state.mode == 'bookmark') {
-          triggerRender(state, domRefs)
-        }
-
       },
       10,
       state,
@@ -192,9 +192,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-      .map((tag) => {
-        if (!state.notes[currentIndex].tags.includes(tag)) {
-          return `
+        .map((tag) => {
+          if (!state.notes[currentIndex].tags.includes(tag)) {
+            return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -202,11 +202,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-        } else {
-          return "";
-        }
-      })
-      .join("")
+          } else {
+            return "";
+          }
+        })
+        .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -304,7 +304,7 @@ export function attachItemListeners(state, domRefs) {
       // Read the action directly from the attribute!
       if (!itemContainer.classList.contains("selected")) {
         if (button?.dataset?.action != "dropDown") {
-          updateSelected(index, domRefs, state);
+          updateSelectedNote(index, domRefs, state);
         }
       }
 
@@ -315,7 +315,7 @@ export function attachItemListeners(state, domRefs) {
         case "copyContent":
           navigator.clipboard
             .writeText(contentText.dataset.content)
-            .then(() => { })
+            .then(() => {})
             .catch((err) => {
               console.error("Error copying to clipboard: ", err);
             });
@@ -398,15 +398,14 @@ export function attachItemListeners(state, domRefs) {
 }
 
 /**
- * 
- * @param {AppState} state 
- * @param {DomRefs} domRefs 
+ *
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
  * @returns {void}
  */
 export function attachBookmarkItemListeners(state, domRefs) {
   return;
 }
-
 
 /**
  * Handles drag and drop calculations.
@@ -445,7 +444,7 @@ function resetDeleteSelectedElementsBtn(domRefs) {
 //     });
 
 //     el.querySelector(".item").addEventListener("click", () =>
-//       updateSelected(i, domRefs, state),
+//       updateSelectedNote(i, domRefs, state),
 //     );
 
 //     el.querySelector(".confirmDeleteBtn")?.addEventListener("click", () => {
@@ -631,7 +630,7 @@ export function initKeyMaps(state, domRefs) {
         domRefs.tagDropDown.children[newIndex].classList.add("selected");
         state.ui.selectedTagIndex = newIndex;
       } else {
-        updateSelected(
+        updateSelectedNote(
           Math.min(state.ui.selectedIndex + 1, state.ui.visibleResults - 1),
           domRefs,
           state,
@@ -650,7 +649,11 @@ export function initKeyMaps(state, domRefs) {
         state.ui.selectedTagIndex = newIndex;
       } else {
         let newIndex = Math.max(state.ui.selectedIndex - 1, 0);
-        updateSelected(Math.max(state.ui.selectedIndex - 1, 0), domRefs, state);
+        updateSelectedNote(
+          Math.max(state.ui.selectedIndex - 1, 0),
+          domRefs,
+          state,
+        );
       }
     }
 
@@ -663,7 +666,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -682,7 +685,23 @@ export function initKeyMaps(state, domRefs) {
       }
     }
 
-    if (e.key === "Enter") {
+    // switch to bookmarkmode
+    if (e.ctrlKey && e.key === "b") {
+      toggleBookmarkMode(state, domRefs);
+    }
+
+    if (e.shiftKey && e.key === "Enter") {
+      if (state.mode === "bookmark") {
+        const url =
+          domRefs.resultsEl.children[state.ui.selectedIndex].dataset
+            .bookmarkurl;
+        console.log("bookmark url", url);
+        window.parent.postMessage(
+          { action: "new-tab-bookmark", bookmarkUrl: url },
+          "*",
+        );
+      }
+    } else if (e.key === "Enter") {
       if (state.ui.tagSelectOn) {
         state.activeTags.push(
           domRefs.tagDropDown.children[state.ui.selectedTagIndex]?.textContent,
@@ -690,23 +709,22 @@ export function initKeyMaps(state, domRefs) {
 
         domRefs.tagDropDown.classList.remove("active");
         domRefs.input.value = "";
-        const tagsBoxes = state.activeTags
-          .map((value, i) => {
-            return `
-          <div class="filter-pill">
-              <button data-tag="${value}" class="filter-remove" aria-label="Remove filter">×</button>
-              <span class="filter-text">${value}</span>
-          </div>
-        `;
-          })
-          .join("");
-
-        domRefs.currentTagsBox.innerHTML = tagsBoxes;
+        updatedActiveTags(state, domRefs);
         triggerRender(state, domRefs);
         state.ui.tagSelectOn = false;
       } else {
         domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.toggle(
           "open",
+        );
+      }
+      if (state.mode == "bookmark") {
+        const url =
+          domRefs.resultsEl.children[state.ui.selectedIndex].dataset
+            .bookmarkurl;
+        console.log("bookmark url", url);
+        window.parent.postMessage(
+          { action: "go-to-bookmark", bookmarkUrl: url },
+          "*",
         );
       }
     }
@@ -945,7 +963,6 @@ export function switchUIBtn(state, domRefs) {
     }
   });
 }
-
 
 /**
  * Handles drag and drop calculations.
@@ -1442,24 +1459,30 @@ function closeOnClickOutside(el, onClose) {
  * @param {DomRefs} domRefs
  */
 function toggleBookmarkEventListener(state, domRefs) {
-  domRefs.bookmarksBtn.removeEventListener('click', handleBookmarkButton);
-  domRefs.bookmarksBtn.addEventListener('click', (e) => {
-    handleBookmarkButton(state, domRefs)
+  domRefs.bookmarksBtn.removeEventListener("click", toggleBookmarkMode);
+  domRefs.bookmarksBtn.addEventListener("click", (e) => {
+    toggleBookmarkMode(state, domRefs);
   });
 }
-
 
 /**
  * Handles drag and drop calculations.
  * @param {AppState} state
  * @param {DomRefs} domRefs
+ * @param {'bookmark'|'default'} mode
  */
-function handleBookmarkButton(state, domRefs) {
-  if (state.mode == "bookmark") {
-    state.mode = "default"
+function toggleBookmarkMode(state, domRefs, mode) {
+  if (mode === undefined) {
+    if (state.mode == "bookmark") {
+      state.mode = "default";
+    } else {
+      state.mode = "bookmark";
+    }
   } else {
-    state.mode = 'bookmark'
+    state.mode = mode;
   }
-  console.log('toggling into bookmark mode')
+  console.log("toggling into bookmark mode");
   triggerRender(state, domRefs);
+  updatedActiveTags(state, domRefs);
+  domRefs.input.focus();
 }

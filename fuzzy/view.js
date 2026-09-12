@@ -25,7 +25,32 @@ export function updateResultCount(state, domRefs) {
       : `${state.ui.visibleResults} results`;
 }
 
-export function updateSelected(newIndex, domRefs, state) {
+/**
+ *
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @returns {void}
+ */
+export function updatedActiveTags(state, domRefs) {
+  if (state.mode == "default" || state.mode == "deleteNotes") {
+    const tagsBoxes = state.activeTags
+      .map((value, i) => {
+        return `
+          <div class="filter-pill">
+              <button data-tag="${value}" class="filter-remove" aria-label="Remove filter">×</button>
+              <span class="filter-text">${value}</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    domRefs.currentTagsBox.innerHTML = tagsBoxes;
+  } else if (state.mode == "bookmark") {
+    domRefs.currentTagsBox.innerHTML = "";
+  }
+}
+
+export function updateSelectedNote(newIndex, domRefs, state) {
   domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.remove(
     "selected",
   );
@@ -63,6 +88,17 @@ export function updateSelected(newIndex, domRefs, state) {
   if (sel) sel.scrollIntoView({ block: "nearest" });
 }
 
+export function updateSelelectedBookmark(newIndex, state, domRefs) {
+  domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.remove(
+    "selected",
+  );
+  domRefs.resultsEl.children[newIndex]?.classList.add("selected");
+  // domRefs.resultsEl.children[state.ui.selectedIndex]?.classList.remove("open");
+  state.ui.selectedIndex = newIndex;
+  const sel = domRefs.resultsEl.querySelector(".selected");
+  if (sel) sel.scrollIntoView({ block: "nearest" });
+}
+
 export function syncSelectAllButton(state, domRefs) {
   domRefs.selectToDelete.textContent = state.ui.selectAll
     ? "Deselect All"
@@ -84,7 +120,7 @@ export function render(results, state, domRefs, attachListenersCallback) {
     renderHandle = false;
   }
 
-  if (state.mode == 'default' || state.mode == 'deleteNotes') {
+  if (state.mode == "default" || state.mode == "deleteNotes") {
     domRefs.resultsEl.innerHTML = results
       .map((item, index) => {
         const hasActiveTags =
@@ -98,21 +134,19 @@ export function render(results, state, domRefs, attachListenersCallback) {
       })
       .join("");
     if (attachListenersCallback) attachListenersCallback(state, domRefs);
-
-  } else if (state.mode == 'bookmark') {
-    domRefs.resultsEl.innerHTML = results.map((bookmark, index) => {
-      return resultBookmarkHtml(bookmark);
-    }).join("");
-
+    updateSelectedNote(state.ui.selectedIndex, domRefs, state);
+  } else if (state.mode == "bookmark") {
+    domRefs.resultsEl.innerHTML = results
+      .map((bookmark, index) => {
+        return resultBookmarkHtml(bookmark);
+      })
+      .join("");
+    updateSelelectedBookmark(state.ui.selectedIndex, state, domRefs);
   }
   state.ui.visibleResults = domRefs.resultsEl.children.length;
 
-
-
   updateResultCount(state, domRefs);
   syncSelectAllButton(state, domRefs);
-  updateSelected(state.ui.selectedIndex, domRefs, state);
-
 }
 
 /**
