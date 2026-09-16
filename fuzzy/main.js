@@ -9,7 +9,7 @@ import {
   closeIframe,
 } from "./events.js";
 import { searchNotes } from "./search.js";
-import { render, displayProjectTags } from "./view.js";
+import { render, displayProjectTags, toggleBookmarkMode } from "./view.js";
 
 function getDomRefs() {
   return {
@@ -47,6 +47,7 @@ function getDomRefs() {
     switchUISettings: document.getElementById("toggle_hide_ui_settings"),
     addNotesTag: null,
     resetButton: document.getElementById("resetData"),
+    leftButtonContainer: document.getElementById('leftButtonContainer')
   };
 }
 
@@ -57,6 +58,12 @@ function initializeApp() {
   console.log(state);
 
   window.addEventListener("message", (event) => {
+
+    if (event.data.type === "SHOW_BOOKMARKMODE") {
+      toggleBookmarkMode(state, domRefs, 'bookmark');
+      domRefs.input.focus();
+    }
+
     if (event.data.type === "TOGGLE_IFRAME") {
       domRefs.input.focus();
     }

@@ -1,10 +1,20 @@
 // view.js
+// helper function that helps is used toggle ui implmentes and give a 
+// central places to toggle ui implements from
+
+
 /** @import { AppState, DomRefs } from "../type.js" */
 import {
   resultItemHTML,
   projectTagItemHtml,
   resultBookmarkHtml,
 } from "./templates.js";
+
+import {
+  triggerRender,
+} from "./events.js"
+
+
 import { colors } from "./state.js";
 
 export function injectMatchStyle(color) {
@@ -185,3 +195,68 @@ export function returnToDefaultOverlay(domRefs) {
   domRefs.settingOverlayContainer.classList.add("hidden");
   domRefs.saveSettingsButton.style.display = "none";
 }
+
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @param {'bookmark'|'default'} mode
+ */
+export function toggleBookmarkMode(state, domRefs, mode) {
+  domRefs.bookmarksBtn.classList.toggle('active')
+  domRefs.input.value = ''
+  if (mode === undefined) {
+    if (state.mode == "bookmark") {
+      state.mode = "default";
+      domRefs.bookmarksBtn.title = 'bookmark mode'
+      domRefs.leftButtonContainer.style.display = 'flex'
+    } else {
+      state.mode = "bookmark";
+      domRefs.bookmarksBtn.title = 'notes mode'
+      domRefs.leftButtonContainer.style.display = 'none'
+    }
+  }
+
+  if (mode == 'bookmark') {
+    state.mode = "bookmark";
+    domRefs.bookmarksBtn.title = 'notes mode'
+    domRefs.leftButtonContainer.style.display = 'none'
+  }
+
+  if (mode == 'default') {
+    state.mode = "default";
+    domRefs.bookmarksBtn.title = 'bookmark mode'
+    domRefs.leftButtonContainer.style.display = 'flex'
+
+  }
+
+
+  triggerRender(state, domRefs);
+  updatedActiveTags(state, domRefs);
+  domRefs.input.focus();
+}
+
+
+/**
+ * sets up the ui elements for minaml
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ * @param {Boolean} minmal
+ * @returns {void} The new offset X
+ */
+export function settingMinmalUI(state, domRefs, minmal) {
+  if (minmal == true) {
+    if (!document.body.classList.contains('minmal')) {
+      document.body.classList.add("minmal");
+    }
+  }
+  else {
+    if (document.body.classList.contains('minmal')) {
+      document.body.classList.remove("minmal");
+    }
+  }
+  domRefs.switchUI.checked = minmal;
+  domRefs.switchUISettings.checked = minmal
+
+}
+

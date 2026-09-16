@@ -36,6 +36,7 @@
  * @property {HTMLInputElement} switchUISettings - button
  * @property {HTMLElement|null} addNotesTag - button
  * @property {HTMLButtonElement} resetButton
+ * @property {HTMLElement} leftButtonContainer - has all the regulard buttons on the left side that is utlized in regular notes mode
  */
 
 /**

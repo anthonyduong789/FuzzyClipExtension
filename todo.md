@@ -236,4 +236,11 @@ will not have removed opacity
 
 
 
+# steps to toggle bookmark mode
+
+ctrl + b 
+
+sends message to iframe
+
+changs state for bookmarkmode
 

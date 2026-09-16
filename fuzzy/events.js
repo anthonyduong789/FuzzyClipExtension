@@ -19,6 +19,8 @@ import {
   updatedActiveTags,
   showHotKeys,
   returnToDefaultOverlay,
+  toggleBookmarkMode,
+  settingMinmalUI
 } from "./view.js";
 
 import { createAddBox } from "./templates.js";
@@ -43,7 +45,7 @@ export function initEventListeners(state, domRefs) {
  * @param {DomRefs} domRefs
  * @returns {void} The new offset X
  */
-function triggerRender(state, domRefs) {
+export function triggerRender(state, domRefs) {
   if (state.mode == "default" || state.mode == "deleteNotes") {
     render(
       searchNotes(domRefs.input.value, state.notes, state.ui.currentAlgo),
@@ -99,6 +101,7 @@ export function initSearch(state, domRefs) {
             triggerRender(state, domRefs);
           }
         } else if (state.mode == "bookmark") {
+          state.ui.selectedIndex = 0;
           triggerRender(state, domRefs);
         }
       },
@@ -192,9 +195,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-        .map((tag) => {
-          if (!state.notes[currentIndex].tags.includes(tag)) {
-            return `
+      .map((tag) => {
+        if (!state.notes[currentIndex].tags.includes(tag)) {
+          return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -202,11 +205,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-          } else {
-            return "";
-          }
-        })
-        .join("")
+        } else {
+          return "";
+        }
+      })
+      .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -315,7 +318,7 @@ export function attachItemListeners(state, domRefs) {
         case "copyContent":
           navigator.clipboard
             .writeText(contentText.dataset.content)
-            .then(() => {})
+            .then(() => { })
             .catch((err) => {
               console.error("Error copying to clipboard: ", err);
             });
@@ -486,7 +489,7 @@ function resetDeleteSelectedElementsBtn(domRefs) {
  */
 export function initSettings(state, domRefs) {
   settingColorPicker(state, domRefs);
-  settingMinmalUI(state, domRefs);
+  settingMinmalUI(state, domRefs, state.settings.hide_ui);
 }
 
 /**
@@ -529,16 +532,16 @@ export function settingColorPicker(state, domRefs) {
  * @param {DomRefs} domRefs
  * @returns {void} The new offset X
  */
-function settingMinmalUI(state, domRefs) {
-  if (state.settings.hide_ui) {
-    document.body.classList.add("minmal");
-    domRefs.switchUI.checked = state.settings.hide_ui;
-    if (domRefs.switchUI.checked) {
-      document.body.classList.add("minmal");
-    }
-    domRefs.switchUISettings.checked = state.settings.hide_ui;
-  }
-}
+// function settingMinmalUI(state, domRefs) {
+//   if (state.settings.hide_ui) {
+//     document.body.classList.add("minmal");
+//     domRefs.switchUI.checked = state.settings.hide_ui;
+//     if (domRefs.switchUI.checked) {
+//       document.body.classList.add("minmal");
+//     }
+//     domRefs.switchUISettings.checked = state.settings.hide_ui;
+//   }
+// }
 
 /**
  * Handles drag and drop calculations.
@@ -666,7 +669,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => {})
+        .then(() => { })
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -1463,24 +1466,3 @@ function toggleBookmarkEventListener(state, domRefs) {
   });
 }
 
-/**
- * Handles drag and drop calculations.
- * @param {AppState} state
- * @param {DomRefs} domRefs
- * @param {'bookmark'|'default'} mode
- */
-function toggleBookmarkMode(state, domRefs, mode) {
-  if (mode === undefined) {
-    if (state.mode == "bookmark") {
-      state.mode = "default";
-    } else {
-      state.mode = "bookmark";
-    }
-  } else {
-    state.mode = mode;
-  }
-  console.log("toggling into bookmark mode");
-  triggerRender(state, domRefs);
-  updatedActiveTags(state, domRefs);
-  domRefs.input.focus();
-}

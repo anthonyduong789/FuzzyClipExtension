@@ -1294,6 +1294,21 @@
 
 /* bookmark container*/
 
+
+#toggleBookmarkModeBtn .notesUI {
+  display: none;
+}
+
+#toggleBookmarkModeBtn.active .bookmarksUI {
+  display: none;
+}
+
+#toggleBookmarkModeBtn.active .notesUI {
+  display: block;
+}
+
+
+
 .bookmarkContainer {
 
   list-style: none;

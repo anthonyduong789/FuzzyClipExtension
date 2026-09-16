@@ -146,6 +146,10 @@ function handleKeydown(event) {
   if (event.ctrlKey && event.key === "q") {
     toggleIframe();
   }
+  if (event.ctrlKey && event.key === "b") {
+    toggleBookmarkMode();
+  }
+
 }
 
 // ============================================================
@@ -155,6 +159,29 @@ function handleKeydown(event) {
 function handleTopBarMouseDown(event) {
   makeDraggable(event);
 }
+
+
+// ============================================================
+// TOGGLE IFRAME Display bookmark mode
+// ============================================================
+
+function toggleBookmarkMode() {
+  if (wrapper.style.display == "none") {
+    wrapper.style.display = "flex";
+
+    iframe.focus();
+
+    iframe.contentWindow.postMessage(
+      {
+        type: "SHOW_BOOKMARKMODE",
+        data: "world",
+      },
+      "*",
+    );
+  }
+
+}
+
 
 // ============================================================
 // TOGGLE IFRAME
