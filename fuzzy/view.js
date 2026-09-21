@@ -260,3 +260,13 @@ export function settingMinmalUI(state, domRefs, minmal) {
 
 }
 
+
+/**
+ * sets up the ui elements for minaml
+ * @param {Boolean} start_on_bookmarkmode
+ * @param {DomRefs} domRefs
+ * @returns {void} The new offset X
+ */
+export function settingBookmarkUI(start_on_bookmarkmode, domRefs) {
+  domRefs.switchBookmarkSettings.checked = start_on_bookmarkmode;
+}
