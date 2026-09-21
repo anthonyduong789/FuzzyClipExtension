@@ -34,6 +34,7 @@
  * @property {HTMLUListElement} confirmTagInput - The list of project tags ("itemList")
  * @property {HTMLInputElement} switchUI - button
  * @property {HTMLInputElement} switchUISettings - button
+ * @property {HTMLInputElement} switchBookmarkSettings - start on bookmark setting or regular note
  * @property {HTMLElement|null} addNotesTag - button
  * @property {HTMLButtonElement} resetButton
  * @property {HTMLElement} leftButtonContainer - has all the regulard buttons on the left side that is utlized in regular notes mode
@@ -59,6 +60,7 @@
  * @property {number} top
  * @property {number} left
  * @property {boolean} hide_ui
+ * @property {boolean} start_on_bookmarkmode
  * @property {any} [key]
  */
 
@@ -124,4 +126,4 @@
  * @property {string} url
  */
 
-export { }; // Converts file to a module
+export {}; // Converts file to a module

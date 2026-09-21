@@ -23,9 +23,9 @@
 
 async function initialize() {
   await intializeData();
-  initializeIframe();
   setupResizeHandles();
   setupEventListeners();
+  initializeIframe();
 }
 
 async function intializeData() {
@@ -34,6 +34,7 @@ async function intializeData() {
   notes = results.notes ?? [];
   tags = results.tags ?? [];
   bookmarks = userBookmarks ?? [];
+
   if (results.personal_settings) {
     personal_settings = results.personal_settings;
   }

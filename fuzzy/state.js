@@ -52,6 +52,7 @@ export function createInitialState(
       top: 5,
       left: 5,
       hide_ui: false,
+      start_on_bookmarkmode: false,
       ...initialSettings,
     },
     newSettings: {},

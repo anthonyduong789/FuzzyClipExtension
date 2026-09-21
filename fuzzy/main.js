@@ -7,6 +7,7 @@ import {
   initSettings,
   initEventListeners,
   closeIframe,
+  triggerRender,
 } from "./events.js";
 import { searchNotes } from "./search.js";
 import { render, displayProjectTags, toggleBookmarkMode } from "./view.js";
@@ -45,9 +46,10 @@ function getDomRefs() {
     confirmTagInput: document.getElementById("confirmAddTagButton"),
     switchUI: document.getElementById("toggleUIButton"),
     switchUISettings: document.getElementById("toggle_hide_ui_settings"),
+    switchBookmarkSettings: document.getElementById("toggle_startOn_bookmark"),
     addNotesTag: null,
     resetButton: document.getElementById("resetData"),
-    leftButtonContainer: document.getElementById('leftButtonContainer')
+    leftButtonContainer: document.getElementById("leftButtonContainer"),
   };
 }
 
@@ -58,9 +60,8 @@ function initializeApp() {
   console.log(state);
 
   window.addEventListener("message", (event) => {
-
     if (event.data.type === "SHOW_BOOKMARKMODE") {
-      toggleBookmarkMode(state, domRefs, 'bookmark');
+      toggleBookmarkMode(state, domRefs, "bookmark");
       domRefs.input.focus();
     }
 
@@ -77,7 +78,9 @@ function initializeApp() {
         event.data.tags,
         event.data.bookmarks,
       );
-      console.log("createInitialState", state);
+      if (state.settings.start_on_bookmarkmode) {
+        state.mode = "bookmark";
+      }
 
       // Initialize App Events & Features
       initSearch(state, domRefs);
@@ -92,7 +95,13 @@ function initializeApp() {
         state.notes,
         state.ui.currentAlgo,
       );
-      render(results, state, domRefs, attachItemListeners);
+
+      if (state.settings.start_on_bookmarkmode) {
+        toggleBookmarkMode(state, domRefs, "bookmark");
+      } else triggerRender(state, domRefs);
+
+      console.log(state.settings);
+      console.log(state.bookmarks);
     }
   });
 

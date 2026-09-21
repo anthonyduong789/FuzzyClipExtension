@@ -123,14 +123,12 @@ export const algos = {
   trigram: { fn: trigramMatch, label: "trigram similarity" },
 };
 
-
-
 /**
- * 
- * @param {string} query 
- * @param {Note[]} notes 
- * @param {string} algoName 
- * @returns 
+ *
+ * @param {string} query
+ * @param {Note[]} notes
+ * @param {string} algoName
+ * @returns
  */
 export function searchNotes(query, notes, algoName) {
   const algo = algos[algoName].fn;
@@ -164,13 +162,12 @@ export function searchTags(query, tags, algoName) {
   return results;
 }
 
-
 /**
- * 
- * @param {string} query 
- * @param {Bookmark[]} bookmarks 
- * @param {string} algoName 
- * @returns 
+ *
+ * @param {string} query
+ * @param {Bookmark[]} bookmarks
+ * @param {string} algoName
+ * @returns
  */
 export function searchBookmarks(query, bookmarks, algoName) {
   const algo = algos[algoName].fn;
@@ -179,9 +176,13 @@ export function searchBookmarks(query, bookmarks, algoName) {
   for (let i = 0; i < bookmarks.length; i++) {
     const res = algo(trimmed, bookmarks[i].title);
     if (res.matched) {
-      results.push({ ...bookmarks[i], score: res.score, positions: res.positions })
+      results.push({
+        ...bookmarks[i],
+        score: res.score,
+        positions: res.positions,
+      });
     }
   }
-  if (trimmed) results.sort((a, b) => b.score - a.score)
-  return results
+  if (trimmed) results.sort((a, b) => b.score - a.score);
+  return results;
 }
