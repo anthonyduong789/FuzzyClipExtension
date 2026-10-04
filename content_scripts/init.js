@@ -38,6 +38,7 @@ async function intializeData() {
   if (results.personal_settings) {
     personal_settings = results.personal_settings;
   }
+  console.log('personal settings applied is', results.personal_settings)
   applyPersonalSettings();
 }
 

@@ -1,5 +1,5 @@
 .wrapper.active {
-    border: 1.5px solid #141312;
+  border: 1.5px solid #141312;
 }
 
 
@@ -24,4 +24,9 @@
 
 .handle-e:hover::before {
   opacity: 0.7;
+}
+
+.wrapper_bookmarkMode {
+  height: 100%;
+  width: calc(80% - 70px);
 }

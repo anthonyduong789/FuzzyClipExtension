@@ -25,7 +25,7 @@ function applyPersonalSettings() {
 
   if (
     personal_settings.height !== undefined &&
-    personal_settings.width !== undefined
+    personal_settings.width !== undefined && !personal_settings.start_on_bookmarkmode
   ) {
     console.log("wrapper style height before clamp", wrapper.style.height);
 
@@ -38,6 +38,10 @@ function applyPersonalSettings() {
     console.log("wrapper style height after clamp", wrapper.style.height);
 
     console.log("wrapper style width after clamp", wrapper.style.width);
+  } else if (personal_settings.start_on_bookmarkmode) {
+    toggleBookmarkModeLayout(true)
+
+    console.log('applying bookmarkmode height and weight')
   } else {
     wrapper.style.height = `${clampHeight(700)}px`;
 
@@ -54,27 +58,17 @@ function applyPersonalSettings() {
 
   if (
     personal_settings.top !== undefined &&
-    personal_settings.left !== undefined
+    personal_settings.left !== undefined && !personal_settings.start_on_bookmarkmode
   ) {
-    console.log(
-      "wrapper style height before clamp position",
-      wrapper.style.height,
-    );
-
-    console.log(
-      "wrapper style width before clamp positon",
-      wrapper.style.width,
-    );
 
     setWrapperPosition(personal_settings.left, personal_settings.top);
 
-    console.log(
-      "wrapper style height AFTER clamp position",
-      wrapper.style.height,
-    );
+  } else if (personal_settings.start_on_bookmarkmode) {
+    wrapper.style.top = '0px';
+    wrapper.style.left = `${window.innerWidth * .1}px`;
 
-    console.log("wrapper style width AFTER clamp positon", wrapper.style.width);
-  } else {
+  }
+  else {
     setWrapperPosition(5, 5);
 
     console.log("No top or left setting found, defaulting to 5px");

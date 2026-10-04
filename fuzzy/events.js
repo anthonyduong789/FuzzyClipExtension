@@ -1080,6 +1080,8 @@ function resetData(state, domRefs) {
       top: 5,
       left: 5,
       hide_ui: false,
+      start_on_bookmarkmode: false,
+
     };
     state.tags = ["work", "javascript"];
     storageManager("update-data", "notes", state.notes);
@@ -1478,3 +1480,4 @@ function toggleBookmarkEventListener(state, domRefs) {
     toggleBookmarkMode(state, domRefs);
   });
 }
+

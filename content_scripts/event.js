@@ -147,6 +147,7 @@ function handleKeydown(event) {
     toggleIframe();
   }
   if (event.ctrlKey && event.key === "b") {
+    toggleBookmarkModeLayout(true);
     toggleBookmarkMode();
   }
 
@@ -240,5 +241,25 @@ function handleRuntimeMessage(message, sender, sendResponse) {
     if (wrapper) {
       toggleIframe();
     }
+  }
+}
+
+
+
+/**
+ * @param {Boolean} bookmarkModeOn
+ */
+function toggleBookmarkModeLayout(bookmarkModeOn) {
+  if (bookmarkModeOn) {
+    wrapper.style.height = `${window.innerHeight}px`
+    wrapper.style.width = `${(window.innerWidth * .8 - 70)}px`
+    wrapper.style.left = `${(window.innerWidth - (window.innerWidth * .8 - 70)) / 2}px`
+  }
+  else {
+    wrapper.style.height = `${clampHeight(personal_settings.height)}px`;
+
+    wrapper.style.width = `${clampWidth(personal_settings.width)}px`;
+
+    setWrapperPosition(personal_settings.left, personal_settings.top);
   }
 }

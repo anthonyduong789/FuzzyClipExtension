@@ -31,3 +31,10 @@ let startRight;
 
 const MIN_W = 160;
 const MIN_H = 90;
+
+const bookmarkModeLayout = {
+  width: 'calc(80% + 20px)',
+  height: 'calc(100% - 70px)',
+  left: '50%',
+  margin: '0 0 0 -40%;'
+};
