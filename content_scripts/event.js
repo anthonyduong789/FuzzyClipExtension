@@ -150,7 +150,6 @@ function handleKeydown(event) {
     toggleBookmarkModeLayout(true);
     toggleBookmarkMode();
   }
-
 }
 
 // ============================================================
@@ -160,7 +159,6 @@ function handleKeydown(event) {
 function handleTopBarMouseDown(event) {
   makeDraggable(event);
 }
-
 
 // ============================================================
 // TOGGLE IFRAME Display bookmark mode
@@ -180,9 +178,7 @@ function toggleBookmarkMode() {
       "*",
     );
   }
-
 }
-
 
 // ============================================================
 // TOGGLE IFRAME
@@ -244,18 +240,16 @@ function handleRuntimeMessage(message, sender, sendResponse) {
   }
 }
 
-
-
 /**
+ * on
  * @param {Boolean} bookmarkModeOn
  */
 function toggleBookmarkModeLayout(bookmarkModeOn) {
   if (bookmarkModeOn) {
-    wrapper.style.height = `${window.innerHeight}px`
-    wrapper.style.width = `${(window.innerWidth * .8 - 70)}px`
-    wrapper.style.left = `${(window.innerWidth - (window.innerWidth * .8 - 70)) / 2}px`
-  }
-  else {
+    wrapper.style.height = `${window.innerHeight}px`;
+    wrapper.style.width = `${window.innerWidth * 0.8 - 70}px`;
+    wrapper.style.left = `${(window.innerWidth - (window.innerWidth * 0.8 - 70)) / 2}px`;
+  } else {
     wrapper.style.height = `${clampHeight(personal_settings.height)}px`;
 
     wrapper.style.width = `${clampWidth(personal_settings.width)}px`;
@@ -263,3 +257,5 @@ function toggleBookmarkModeLayout(bookmarkModeOn) {
     setWrapperPosition(personal_settings.left, personal_settings.top);
   }
 }
+
+function expandMode() {}

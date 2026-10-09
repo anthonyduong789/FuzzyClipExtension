@@ -38,6 +38,7 @@
  * @property {HTMLElement|null} addNotesTag - button
  * @property {HTMLButtonElement} resetButton
  * @property {HTMLElement} leftButtonContainer - has all the regulard buttons on the left side that is utlized in regular notes mode
+ * @property {HTMLElement} resizeButton - button is used for resizing the container and swiching to stretched position or resizing
  */
 
 /**

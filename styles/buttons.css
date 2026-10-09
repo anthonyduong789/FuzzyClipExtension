@@ -1,0 +1,17 @@
+#resizeButton.expandMode .frameCorners {
+    display: block;
+
+}
+
+#resizeButton.expandMode .resizeBtn {
+    display: none;
+}
+
+#resizeButton.resizeMode .frameCorners {
+    display: none;
+
+}
+
+#resizeButton.resizeMode .resizeBtn {
+    display: block;
+}

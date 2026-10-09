@@ -50,6 +50,7 @@ function getDomRefs() {
     addNotesTag: null,
     resetButton: document.getElementById("resetData"),
     leftButtonContainer: document.getElementById("leftButtonContainer"),
+    resizeButton: document.getElementById("resizeButton"),
   };
 }
 

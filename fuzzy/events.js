@@ -21,7 +21,7 @@ import {
   returnToDefaultOverlay,
   toggleBookmarkMode,
   settingMinmalUI,
-  settingBookmarkUI
+  settingBookmarkUI,
 } from "./view.js";
 
 import { createAddBox } from "./templates.js";
@@ -37,6 +37,7 @@ export function initEventListeners(state, domRefs) {
   handleTagDropDown(state, domRefs);
   addNotesButton(state, domRefs);
   toggleBookmarkEventListener(state, domRefs);
+  toggleResizeButton(state, domRefs);
   drag(state, domRefs);
 }
 
@@ -196,9 +197,9 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
 
   let availableTags = state.tags.length
     ? state.tags
-      .map((tag) => {
-        if (!state.notes[currentIndex].tags.includes(tag)) {
-          return `
+        .map((tag) => {
+          if (!state.notes[currentIndex].tags.includes(tag)) {
+            return `
       <div class="add-tag-row" data-tag="${escHtml(tag)}">
         <span class="add-tag-label">${escHtml(tag)}</span>
         <button class="" aria-label="Add tag ${escHtml(tag)}">
@@ -206,11 +207,11 @@ function showTagPopover(triggerEl, currentIndex, state, domRefs) {
         </button>
       </div>
       `;
-        } else {
-          return "";
-        }
-      })
-      .join("")
+          } else {
+            return "";
+          }
+        })
+        .join("")
     : `<div class="add-tag-empty">No tags yet</div>`;
 
   if (availableTags == "") {
@@ -319,7 +320,7 @@ export function attachItemListeners(state, domRefs) {
         case "copyContent":
           navigator.clipboard
             .writeText(contentText.dataset.content)
-            .then(() => { })
+            .then(() => {})
             .catch((err) => {
               console.error("Error copying to clipboard: ", err);
             });
@@ -592,7 +593,6 @@ export function initSettingsEvents(state, domRefs) {
     }
     domRefs.saveSettingsButton.style.display = "block";
     console.log(state.newSettings);
-
   });
 
   saveSettings(state, domRefs);
@@ -682,7 +682,7 @@ export function initKeyMaps(state, domRefs) {
       if (!content) return;
       navigator.clipboard
         .writeText(content)
-        .then(() => { })
+        .then(() => {})
         .catch((err) => {
           console.error("Error copying to clipboard: ", err);
         });
@@ -1081,7 +1081,6 @@ function resetData(state, domRefs) {
       left: 5,
       hide_ui: false,
       start_on_bookmarkmode: false,
-
     };
     state.tags = ["work", "javascript"];
     storageManager("update-data", "notes", state.notes);
@@ -1481,3 +1480,20 @@ function toggleBookmarkEventListener(state, domRefs) {
   });
 }
 
+/**
+ * Handles drag and drop calculations.
+ * @param {AppState} state
+ * @param {DomRefs} domRefs
+ */
+function toggleResizeButton(state, domRefs) {
+  domRefs.resizeButton.addEventListener("click", (e) => {
+    console.log("toggleResizeButton");
+    if (domRefs.resizeButton.classList.contains("expandMode")) {
+      domRefs.resizeButton.classList.remove("expandMode");
+      domRefs.resizeButton.classList.add("resizeMode");
+    } else {
+      domRefs.resizeButton.classList.remove("resizeMode");
+      domRefs.resizeButton.classList.add("expandMode");
+    }
+  });
+}
